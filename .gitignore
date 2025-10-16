@@ -1,6 +1,12 @@
 raw_tracks.csv
 raw_tracks_cleaned.csv
+raw_albums_cleaned.csv
 raw_echonest.csv
 raw_albums.csv
 new_albums.csv
 tracks.csv
+echonest.csv
+features.csv
+genres.csv
+raw_artists.csv
+raw_genres.csv

@@ -48,7 +48,7 @@ new_df["album_information"] = new_df["album_information"].str.replace(r"<\/?p[^>
 
 new_df.drop(df[df.apply(ligne_valide, axis=1)].index, inplace=True)
 
-new_df.to_csv("../../CSV/Cleaned_CSV/new_albums.csv", sep=",", index=False, encoding="utf-8")
+new_df.to_csv("../../CSV/Cleaned_CSV/raw_albums_cleaned.csv", sep=",", index=False, encoding="utf-8")
 
 # Compter les occurrences de guillemet simple
 print('cases avec "" :', df['album_information'].str.contains("\"\"", regex=False).sum())
