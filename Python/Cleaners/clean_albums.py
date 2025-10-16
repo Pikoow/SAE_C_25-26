@@ -2,10 +2,16 @@ import pandas as pd
 import numpy as np
 import re
 import matplotlib.pyplot as plt
+import os
 
 EXPECTED_COLUMNS = 19
 
-df = pd.read_csv("../../CSV/Initial_CSV/raw_albums.csv", sep=",", on_bad_lines="warn")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+input_file = os.path.join(current_dir, "..", "..", "CSV", "Initial_CSV", "raw_albums.csv")
+output_file = os.path.join(current_dir, "..", "..", "CSV", "Cleaned_CSV", "raw_albums_cleaned.csv")
+
+df = pd.read_csv(input_file, sep=",", on_bad_lines="warn")
 new_df = pd.DataFrame(df)
 
 pattern_clean = re.compile(
@@ -20,12 +26,6 @@ new_df["album_information"] = (
     .str.replace(pattern_clean, "", regex=True)
 )
 
-# new_df["album_information"] = (
-#     new_df["album_information"]
-#     .fillna("")
-#     .astype(str)
-#     .str.replace("\"\"", "\"", regex=False)
-# )
 pattern_quotes = re.compile(r"(?<=\w)""|""(?=\w)", flags=re.IGNORECASE | re.VERBOSE)
 
 def ligne_valide(row):
@@ -36,26 +36,8 @@ def ligne_valide(row):
         return False
     return True
 
-
-print(df.loc[0],"\n\n\n")
-print(df)
-
 new_df["album_information"] = new_df["album_information"].str.replace(r"<\/?p[^>]*>", "", regex=True)
-
-# new_df["album_information"] = new_df["album_information"].str.replace(r"'{2,}", "'", regex=True)
-# new_df["album_information"] = new_df["album_information"].str.replace(r'"{2,}', '"', regex=True)
-
 
 new_df.drop(df[df.apply(ligne_valide, axis=1)].index, inplace=True)
 
-new_df.to_csv("../../CSV/Cleaned_CSV/raw_albums_cleaned.csv", sep=",", index=False, encoding="utf-8")
-
-# Compter les occurrences de guillemet simple
-print('cases avec "" :', df['album_information'].str.contains("\"\"", regex=False).sum())
-print(repr(df['album_information'].iloc[10]))
-# df.drop()
-
-# print(df.loc[0],"\n\n\n")
-# print(df)
-
-#tags & genre ?
+new_df.to_csv(output_file, sep=",", index=False, encoding="utf-8")

@@ -3,19 +3,78 @@ import numpy as np
 import matplotlib.pyplot as plt
 import prince
 import seaborn as sns
+import os
+import re
 
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
+# ===== CLEANER - ALBUMS ===== #
+EXPECTED_COLUMNS = 19
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+input_file = os.path.join(current_dir, "raw_albums.csv")
+output_file = os.path.join(current_dir, "raw_albums_cleaned.csv")
+
+df = pd.read_csv(input_file, sep=",", on_bad_lines="warn")
+new_df = pd.DataFrame(df)
+
+pattern_clean = re.compile(
+    r"<\s*/?\s*(p|br|div|span|b|i|u|em|strong|ul|a|li|font|table|tbody|tr|thead|td|font-face|center|iframe|col|img|h4|h3|h2|ol|sup|blockquote|hr|w|m|xml)\b[^>]*>|[\t\n\]+]|[\*]|",
+    flags=re.IGNORECASE
+)
+
+new_df["album_information"] = (
+    new_df["album_information"]
+    .fillna("")
+    .astype(str)
+    .str.replace(pattern_clean, "", regex=True)
+)
+
+pattern_quotes = re.compile(r"(?<=\w)""|""(?=\w)", flags=re.IGNORECASE | re.VERBOSE)
+
+def ligne_valide(row):
+    ligne = str(row)
+    if (isinstance(row['album_comments'], int) or (isinstance(row['album_listens'], int)) or (isinstance(row['album_id'], str))) :
+        return False
+    return True
+
+new_df["album_information"] = new_df["album_information"].str.replace(r"<\/?p[^>]*>", "", regex=True)
+
+new_df.drop(df[df.apply(ligne_valide, axis=1)].index, inplace=True)
+
+new_df.to_csv(output_file, sep=",", index=False, encoding="utf-8")
+
+# ===== CLEANER - TRACKS ===== #
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+input_file = os.path.join(current_dir, "raw_tracks.csv")
+output_file = os.path.join(current_dir, "raw_tracks_cleaned.csv")
+
+# Chargement du fichier CSV
+data_frame = pd.read_csv(input_file)
+
+def cleaner(data_frame):
+    # Traitement des valeurs manquantes
+    data_frame_cleaned = data_frame.replace(r'^\s*$', None, regex=True) 
+    
+    # Suppression des balises HTML
+    data_frame_cleaned = data_frame_cleaned.replace(r'<[^<>]*>', '', regex=True)
+    
+    # Génération du fichier nettoyé
+    data_frame_cleaned.to_csv(output_file, index=False, na_rep="NULL")
+
+cleaner(data_frame)
 
 # ===== LECTURE DES DONNÉES DEPUIS LES DIFFÉRENTS FICHIERS CSV ===== #
 
-df_echonest = pd.read_csv("../../CSV/Initial_CSV/raw_echonest.csv", header=2, low_memory=False)
-df_raw_tracks = pd.read_csv("../../CSV/Cleaned_CSV/raw_tracks_cleaned.csv", low_memory=False)
-df_tracks_box_plot = pd.read_csv("../../CSV/Initial_CSV/tracks.csv", header=1, low_memory=False)
-df_albums = pd.read_csv("../../CSV/Cleaned_CSV/raw_albums_cleaned.csv", sep=",", on_bad_lines="warn", low_memory=False)
-
+df_echonest = pd.read_csv("./raw_echonest.csv", header=2, low_memory=False)
+df_raw_tracks = pd.read_csv("./raw_tracks_cleaned.csv", low_memory=False)
+df_tracks = pd.read_csv("./tracks.csv", low_memory=False, nrows=100000, header=1)
+df_tracks_box_plot = pd.read_csv("./tracks.csv", header=1, low_memory=False)
+df_albums = pd.read_csv("./raw_albums_cleaned.csv", sep=",", on_bad_lines="warn", low_memory=False)
 
 # ===== BOX PLOT DURATION / GENRE ===== #
 
@@ -28,7 +87,6 @@ def box_plot_duration_genre(df):
 
     # Filtrage des durées dans une plage raisonnable
     df_filtre = df[(df['duration'] >= Q1 - 1.5 * IQR) & (df['duration'] <= Q3 + 1.5 * IQR)]
-    print(f"Lignes conservées : {len(df_filtre)} / {len(df)}")
 
     # Création du boxplot
     df_filtre.boxplot(column='duration', by='genre_top', figsize=(12,6))
@@ -124,11 +182,11 @@ def bar_chart_track_titles_length(df):
 def stack_bar_number_of_tracks_per_decennies_genres():
 
     # Lecture des deux premières lignes pour générer des noms de colonnes corrects
-    header_df = pd.read_csv("../../CSV/Initial_CSV/tracks.csv", nrows=2)
+    header_df = pd.read_csv("./tracks.csv", nrows=2)
     columns = [f"{header_df.columns[i]}_{header_df.iloc[0, i]}" for i in range(len(header_df.columns))]
 
     # Lecture complète avec les nouveaux noms de colonnes
-    df = pd.read_csv("../../CSV/Initial_CSV/tracks.csv", skiprows=2, names=columns, low_memory=False)
+    df = pd.read_csv("./tracks.csv", skiprows=2, names=columns, low_memory=False)
 
     date_col = "track.4_date_recorded"
     genre_col = "track.7_genre_top"
@@ -218,11 +276,6 @@ def pca_analysis(df):
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
     plt.show()
-
-    # Affichage des valeurs numériques de la variance expliquée
-    print("\nExplained variance per component:")
-    for i, var in enumerate(explained_variance, start=1):
-        print(f" - Component {i}: {var*100:.2f}%")
 
     # Cercle de corrélation ---
     def correlation_circle(pca, axis_x, axis_y, features):
