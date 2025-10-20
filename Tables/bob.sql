@@ -1,0 +1,4 @@
+CREATE TABLE bob {
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+}
