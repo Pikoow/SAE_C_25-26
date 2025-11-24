@@ -3,12 +3,12 @@ CREATE SCHEMA IF NOT EXISTS sae;
 SET SCHEMA 'sae';
 
 CREATE TABLE Users (
-    user_id       SERIAL Primary key,
-    user_firstName VARCHAR(20),
-    user_lastName VARCHAR(20),
-    user_age int,
-    user_year_created date,
-    user_image VARCHAR(100),
+    user_id                  SERIAL PRIMARY KEY,
+    user_firstName           VARCHAR(20),
+    user_lastName            VARCHAR(20),
+    user_age                 INT,
+    user_year_created        DATE,
+    user_image               VARCHAR(100),
     user_location            VARCHAR(50),
     user_latitude            FLOAT,
     user_longitude           FLOAT,
