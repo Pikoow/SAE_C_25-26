@@ -1,38 +1,28 @@
+DROP SCHEMA IF EXISTS sae CASCADE;
+CREATE SCHEMA IF NOT EXISTS sae;
+SET SCHEMA 'sae';
 
-drop table if exists Users cascade;
-drop table if exists favorite cascade;
-drop table if exists tracks cascade;
-drop table if exists score_track cascade;
-drop table if exists users_track cascade;
-drop table if exists playlist cascade;
-drop table if exists playlist_track cascade;
-drop table if exists artist cascade;
-drop table if exists score_artist cascade;
-drop table if exists Album cascade;
-drop table if exists album_artist cascade;
-drop table if exists genre cascade;
-
-create table Users(
-  user_id SERIAL Primary key,
-  user_firstName VARCHAR(20),
-  user_lastName VARCHAR(20),
-  user_age int,
-  user_year_created date,
-  user_image VARCHAR(100),
-  user_location VARCHAR(50),
-  user_latitude Float,
-  user_longitude Float,
-  user_duree_ecoute int,
-  user_average_duration int,
-  user_status VARCHAR(50),
-  user_average_listenedBPM float,
-  user_average_valence float,
-  user_playlist_Id int,
-  user_tags VARCHAR(50),
-  user_password VARCHAR(50),
-  user_mail VARCHAR(50),
-  user_phoneNumber VARCHAR(10),
-  user_id_form SERIAL unique
+CREATE TABLE Users (
+    user_id       SERIAL Primary key,
+    user_firstName VARCHAR(20),
+    user_lastName VARCHAR(20),
+    user_age int,
+    user_year_created date,
+    user_image VARCHAR(100),
+    user_location            VARCHAR(50),
+    user_latitude            FLOAT,
+    user_longitude           FLOAT,
+    user_duree_ecoute        INT,
+    user_average_duration    INT,
+    user_status              VARCHAR(50),
+    user_average_listenedBPM FLOAT,
+    user_average_valence     FLOAT,
+    user_playlist_Id         int,
+    user_tags                VARCHAR(50),
+    user_password            VARCHAR(50),
+    user_mail                VARCHAR(50),
+    user_phoneNumber         VARCHAR(10),
+    user_id_form             SERIAL UNIQUE
 );
 
 create table favorite(
