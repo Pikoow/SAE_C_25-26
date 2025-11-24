@@ -84,7 +84,7 @@ CREATE TABLE score_track (
     ranks_song_hotness_rank       INT,
     social_features_song_currency FLOAT,
     social_features_song_hotness  FLOAT,
-    track_id                      INT references tracks(track_id)
+    track_id                      INT REFERENCES tracks(track_id)
 );
 
 CREATE TABLE users_track (
@@ -94,64 +94,64 @@ CREATE TABLE users_track (
 );
 
 CREATE TABLE playlist (
-  playlist_id         SERIAL PRIMARY KEY,
-  playlist_name       VARCHAR(50),
-  playlist_num_tracks INT,
-  -- list_track          LIST,
-  user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    playlist_id         SERIAL PRIMARY KEY,
+    playlist_name       VARCHAR(50),
+    playlist_num_tracks INT,
+    -- list_track          LIST,
+    user_id             INT    REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE playlist_track (
-  playlist_id INT REFERENCES playlist(playlist_id) ON DELETE CASCADE,
-  track_id INT REFERENCES tracks(track_id) ON DELETE CASCADE,
-  PRIMARY KEY (playlist_id, track_id)
+    playlist_id INT REFERENCES playlist(playlist_id) ON DELETE CASCADE,
+    track_id    INT REFERENCES tracks(track_id)      ON DELETE CASCADE,
+    PRIMARY KEY (playlist_id, track_id)
 );
 
 CREATE TABLE artist (
-  artist_id                SERIAL PRIMARY KEY,
-  artist_password          VARCHAR(30),
-  artist_name              VARCHAR(20),
-  artist_bio               VARCHAR(200),
-  artist_related_project   VARCHAR(255),
-  artist_favorites         INT,
-  artist_image_file        VARCHAR(200),
-  artist_active_year_begin DATE,
-  artist_active_year_end   DATE,
-  artist_tags              VARCHAR(200),
-  artist_location          VARCHAR(200),
-  artist_website           VARCHAR(200),
-  -- artist_latitude       FLOAT,
-  -- artist_longitude      FLOAT,
-  artist_associated_label  VARCHAR(200),
-  id_rank_artist           INT,
-  artiste_social_score     INT,
-  user_id INT REFERENCES users(user_id)
+    artist_id                SERIAL PRIMARY KEY,
+    artist_password          VARCHAR(30),
+    artist_name              VARCHAR(20),
+    artist_bio               VARCHAR(200),
+    artist_related_project   VARCHAR(255),
+    artist_favorites         INT,
+    artist_image_file        VARCHAR(200),
+    artist_active_year_begin DATE,
+    artist_active_year_end   DATE,
+    artist_tags              VARCHAR(200),
+    artist_location          VARCHAR(200),
+    artist_website           VARCHAR(200),
+    -- artist_latitude       FLOAT,
+    -- artist_longitude      FLOAT,
+    artist_associated_label  VARCHAR(200),
+    id_rank_artist           INT,
+    artiste_social_score     INT,
+    user_id                  INT    REFERENCES users(user_id)
 );
 
-CREATE TABLE score_artist(
-  id_rank_artist                     SERIAL PRIMARY KEY,
-  social_features_artist_discovery   FLOAT,
-  social_features_artist_familiarity FLOAT,
-  social_features_artist_hotnesss    FLOAT,
-  ranks_artist_discovery_rank        INT,
-  ranks_artist_familiarity_rank      INT,
-  ranks_artist_hotttnesss_rank       INT,
-  artist_id                          INT REFERENCES artist(artist_id)
+CREATE TABLE score_artist (
+    id_rank_artist                     SERIAL PRIMARY KEY,
+    social_features_artist_discovery   FLOAT,
+    social_features_artist_familiarity FLOAT,
+    social_features_artist_hotnesss    FLOAT,
+    ranks_artist_discovery_rank        INT,
+    ranks_artist_familiarity_rank      INT,
+    ranks_artist_hotttnesss_rank       INT,
+    artist_id                          INT    REFERENCES artist(artist_id)
 );
 
 CREATE TABLE album_artist (
-  album_id INT REFERENCES album(album_id) ON DELETE CASCADE,
-  artist_id INT REFERENCES artist(artist_id) ON DELETE CASCADE,
-  PRIMARY KEY (album_id, artist_id)
+    album_id  INT REFERENCES album(album_id)   ON DELETE CASCADE,
+    artist_id INT REFERENCES artist(artist_id) ON DELETE CASCADE,
+    PRIMARY KEY (album_id, artist_id)
 );
 
-CREATE TABLE genre(
-  genre_id        SERIAL UNIQUE PRIMARY KEY,
-  genre_parent_id INT,
-  genre_title     VARCHAR(200),
-  genre_handle    VARCHAR(200),
-  genre_color     VARCHAR(200),
-  low_level       BOOLEAN,
-  tracks          INT,
-  track_id INT REFERENCES tracks(track_id)
+CREATE TABLE genre (
+    genre_id        SERIAL UNIQUE PRIMARY KEY,
+    genre_parent_id INT,
+    genre_title     VARCHAR(200),
+    genre_handle    VARCHAR(200),
+    genre_color     VARCHAR(200),
+    low_level       BOOLEAN,
+    tracks          INT,
+    track_id        INT    REFERENCES tracks(track_id)
 );
