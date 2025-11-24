@@ -2,7 +2,7 @@ DROP SCHEMA IF EXISTS sae CASCADE;
 CREATE SCHEMA IF NOT EXISTS sae;
 SET SCHEMA 'sae';
 
-CREATE TABLE Users (
+CREATE TABLE users (
     user_id                  SERIAL PRIMARY KEY,
     user_firstName           VARCHAR(20),
     user_lastName            VARCHAR(20),
@@ -27,71 +27,70 @@ CREATE TABLE Users (
     user_id_form             SERIAL UNIQUE
 );
 
-create table favorite(
-  favorite_id serial Primary key,
-  user_id INT REFERENCES users(user_id),
-  user_favorite_tracks integer,
-  user_favorite_album integer,
-  user_favorite_artist integer,
-  user_favorite_language VARCHAR(50),
-  user_favortie_genre integer,
-  user_favorite_hour VARCHAR(50)
+CREATE TABLE favorite (
+    favorite_id            SERIAL PRIMARY KEY,
+    user_favorite_tracks   INT,
+    user_favorite_album    INT,
+    user_favorite_artist   INT,
+    user_favorite_language VARCHAR(50),
+    user_favortie_genre    INT,
+    user_id                INT    REFERENCES users(user_id)
 );
 
-create table Album(
-  album_id serial primary key,
-  album_title VARCHAR(200),
-  album_type VARCHAR(200),
-  album_tracks int,
-  album_information VARCHAR(200),
-  album_favorites int,
-  album_image_file VARCHAR(200),
-  album_listens int,
-  album_tags VARCHAR(200),
-  album_date_released date,
-  album_date_created date,
-  album_engineer VARCHAR(200),
-  album_producer VARCHAR(200)
+CREATE TABLE album (
+    album_id            SERIAL PRIMARY KEY,
+    album_title         VARCHAR(50)
+    album_type          VARCHAR(30),
+    album_tracks        INT,
+    album_information   VARCHAR(255),
+    album_favorites     INT,
+    album_image_file    VARCHAR(255),
+    album_listens       INT,
+    album_tags          VARCHAR(100),
+    album_date_released DATE,
+    album_date_created  DATE,
+    album_engineer      VARCHAR(50),
+    album_producer      VARCHAR(50)
 );
 
-create table tracks(
-  track_id serial primary key,
-  track_title varchar(200),
-  track_duration int,
-  track_genre_top varchar(50),
-  track_genre varchar(50),
-  track_listens int,
-  track_favorite int,
-  track_interest float,
-  track_date_recorded date,
-  track_date_created date,
-  track_composer varchar(50),
-  track_lyricist varchar(50),
-  track_publisher varchar(50),
-  track_tags varchar(200),
-  track_artist_id int,
-  track_album_id int,
-  track_rank_id int,
-  track_feature_id int,
-  track_file varchar(200),
-  track_disk_number int,
-  track_bit_rate int,
-  album_id INT NULL REFERENCES Album(album_id) ON DELETE SET NULL
+CREATE TABLE tracks (
+    track_id            SERIAL PRIMARY KEY,
+    track_title         VARCHAR(200),
+    track_duration      INT,
+    track_genre_top     VARCHAR(30),
+    track_genre         VARCHAR(255),
+    track_listens       INT,
+    track_favorite      INT,
+    track_interest      FLOAT,
+    track_date_recorded DATE,
+    track_date_created  DATE,
+    track_composer      VARCHAR(50),
+    track_lyricist      VARCHAR(50),
+    track_publisher     VARCHAR(50),
+    track_tags          VARCHAR(100),
+    track_artist_id     INT,
+    track_album_id      INT,
+    track_rank_id       INT,
+    track_feature_id    INT,
+    track_file          VARCHAR(255),
+    track_disk_number   INT,
+    track_bit_rate      INT,
+    album_id            INT    NULL REFERENCES album(album_id) ON DELETE SET NULL
 );
 
-create table score_track(
-  id_rank_track serial primary key,
-  ranks_song_currency_rank int,
-  ranks_song_hotttnesss_rank int ,
-  social_features_song_currency float,
-  social_features_song_hotttnesss float,
-  track_id int references tracks(track_id)
+CREATE TABLE score_track (
+    id_rank_track                 SERIAL PRIMARY KEY,
+    ranks_song_currency_rank      INT,
+    ranks_song_hotness_rank       INT,
+    social_features_song_currency FLOAT,
+    social_features_song_hotness  FLOAT,
+    track_id                      INT references tracks(track_id)
 );
 
-create table users_track(
-  user_id int references users(user_id),
-  track_id int references tracks(track_id),
-  PRIMARY KEY (user_id, track_id)
+CREATE TABLE users_track (
+    user_id  INT REFERENCES users(user_id),
+    track_id INT REFERENCES tracks(track_id),
+    PRIMARY KEY (user_id, track_id)
 );
 
 CREATE TABLE playlist (
