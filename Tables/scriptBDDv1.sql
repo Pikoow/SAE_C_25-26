@@ -39,7 +39,7 @@ CREATE TABLE favorite (
 
 CREATE TABLE album (
     album_id            SERIAL PRIMARY KEY,
-    album_title         VARCHAR(50)
+    album_title         VARCHAR(50),
     album_type          VARCHAR(30),
     album_tracks        INT,
     album_information   VARCHAR(255),
