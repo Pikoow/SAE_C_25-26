@@ -42,7 +42,7 @@ CREATE TABLE favorite (
     user_favorite_album    INT,
     user_favorite_artist   INT,
     user_favorite_language VARCHAR(50),
-    user_favortie_genre    INT,
+    user_favorite_genre    INT,
     user_id                INT    REFERENCES users(user_id)
 );
 
@@ -84,7 +84,6 @@ CREATE TABLE tracks (
     track_publisher     VARCHAR(50),
     track_tags          VARCHAR(100),
     track_artist_id     INT,
-    track_album_id      INT,
     track_rank_id       INT,
     track_feature_id    INT,
     track_file          VARCHAR(255),
@@ -154,7 +153,7 @@ CREATE TABLE artist (
     artist_longitude         FLOAT,
     artist_associated_label  VARCHAR(200),
     id_rank_artist           INT,
-    artiste_social_score     INT,
+    artist_social_score     INT,
     user_id                  INT    REFERENCES users(user_id)
 );
 
@@ -165,10 +164,10 @@ CREATE TABLE score_artist (
     id_rank_artist                     SERIAL PRIMARY KEY,
     social_features_artist_discovery   FLOAT,
     social_features_artist_familiarity FLOAT,
-    social_features_artist_hotnesss    FLOAT,
+    social_features_artist_hotness     FLOAT,
     ranks_artist_discovery_rank        INT,
     ranks_artist_familiarity_rank      INT,
-    ranks_artist_hotttnesss_rank       INT,
+    ranks_artist_hotness_rank       INT,
     artist_id                          INT    REFERENCES artist(artist_id)
 );
 
@@ -200,34 +199,51 @@ CREATE TABLE genre (
 /*                                 VUES                                  */
 /* ##################################################################### */
 
-/* ========================== VUE ALL TRACKS INFORMATIONS  ========================== */
+/* ========================== VUE TRACKS FEATURES  ========================== */
 
-CREATE VIEW all_tracks_informations AS
-    SELECT t.track_id,
+CREATE VIEW tracks_features AS
+    SELECT
+        t.track_id,
         t.track_title,
         t.track_duration,
         t.track_genre_top,
         t.track_genre,
+        t.track_tags,
         t.track_listens,
         t.track_favorite,
         t.track_interest,
-        t.track_tags,
+        t.track_date_recorded,
+        t.track_date_created,
+        t.track_composer,
+        t.track_lyricist,
+        t.track_publisher,
+        t.track_bit_rate,
+        t.track_disk_number,
+        a.album_id,
         a.album_title,
-        a.album_image_file,
+        a.album_type,
+        a.album_favorites,
+        a.album_listens,
+        a.album_tags,
         a.album_date_released,
-        art.artist_name,
-        s.social_features_song_hotness AS hotness,
-        s.social_features_song_currency AS currency
+        a.album_engineer,
+        a.album_producer,
+        STRING_AGG(DISTINCT ar.artist_name, ', ') AS artist_names,
+        STRING_AGG(DISTINCT ar.artist_id::text, ',') AS artist_ids,
+        AVG(sa.social_features_artist_hotness) AS avg_artist_hotness,
+        AVG(sa.social_features_artist_familiarity) AS avg_artist_familiarity
     FROM tracks t
-    JOIN album a ON t.album_id = a.album_id
-    JOIN artist art ON t.track_artist_id = art.artist_id
-    JOIN score_track s ON t.track_id = s.track_id
+    LEFT JOIN album a ON a.album_id = t.album_id
+    LEFT JOIN album_artist aa ON aa.album_id = a.album_id
+    LEFT JOIN artist ar ON ar.artist_id = aa.artist_id
+    LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
+    GROUP BY t.track_id, a.album_id
 ;
 
 
-/* ========================== VUE ALL ALBUM INFORMATIONS  ========================== */
+/* ========================== VUE ALBUM FEATURES  ========================== */
 
-CREATE VIEW all_album_informations AS
+CREATE OR REPLACE VIEW album_features AS
     SELECT 
         alb.album_id,
         alb.album_title,
@@ -237,11 +253,56 @@ CREATE VIEW all_album_informations AS
         alb.album_favorites,
         alb.album_image_file,
         alb.album_date_released,
+        alb.album_tags,
         STRING_AGG(art.artist_name, ', ') AS artists
     FROM album alb
     JOIN album_artist aa ON aa.album_id = alb.album_id
     JOIN artist art ON art.artist_id = aa.artist_id
     GROUP BY alb.album_id
+;
+
+
+/* ========================== VUE ARTIST FEATURES  ========================== */
+
+CREATE OR REPLACE VIEW artist_features AS
+    SELECT
+        ar.artist_id,
+        ar.artist_name,
+        ar.artist_tags,
+        ar.artist_location,
+        ar.artist_associated_label,
+        ar.artist_active_year_begin,
+        ar.artist_active_year_end,
+        ar.artist_favorites,
+        AVG(sa.social_features_artist_hotness) AS hotness,
+        AVG(sa.social_features_artist_familiarity) AS familiarity,
+        AVG(sa.social_features_artist_discovery) AS discovery
+    FROM artist ar
+    LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
+    GROUP BY ar.artist_id
+;
+
+
+/* ========================== VUE USER FEATURES  ========================== */
+
+CREATE OR REPLACE VIEW user_features AS
+    SELECT
+        u.user_id,
+        u.user_firstName,
+        u.user_lastName,
+        u.user_age,
+        u.user_location,
+        u.user_favorite_genre,
+        u.user_average_listenedBPM,
+        u.user_average_duration,
+        u.user_average_valence,
+        u.user_favorite_hour,
+        f.user_favorite_tracks,
+        f.user_favorite_album,
+        f.user_favorite_artist,
+        f.user_favorite_language
+    FROM users u
+    LEFT JOIN favorite f ON f.user_id = u.user_id
 ;
 
 
@@ -255,11 +316,11 @@ BEGIN
     IF TG_OP = 'INSERT' THEN
         UPDATE album
         SET album_tracks = album_tracks + 1
-        WHERE album_id = NEW.track_album_id;
+        WHERE album_id = NEW.album_id;
     ELSIF TG_OP = 'DELETE' THEN
         UPDATE album
         SET album_tracks = album_tracks - 1
-        WHERE album_id = OLD.track_album_id;
+        WHERE album_id = OLD.album_id;
     END IF;
     RETURN NULL;
 END;
@@ -269,14 +330,14 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER track_album_insert
 AFTER INSERT ON tracks
 FOR EACH ROW
-WHEN (NEW.track_album_id IS NOT NULL)
+WHEN (NEW.album_id IS NOT NULL)
 EXECUTE FUNCTION update_album_track_count();
 
 
 CREATE TRIGGER track_album_delete
 AFTER DELETE ON tracks
 FOR EACH ROW
-WHEN (OLD.track_album_id IS NOT NULL)
+WHEN (OLD.album_id IS NOT NULL)
 EXECUTE FUNCTION update_album_track_count();
 
 
