@@ -2,6 +2,12 @@ DROP SCHEMA IF EXISTS sae CASCADE;
 CREATE SCHEMA IF NOT EXISTS sae;
 SET SCHEMA 'sae';
 
+/* ##################################################################### */
+/*                                TABLES                                 */
+/* ##################################################################### */
+
+/* ========================== TABLE USERS  ========================== */
+
 CREATE TABLE users (
     user_id                  SERIAL PRIMARY KEY,
     user_firstName           VARCHAR(20),
@@ -27,6 +33,9 @@ CREATE TABLE users (
     user_id_form             SERIAL UNIQUE
 );
 
+
+/* ========================== TABLE FAVORITE  ========================== */
+
 CREATE TABLE favorite (
     favorite_id            SERIAL PRIMARY KEY,
     user_favorite_tracks   INT,
@@ -36,6 +45,9 @@ CREATE TABLE favorite (
     user_favortie_genre    INT,
     user_id                INT    REFERENCES users(user_id)
 );
+
+
+/* ========================== TABLE ALBUM  ========================== */
 
 CREATE TABLE album (
     album_id            SERIAL PRIMARY KEY,
@@ -52,6 +64,9 @@ CREATE TABLE album (
     album_engineer      VARCHAR(50),
     album_producer      VARCHAR(50)
 );
+
+
+/* ========================== TABLE TRACKS  ========================== */
 
 CREATE TABLE tracks (
     track_id            SERIAL PRIMARY KEY,
@@ -78,6 +93,9 @@ CREATE TABLE tracks (
     album_id            INT    NULL REFERENCES album(album_id) ON DELETE SET NULL
 );
 
+
+/* ========================== TABLE SCORE TRACK  ========================== */
+
 CREATE TABLE score_track (
     id_rank_track                 SERIAL PRIMARY KEY,
     ranks_song_currency_rank      INT,
@@ -87,11 +105,17 @@ CREATE TABLE score_track (
     track_id                      INT REFERENCES tracks(track_id)
 );
 
+
+/* ========================== TABLE USERS TRACK  ========================== */
+
 CREATE TABLE users_track (
     user_id  INT REFERENCES users(user_id),
     track_id INT REFERENCES tracks(track_id),
     PRIMARY KEY (user_id, track_id)
 );
+
+
+/* ========================== TABLE PLAYLIST  ========================== */
 
 CREATE TABLE playlist (
     playlist_id         SERIAL PRIMARY KEY,
@@ -101,11 +125,17 @@ CREATE TABLE playlist (
     user_id             INT    REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+
+/* ========================== TABLE PLAYLIST TRACK  ========================== */
+
 CREATE TABLE playlist_track (
     playlist_id INT REFERENCES playlist(playlist_id) ON DELETE CASCADE,
     track_id    INT REFERENCES tracks(track_id)      ON DELETE CASCADE,
     PRIMARY KEY (playlist_id, track_id)
 );
+
+
+/* ========================== TABLE ARTIST  ========================== */
 
 CREATE TABLE artist (
     artist_id                SERIAL PRIMARY KEY,
@@ -128,6 +158,9 @@ CREATE TABLE artist (
     user_id                  INT    REFERENCES users(user_id)
 );
 
+
+/* ========================== TABLE SCORE ARTIST  ========================== */
+
 CREATE TABLE score_artist (
     id_rank_artist                     SERIAL PRIMARY KEY,
     social_features_artist_discovery   FLOAT,
@@ -139,11 +172,17 @@ CREATE TABLE score_artist (
     artist_id                          INT    REFERENCES artist(artist_id)
 );
 
+
+/* ========================== TABLE ALBUM ARTIST  ========================== */
+
 CREATE TABLE album_artist (
     album_id  INT REFERENCES album(album_id)   ON DELETE CASCADE,
     artist_id INT REFERENCES artist(artist_id) ON DELETE CASCADE,
     PRIMARY KEY (album_id, artist_id)
 );
+
+
+/* ========================== TABLE GENRE  ========================== */
 
 CREATE TABLE genre (
     genre_id        SERIAL UNIQUE PRIMARY KEY,
@@ -155,3 +194,141 @@ CREATE TABLE genre (
     tracks          INT,
     track_id        INT    REFERENCES tracks(track_id)
 );
+
+
+/* ##################################################################### */
+/*                                 VUES                                  */
+/* ##################################################################### */
+
+/* ========================== VUE ALL TRACKS INFORMATIONS  ========================== */
+
+CREATE VIEW all_tracks_informations AS
+    SELECT t.track_id,
+        t.track_title,
+        t.track_duration,
+        t.track_genre_top,
+        t.track_genre,
+        t.track_listens,
+        t.track_favorite,
+        t.track_interest,
+        t.track_tags,
+        a.album_title,
+        a.album_image_file,
+        a.album_date_released,
+        art.artist_name,
+        s.social_features_song_hotness AS hotness,
+        s.social_features_song_currency AS currency
+    FROM tracks t
+    JOIN album a ON t.album_id = a.album_id
+    JOIN artist art ON t.track_artist_id = art.artist_id
+    JOIN score_track s ON t.track_id = s.track_id
+;
+
+
+/* ========================== VUE ALL ALBUM INFORMATIONS  ========================== */
+
+CREATE VIEW all_album_informations AS
+    SELECT 
+        alb.album_id,
+        alb.album_title,
+        alb.album_type,
+        alb.album_tracks,
+        alb.album_listens,
+        alb.album_favorites,
+        alb.album_image_file,
+        alb.album_date_released,
+        STRING_AGG(art.artist_name, ', ') AS artists
+    FROM album alb
+    JOIN album_artist aa ON aa.album_id = alb.album_id
+    JOIN artist art ON art.artist_id = aa.artist_id
+    GROUP BY alb.album_id
+;
+
+
+/* ##################################################################### */
+/*                               TRIGGERS                                */
+/* ##################################################################### */
+
+CREATE OR REPLACE FUNCTION update_album_track_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE album
+        SET album_tracks = album_tracks + 1
+        WHERE album_id = NEW.track_album_id;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE album
+        SET album_tracks = album_tracks - 1
+        WHERE album_id = OLD.track_album_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER track_album_insert
+AFTER INSERT ON tracks
+FOR EACH ROW
+WHEN (NEW.track_album_id IS NOT NULL)
+EXECUTE FUNCTION update_album_track_count();
+
+
+CREATE TRIGGER track_album_delete
+AFTER DELETE ON tracks
+FOR EACH ROW
+WHEN (OLD.track_album_id IS NOT NULL)
+EXECUTE FUNCTION update_album_track_count();
+
+
+CREATE OR REPLACE FUNCTION update_playlist_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE playlist
+        SET playlist_num_tracks = playlist_num_tracks + 1
+        WHERE playlist_id = NEW.playlist_id;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE playlist
+        SET playlist_num_tracks = playlist_num_tracks - 1
+        WHERE playlist_id = OLD.playlist_id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER playlist_track_insert
+AFTER INSERT ON playlist_track
+FOR EACH ROW EXECUTE FUNCTION update_playlist_count();
+
+CREATE TRIGGER playlist_track_delete
+AFTER DELETE ON playlist_track
+FOR EACH ROW EXECUTE FUNCTION update_playlist_count();
+
+
+CREATE OR REPLACE FUNCTION set_album_created_date()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.album_date_created := CURRENT_DATE;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER album_set_date
+BEFORE INSERT ON album
+FOR EACH ROW EXECUTE FUNCTION set_album_created_date();
+
+
+CREATE OR REPLACE FUNCTION set_track_created_date()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.track_date_created := CURRENT_DATE;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER track_set_date
+BEFORE INSERT ON tracks
+FOR EACH ROW EXECUTE FUNCTION set_track_created_date();
