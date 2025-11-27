@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS stg_questionnaire (
     job_sector text
 );
 
+/* Importation des csv dans pgAdmin */
+
 -- Désactiver temporairement les triggers
 ALTER TABLE album DISABLE TRIGGER ALL;
 
