@@ -1,6 +1,6 @@
 SET SCHEMA 'sae';
 
--- 1. Staging Table for Albums
+ -- 1. Table temporaire pour les albums
 CREATE TABLE IF NOT EXISTS stg_albums (
     album_id text, album_comments text, album_date_created text, album_date_released text,
     album_engineer text, album_favorites text, album_handle text, album_image_file text,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS stg_albums (
     artist_name text, artist_url text, tags text
 );
 
--- 2. Staging Table for Artists
+-- 2. Table temporaire pour les artistes
 CREATE TABLE IF NOT EXISTS stg_artists (
     artist_id text, artist_active_year_begin text, artist_active_year_end text,
     artist_associated_labels text, artist_bio text, artist_comments text,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS stg_artists (
     artist_url text, artist_website text, artist_wikipedia_page text, tags text
 );
 
--- 3. Staging Table for Tracks
+-- 3. Table temporaire pour les tracks
 CREATE TABLE IF NOT EXISTS stg_tracks (
     track_id text, album_id text, album_title text, album_url text,
     artist_id text, artist_name text, artist_url text, artist_website text,
@@ -37,12 +37,35 @@ CREATE TABLE IF NOT EXISTS stg_tracks (
     track_publisher text, track_title text, track_url text
 );
 
-SET SCHEMA 'sae';
+-- 4. Table temporaire pour les questionnaires
+CREATE TABLE IF NOT EXISTS stg_questionnaire (
+    horodateur text,
+    consent text,
+    use_streaming text,
+    platforms text,
+    daily_time text,
+    genres text,
+    devices text,
+    context text,
+    frequency text,
+    time_slots text,
+    languages text,
+    follow_releases text,
+    discovery_habits text,
+    change_styles text,
+    track_duration_pref text,
+    lyrics_pref text,
+    continue_form text,
+    age_range text,
+    gender text,
+    status text,
+    job_sector text
+);
 
--- Disable triggers temporarily to prevent double-counting tracks during bulk insert
+-- Désactiver temporairement les triggers
 ALTER TABLE album DISABLE TRIGGER ALL;
 
-/* ========================== 1. POPULATE ALBUM ========================== */
+/* ========================== 1. Population d'albums  ========================== */
 INSERT INTO album (
     album_id, album_title, album_type, album_tracks, album_information,
     album_favorites, album_image_file, album_listens, album_tags,
@@ -52,13 +75,12 @@ SELECT
     album_id::INT,
     album_title,
     album_type,
-    0, -- We set this to 0 initially. We will calculate it correctly later using the link table.
+    0,
     album_information,
     NULLIF(album_favorites, '')::INT,
     album_image_file,
     NULLIF(album_listens, '')::INT,
     tags,
-    -- Handle Date Formats (MM/DD/YYYY)
     TO_DATE(LEFT(album_date_released, 10), 'MM/DD/YYYY'),
     TO_DATE(LEFT(album_date_created, 10), 'MM/DD/YYYY'),
     album_engineer,
@@ -66,7 +88,7 @@ SELECT
 FROM stg_albums
 ON CONFLICT (album_id) DO NOTHING;
 
-/* ========================== 2. POPULATE ARTIST ========================== */
+/* ========================== 2. Population des artistes ========================== */
 INSERT INTO artist (
     artist_id, artist_name, artist_bio, artist_related_project,
     artist_favorites, artist_image_file, artist_active_year_begin,
@@ -80,7 +102,6 @@ SELECT
     artist_related_projects,
     NULLIF(artist_favorites, '')::INT,
     artist_image_file,
-    -- Handle "2006.0" format for years
     TO_DATE(SPLIT_PART(NULLIF(artist_active_year_begin, 'NULL'), '.', 1), 'YYYY'),
     TO_DATE(SPLIT_PART(NULLIF(artist_active_year_end, 'NULL'), '.', 1), 'YYYY'),
     tags,
@@ -92,7 +113,7 @@ SELECT
 FROM stg_artists
 ON CONFLICT (artist_id) DO NOTHING;
 
-/* ========================== 3. POPULATE TRACKS ========================== */
+/* ========================== 3. Population des tracks ========================== */
 INSERT INTO tracks (
     track_id, track_title, track_duration, track_genre, track_listens,
     track_favorite, track_interest, track_date_recorded, track_date_created,
@@ -102,9 +123,8 @@ INSERT INTO tracks (
 SELECT
     track_id::INT,
     track_title,
-    -- Convert "MM:SS" string to Integer (Seconds)
     (SPLIT_PART(track_duration, ':', 1)::INT * 60) + SPLIT_PART(track_duration, ':', 2)::INT,
-    track_genres, -- Storing the raw JSON/String provided in CSV
+    track_genres,
     NULLIF(track_listens, '')::INT,
     NULLIF(track_favorites, '')::INT,
     NULLIF(track_interest, '')::FLOAT,
@@ -120,8 +140,7 @@ SELECT
 FROM stg_tracks
 ON CONFLICT (track_id) DO NOTHING;
 
-/* ========================== 4. POPULATE LINK TABLE (Album-Artist-Track) ========================== */
--- This logic creates the relationships that are implicit in the raw_tracks CSV
+/* ========================== 4. Population d'albums_artists ========================== */
 INSERT INTO album_artist_track (album_id, artist_id, track_id)
 SELECT DISTINCT
     t.album_id::INT,
@@ -135,26 +154,81 @@ WHERE t.album_id IS NOT NULL
   AND t.track_id IS NOT NULL
 ON CONFLICT DO NOTHING;
 
--- Re-enable triggers
+/* ========================== 5. Population des utilisateurs ========================== */
+INSERT INTO users (
+	user_firstName,
+    user_lastName,
+    user_age,
+    user_year_created,
+    user_listening_duration,
+    user_average_duration,
+    user_status,
+    user_favorite_hour,
+    user_favorite_genre,
+	user_favorite_language,
+	user_favorite_platforms,
+	user_gender,
+	user_job
+)
+SELECT
+	'Anonymous',
+	'Anonymous',
+    -- Convertir la tranche d'âge en un entier
+    CASE 
+        WHEN age_range LIKE '%17 ans%' THEN 16
+        WHEN age_range LIKE '%18 - 25%' THEN 22
+        WHEN age_range LIKE '%26- 35%' THEN 30
+        WHEN age_range LIKE '%36 - 45%' THEN 40
+        WHEN age_range LIKE '%46 - 55%' THEN 50
+        WHEN age_range LIKE '%55 ans%' THEN 60
+        ELSE 25
+    END,
+
+    -- Timestamp en date
+    TO_DATE(LEFT(horodateur, 10), 'YYYY/MM/DD'),
+
+    -- Convertir le temps d'écoute quotidien en entier
+    CASE 
+        WHEN daily_time LIKE '%30 minutes%' THEN 30
+        WHEN daily_time LIKE '%1 heure%' THEN 60
+        WHEN daily_time LIKE '%2 heures%' THEN 120
+        WHEN daily_time LIKE '%4 heures%' THEN 240
+        WHEN daily_time LIKE '%6 heures%' THEN 360
+        ELSE 60
+    END,
+
+    -- Convertir la durée moyenne des morceaux préférés en entier
+    CASE 
+        WHEN track_duration_pref LIKE '%Moins de 1 minute%' THEN 60
+        WHEN track_duration_pref LIKE '%1 minute 30 à 3 minutes%' THEN 135
+        WHEN track_duration_pref LIKE '%3 minutes à 5 minutes%' THEN 240
+        WHEN track_duration_pref LIKE '%Plus de 5 minutes%' THEN 350
+        ELSE 180
+    END,
+    status,
+    time_slots,
+    genres,
+    languages,
+	platforms,
+	gender,
+	job_sector
+FROM stg_questionnaire;
+
+-- Activer les triggers
 ALTER TABLE album ENABLE TRIGGER ALL;
 
-/* ========================== 5. FIX SEQUENCES AND COUNTS ========================== */
+/* ========================== 5. Fixer les sequences ========================== */
 
--- Update the album track counts based on what we just inserted into the link table
-UPDATE album a
-SET album_tracks = (
-    SELECT COUNT(*) 
-    FROM album_artist_track aat 
-    WHERE aat.album_id = a.album_id
-);
-
--- Reset the SERIAL sequences so new inserts don't crash
+-- Réinitialiser les séquences SERIAL pour que les nouvelles insertions ne provoquent pas d'erreurs
 SELECT setval('sae.users_user_id_seq', COALESCE((SELECT MAX(user_id)+1 FROM users), 1), false);
 SELECT setval('sae.album_album_id_seq', COALESCE((SELECT MAX(album_id)+1 FROM album), 1), false);
 SELECT setval('sae.artist_artist_id_seq', COALESCE((SELECT MAX(artist_id)+1 FROM artist), 1), false);
 SELECT setval('sae.tracks_track_id_seq', COALESCE((SELECT MAX(track_id)+1 FROM tracks), 1), false);
+SELECT setval('sae.users_user_id_seq', COALESCE((SELECT MAX(user_id)+1 FROM users), 1), false);
+SELECT setval('sae.users_user_id_form_seq', COALESCE((SELECT MAX(user_id_form)+1 FROM users), 1), false);
 
--- Clean up staging tables
+-- Supprimer les tables temporaires
 DROP TABLE IF EXISTS stg_albums;
 DROP TABLE IF EXISTS stg_artists;
 DROP TABLE IF EXISTS stg_tracks;
+DROP TABLE IF EXISTS stg_questionnaire;
