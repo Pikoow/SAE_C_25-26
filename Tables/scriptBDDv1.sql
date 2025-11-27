@@ -33,7 +33,6 @@ CREATE TABLE users (
     user_id_form             SERIAL UNIQUE
 );
 
-
 /* ========================== TABLE FAVORITE  ========================== */
 
 CREATE TABLE favorite (
@@ -46,14 +45,13 @@ CREATE TABLE favorite (
     user_id                INT    REFERENCES users(user_id)
 );
 
-
 /* ========================== TABLE ALBUM  ========================== */
 
 CREATE TABLE album (
     album_id            SERIAL PRIMARY KEY,
     album_title         VARCHAR(50),
     album_type          VARCHAR(30),
-    album_tracks        INT,
+    album_tracks        INT DEFAULT 0,
     album_information   VARCHAR(255),
     album_favorites     INT,
     album_image_file    VARCHAR(255),
@@ -64,7 +62,6 @@ CREATE TABLE album (
     album_engineer      VARCHAR(50),
     album_producer      VARCHAR(50)
 );
-
 
 /* ========================== TABLE TRACKS  ========================== */
 
@@ -81,17 +78,14 @@ CREATE TABLE tracks (
     track_date_created  DATE,
     track_composer      VARCHAR(50),
     track_lyricist      VARCHAR(50),
-    track_publisher     VARCHAR(50),
     track_tags          VARCHAR(100),
     track_artist_id     INT,
     track_rank_id       INT,
     track_feature_id    INT,
     track_file          VARCHAR(255),
     track_disk_number   INT,
-    track_bit_rate      INT,
-    album_id            INT    NULL REFERENCES album(album_id) ON DELETE SET NULL
+    track_bit_rate      INT
 );
-
 
 /* ========================== TABLE SCORE TRACK  ========================== */
 
@@ -104,7 +98,6 @@ CREATE TABLE score_track (
     track_id                      INT REFERENCES tracks(track_id)
 );
 
-
 /* ========================== TABLE USERS TRACK  ========================== */
 
 CREATE TABLE users_track (
@@ -113,17 +106,15 @@ CREATE TABLE users_track (
     PRIMARY KEY (user_id, track_id)
 );
 
-
 /* ========================== TABLE PLAYLIST  ========================== */
 
 CREATE TABLE playlist (
     playlist_id         SERIAL PRIMARY KEY,
     playlist_name       VARCHAR(50),
-    playlist_num_tracks INT,
+    playlist_num_tracks INT DEFAULT 0,
     -- list_track          LIST,
     user_id             INT    REFERENCES users(user_id) ON DELETE CASCADE
 );
-
 
 /* ========================== TABLE PLAYLIST TRACK  ========================== */
 
@@ -133,13 +124,12 @@ CREATE TABLE playlist_track (
     PRIMARY KEY (playlist_id, track_id)
 );
 
-
 /* ========================== TABLE ARTIST  ========================== */
 
 CREATE TABLE artist (
     artist_id                SERIAL PRIMARY KEY,
     artist_password          VARCHAR(30),
-    artist_name              VARCHAR(20),
+    artist_name              VARCHAR(200),
     artist_bio               VARCHAR(200),
     artist_related_project   VARCHAR(255),
     artist_favorites         INT,
@@ -153,10 +143,9 @@ CREATE TABLE artist (
     artist_longitude         FLOAT,
     artist_associated_label  VARCHAR(200),
     id_rank_artist           INT,
-    artist_social_score     INT,
+    artist_social_score      INT,
     user_id                  INT    REFERENCES users(user_id)
 );
-
 
 /* ========================== TABLE SCORE ARTIST  ========================== */
 
@@ -167,19 +156,9 @@ CREATE TABLE score_artist (
     social_features_artist_hotness     FLOAT,
     ranks_artist_discovery_rank        INT,
     ranks_artist_familiarity_rank      INT,
-    ranks_artist_hotness_rank       INT,
+    ranks_artist_hotness_rank          INT,
     artist_id                          INT    REFERENCES artist(artist_id)
 );
-
-
-/* ========================== TABLE ALBUM ARTIST  ========================== */
-
-CREATE TABLE album_artist (
-    album_id  INT REFERENCES album(album_id)   ON DELETE CASCADE,
-    artist_id INT REFERENCES artist(artist_id) ON DELETE CASCADE,
-    PRIMARY KEY (album_id, artist_id)
-);
-
 
 /* ========================== TABLE GENRE  ========================== */
 
@@ -194,14 +173,37 @@ CREATE TABLE genre (
     track_id        INT    REFERENCES tracks(track_id)
 );
 
+/* ========================== TABLE PUBLISHER  ========================== */
+
+CREATE TABLE publisher (
+    publisher_id   SERIAL PRIMARY KEY,
+    publisher_name VARCHAR(200)
+);
+
+/* ========================== TERNARY LINK TABLES ========================== */
+
+CREATE TABLE album_artist_track (
+    album_id  INT    REFERENCES album(album_id)   ON DELETE CASCADE,
+    artist_id INT    REFERENCES artist(artist_id) ON DELETE CASCADE,
+    track_id  INT    REFERENCES tracks(track_id)  ON DELETE CASCADE,
+    contribution_role VARCHAR(100), -- optional: e.g. 'main', 'feat', 'producer'
+    PRIMARY KEY (album_id, artist_id, track_id)
+);
+
+CREATE TABLE artist_publisher_track (
+    artist_id    INT    REFERENCES artist(artist_id) ON DELETE CASCADE,
+    publisher_id INT    REFERENCES publisher(publisher_id) ON DELETE CASCADE,
+    track_id     INT    REFERENCES tracks(track_id)    ON DELETE CASCADE,
+    publisher_role VARCHAR(100), -- optional: e.g. 'label', 'distributor'
+    PRIMARY KEY (artist_id, publisher_id, track_id)
+);
 
 /* ##################################################################### */
 /*                                 VUES                                  */
 /* ##################################################################### */
 
-/* ========================== VUE TRACKS FEATURES  ========================== */
 
-CREATE VIEW tracks_features AS
+CREATE OR REPLACE VIEW tracks_features AS
     SELECT
         t.track_id,
         t.track_title,
@@ -216,32 +218,22 @@ CREATE VIEW tracks_features AS
         t.track_date_created,
         t.track_composer,
         t.track_lyricist,
-        t.track_publisher,
         t.track_bit_rate,
         t.track_disk_number,
-        a.album_id,
-        a.album_title,
-        a.album_type,
-        a.album_favorites,
-        a.album_listens,
-        a.album_tags,
-        a.album_date_released,
-        a.album_engineer,
-        a.album_producer,
+        STRING_AGG(DISTINCT a.album_id::text, ',') AS album_ids,
+        STRING_AGG(DISTINCT a.album_title, ', ') AS album_titles,
         STRING_AGG(DISTINCT ar.artist_name, ', ') AS artist_names,
         STRING_AGG(DISTINCT ar.artist_id::text, ',') AS artist_ids,
         AVG(sa.social_features_artist_hotness) AS avg_artist_hotness,
         AVG(sa.social_features_artist_familiarity) AS avg_artist_familiarity
     FROM tracks t
-    LEFT JOIN album a ON a.album_id = t.album_id
-    LEFT JOIN album_artist aa ON aa.album_id = a.album_id
-    LEFT JOIN artist ar ON ar.artist_id = aa.artist_id
+    LEFT JOIN album_artist_track aat ON aat.track_id = t.track_id
+    LEFT JOIN album a ON a.album_id = aat.album_id
+    LEFT JOIN artist ar ON ar.artist_id = aat.artist_id
     LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
-    GROUP BY t.track_id, a.album_id
+    GROUP BY t.track_id
 ;
 
-
-/* ========================== VUE ALBUM FEATURES  ========================== */
 
 CREATE OR REPLACE VIEW album_features AS
     SELECT 
@@ -254,15 +246,13 @@ CREATE OR REPLACE VIEW album_features AS
         alb.album_image_file,
         alb.album_date_released,
         alb.album_tags,
-        STRING_AGG(art.artist_name, ', ') AS artists
+        STRING_AGG(DISTINCT art.artist_name, ', ') AS artists
     FROM album alb
-    JOIN album_artist aa ON aa.album_id = alb.album_id
-    JOIN artist art ON art.artist_id = aa.artist_id
+    LEFT JOIN album_artist_track aat ON aat.album_id = alb.album_id
+    LEFT JOIN artist art ON art.artist_id = aat.artist_id
     GROUP BY alb.album_id
 ;
 
-
-/* ========================== VUE ARTIST FEATURES  ========================== */
 
 CREATE OR REPLACE VIEW artist_features AS
     SELECT
@@ -276,14 +266,17 @@ CREATE OR REPLACE VIEW artist_features AS
         ar.artist_favorites,
         AVG(sa.social_features_artist_hotness) AS hotness,
         AVG(sa.social_features_artist_familiarity) AS familiarity,
-        AVG(sa.social_features_artist_discovery) AS discovery
+        AVG(sa.social_features_artist_discovery) AS discovery,
+        COUNT(DISTINCT aat.track_id) AS num_tracks_associated,
+        COUNT(DISTINCT apt.publisher_id) AS num_publishers
     FROM artist ar
     LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
+    LEFT JOIN album_artist_track aat ON aat.artist_id = ar.artist_id
+    LEFT JOIN artist_publisher_track apt ON apt.artist_id = ar.artist_id
     GROUP BY ar.artist_id
 ;
 
-
-/* ========================== VUE USER FEATURES  ========================== */
+/* ========================== VIEW USER FEATURES  ========================== */
 
 CREATE OR REPLACE VIEW user_features AS
     SELECT
@@ -305,7 +298,6 @@ CREATE OR REPLACE VIEW user_features AS
     LEFT JOIN favorite f ON f.user_id = u.user_id
 ;
 
-
 /* ##################################################################### */
 /*                               TRIGGERS                                */
 /* ##################################################################### */
@@ -315,11 +307,11 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         UPDATE album
-        SET album_tracks = album_tracks + 1
+        SET album_tracks = COALESCE(album_tracks, 0) + 1
         WHERE album_id = NEW.album_id;
     ELSIF TG_OP = 'DELETE' THEN
         UPDATE album
-        SET album_tracks = album_tracks - 1
+        SET album_tracks = GREATEST(COALESCE(album_tracks, 0) - 1, 0)
         WHERE album_id = OLD.album_id;
     END IF;
     RETURN NULL;
@@ -327,17 +319,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER track_album_insert
-AFTER INSERT ON tracks
+CREATE TRIGGER album_artist_track_insert
+AFTER INSERT ON album_artist_track
 FOR EACH ROW
-WHEN (NEW.album_id IS NOT NULL)
 EXECUTE FUNCTION update_album_track_count();
 
-
-CREATE TRIGGER track_album_delete
-AFTER DELETE ON tracks
+CREATE TRIGGER album_artist_track_delete
+AFTER DELETE ON album_artist_track
 FOR EACH ROW
-WHEN (OLD.album_id IS NOT NULL)
 EXECUTE FUNCTION update_album_track_count();
 
 
@@ -346,11 +335,11 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         UPDATE playlist
-        SET playlist_num_tracks = playlist_num_tracks + 1
+        SET playlist_num_tracks = COALESCE(playlist_num_tracks, 0) + 1
         WHERE playlist_id = NEW.playlist_id;
     ELSIF TG_OP = 'DELETE' THEN
         UPDATE playlist
-        SET playlist_num_tracks = playlist_num_tracks - 1
+        SET playlist_num_tracks = GREATEST(COALESCE(playlist_num_tracks, 0) - 1, 0)
         WHERE playlist_id = OLD.playlist_id;
     END IF;
     RETURN NULL;
