@@ -10,25 +10,27 @@ SET SCHEMA 'sae';
 
 CREATE TABLE users (
     user_id                  SERIAL PRIMARY KEY,
-    user_firstName           VARCHAR(20),
-    user_lastName            VARCHAR(20),
+    user_firstName           VARCHAR(65000),
+    user_lastName            VARCHAR(65000),
     user_age                 INT,
-    user_year_created        INT,
-    user_image               VARCHAR(100),
-    user_location            VARCHAR(50),
-    -- user_latitude         FLOAT,
-    -- user_longitude        FLOAT,
+    user_year_created        DATE,
+    user_image               VARCHAR(65000),
+    user_location            VARCHAR(65000),
     user_listening_duration  INT,
     user_average_duration    INT,
-    user_status              VARCHAR(50),
+    user_status              VARCHAR(65000),
     user_average_listenedBPM FLOAT,
-    user_favorite_hour       VARCHAR(50),
-    user_favorite_genre      VARCHAR(50),
+    user_favorite_hour       VARCHAR(65000),
+    user_favorite_genre      VARCHAR(65000),
+    user_favorite_language   VARCHAR(65000),
+	user_favorite_platforms  VARCHAR(65000),
+    user_gender              VARCHAR(65000),
+	user_job                 VARCHAR(65000),
     user_average_valence     FLOAT,
     user_playlist_Id         int,
-    user_tags                VARCHAR(50),
-    user_password            VARCHAR(50),
-    user_mail                VARCHAR(50),
+    user_tags                VARCHAR(65000),
+    user_password            VARCHAR(65000),
+    user_mail                VARCHAR(65000),
     user_phoneNumber         VARCHAR(10),
     user_id_form             SERIAL UNIQUE
 );
@@ -40,7 +42,7 @@ CREATE TABLE favorite (
     user_favorite_tracks   INT,
     user_favorite_album    INT,
     user_favorite_artist   INT,
-    user_favorite_language VARCHAR(50),
+    user_favorite_language VARCHAR(65000),
     user_favorite_genre    INT,
     user_id                INT    REFERENCES users(user_id)
 );
@@ -49,40 +51,40 @@ CREATE TABLE favorite (
 
 CREATE TABLE album (
     album_id            SERIAL PRIMARY KEY,
-    album_title         VARCHAR(50),
-    album_type          VARCHAR(30),
+    album_title         VARCHAR(65000),
+    album_type          VARCHAR(65000),
     album_tracks        INT DEFAULT 0,
-    album_information   VARCHAR(255),
+    album_information   VARCHAR(65000),
     album_favorites     INT,
-    album_image_file    VARCHAR(255),
+    album_image_file    VARCHAR(65000),
     album_listens       INT,
-    album_tags          VARCHAR(100),
-    album_date_released INT,
-    album_date_created  INT,
-    album_engineer      VARCHAR(50),
-    album_producer      VARCHAR(50)
+    album_tags          VARCHAR(65000),
+    album_date_released DATE,
+    album_date_created  DATE,
+    album_engineer      VARCHAR(65000),
+    album_producer      VARCHAR(65000)
 );
 
 /* ========================== TABLE TRACKS  ========================== */
 
 CREATE TABLE tracks (
     track_id            SERIAL PRIMARY KEY,
-    track_title         VARCHAR(200),
+    track_title         VARCHAR(65000),
     track_duration      INT,
-    track_genre_top     VARCHAR(30),
-    track_genre         VARCHAR(255),
+    track_genre_top     VARCHAR(65000),
+    track_genre         VARCHAR(65000),
     track_listens       INT,
     track_favorite      INT,
     track_interest      FLOAT,
-    track_date_recorded INT,
-    track_date_created  INT,
-    track_composer      VARCHAR(50),
-    track_lyricist      VARCHAR(50),
-    track_tags          VARCHAR(100),
+    track_date_recorded DATE,
+    track_date_created  DATE,
+    track_composer      VARCHAR(65000),
+    track_lyricist      VARCHAR(65000),
+    track_tags          VARCHAR(65000),
     track_artist_id     INT,
     track_rank_id       INT,
     track_feature_id    INT,
-    track_file          VARCHAR(255),
+    track_file          VARCHAR(65000),
     track_disk_number   INT,
     track_bit_rate      INT
 );
@@ -110,7 +112,7 @@ CREATE TABLE users_track (
 
 CREATE TABLE playlist (
     playlist_id         SERIAL PRIMARY KEY,
-    playlist_name       VARCHAR(50),
+    playlist_name       VARCHAR(65000),
     playlist_num_tracks INT DEFAULT 0,
     -- list_track          LIST,
     user_id             INT    REFERENCES users(user_id) ON DELETE CASCADE
@@ -128,20 +130,20 @@ CREATE TABLE playlist_track (
 
 CREATE TABLE artist (
     artist_id                SERIAL PRIMARY KEY,
-    artist_password          VARCHAR(30),
-    artist_name              VARCHAR(200),
-    artist_bio               VARCHAR(200),
-    artist_related_project   VARCHAR(255),
+    artist_password          VARCHAR(65000),
+    artist_name              VARCHAR(65000),
+    artist_bio               VARCHAR(65000),
+    artist_related_project   VARCHAR(65000),
     artist_favorites         INT,
-    artist_image_file        VARCHAR(200),
-    artist_active_year_begin INT,
-    artist_active_year_end   INT,
-    artist_tags              VARCHAR(200),
-    artist_location          VARCHAR(200),
-    artist_website           VARCHAR(200),
+    artist_image_file        VARCHAR(65000),
+    artist_active_year_begin DATE,
+    artist_active_year_end   DATE,
+    artist_tags              VARCHAR(65000),
+    artist_location          VARCHAR(65000),
+    artist_website           VARCHAR(65000),
     artist_latitude          FLOAT,
     artist_longitude         FLOAT,
-    artist_associated_label  VARCHAR(200),
+    artist_associated_label  VARCHAR(65000),
     id_rank_artist           INT,
     artist_social_score      INT,
     user_id                  INT    REFERENCES users(user_id)
@@ -165,9 +167,9 @@ CREATE TABLE score_artist (
 CREATE TABLE genre (
     genre_id        SERIAL UNIQUE PRIMARY KEY,
     genre_parent_id INT,
-    genre_title     VARCHAR(200),
-    genre_handle    VARCHAR(200),
-    genre_color     VARCHAR(200),
+    genre_title     VARCHAR(65000),
+    genre_handle    VARCHAR(65000),
+    genre_color     VARCHAR(65000),
     low_level       BOOLEAN,
     tracks          INT,
     track_id        INT    REFERENCES tracks(track_id)
@@ -177,7 +179,7 @@ CREATE TABLE genre (
 
 CREATE TABLE publisher (
     publisher_id   SERIAL PRIMARY KEY,
-    publisher_name VARCHAR(200)
+    publisher_name VARCHAR(65000)
 );
 
 /* ========================== TERNARY LINK TABLES ========================== */
@@ -186,7 +188,7 @@ CREATE TABLE album_artist_track (
     album_id  INT    REFERENCES album(album_id)   ON DELETE CASCADE,
     artist_id INT    REFERENCES artist(artist_id) ON DELETE CASCADE,
     track_id  INT    REFERENCES tracks(track_id)  ON DELETE CASCADE,
-    contribution_role VARCHAR(100), -- optional: e.g. 'main', 'feat', 'producer'
+    contribution_role VARCHAR(65000), -- optional: e.g. 'main', 'feat', 'producer'
     PRIMARY KEY (album_id, artist_id, track_id)
 );
 
@@ -194,7 +196,7 @@ CREATE TABLE artist_publisher_track (
     artist_id    INT    REFERENCES artist(artist_id) ON DELETE CASCADE,
     publisher_id INT    REFERENCES publisher(publisher_id) ON DELETE CASCADE,
     track_id     INT    REFERENCES tracks(track_id)    ON DELETE CASCADE,
-    publisher_role VARCHAR(100), -- optional: e.g. 'label', 'distributor'
+    publisher_role VARCHAR(65000), -- optional: e.g. 'label', 'distributor'
     PRIMARY KEY (artist_id, publisher_id, track_id)
 );
 
@@ -286,7 +288,6 @@ CREATE OR REPLACE VIEW user_features AS
         u.user_age,
         u.user_location,
         u.user_favorite_genre,
-        u.user_average_listenedBPM,
         u.user_average_duration,
         u.user_average_valence,
         u.user_favorite_hour,
