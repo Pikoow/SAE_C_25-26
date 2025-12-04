@@ -132,7 +132,6 @@ def search_track_by_name_and_artist(track_name, artist_name):
                 if track[14]:  # Album
                     print(f"Album: {track[14]}")
                 
-                print(f"ID de la track: {track[0]}")
                 if track[13]:  # ID artiste
                     print(f"ID de l'artiste: {track[13]}")
         
