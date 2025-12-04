@@ -6,7 +6,7 @@ SET SCHEMA 'sae';
 /*                                TABLES                                 */
 /* ##################################################################### */
 
-/* ========================== TABLE users  ========================== */
+/* ========================== TABLE USERS  ========================== */
 
 CREATE TABLE users (
     user_id                  SERIAL PRIMARY KEY,
@@ -35,8 +35,7 @@ CREATE TABLE users (
     user_id_form             SERIAL UNIQUE
 );
 
-
-/* ========================== TABLE favorite  ========================== */
+/* ========================== TABLE FAVORITE  ========================== */
 
 CREATE TABLE favorite (
     favorite_id            SERIAL PRIMARY KEY,
@@ -48,8 +47,7 @@ CREATE TABLE favorite (
     user_id                INT    REFERENCES users(user_id)
 );
 
-
-/* ========================== TABLE album  ========================== */
+/* ========================== TABLE ALBUM  ========================== */
 
 CREATE TABLE album (
     album_id            SERIAL PRIMARY KEY,
@@ -69,6 +67,7 @@ CREATE TABLE album (
 );
 
 
+
 /* ========================== TABLE song_social_score  ========================== */
 
 CREATE TABLE song_social_score (
@@ -76,7 +75,6 @@ CREATE TABLE song_social_score (
     social_features_song_currency DOUBLE PRECISION,
     social_features_song_hottness DOUBLE PRECISION
 );
-
 
 /* ========================== TABLE song_rank  ========================== */
 
@@ -87,25 +85,11 @@ CREATE TABLE song_rank (
 );
 
 
-/* ========================== TABLE audio  ========================== */
 
-CREATE TABLE audio (
-    id SERIAL PRIMARY KEY,
-    audio_features_accousticness DOUBLE PRECISION,
-    audio_features_danceability DOUBLE PRECISION,
-    audio_features_energy DOUBLE PRECISION,
-    audio_features_instrumentalness DOUBLE PRECISION,
-    audio_features_liveness DOUBLE PRECISION,
-    audio_features_speechiness DOUBLE PRECISION,
-    audio_features_tempo DOUBLE PRECISION,
-    audio_features_valence DOUBLE PRECISION
-);
-
-
-/* ========================== TABLE tracks  ========================== */
+/* ========================== TABLE TRACKS  ========================== */
 
 CREATE TABLE tracks (
-    track_id            SERIAL PRIMARY KEY,
+    track_id            INT PRIMARY KEY,
     track_title         VARCHAR(65000),
     track_duration      INT,
     track_genre_top     VARCHAR(65000),
@@ -125,10 +109,24 @@ CREATE TABLE tracks (
     track_disk_number   INT,
     track_bit_rate      INT,
     track_social_score_id INT UNIQUE REFERENCES song_social_score(sss_id),
-    track_social_rank_id INT UNIQUE REFERENCES song_rank(sr_id),
-    CONSTRAINT fk_track_feature
-        FOREIGN KEY (track_feature_id) REFERENCES audio(id)
+    track_social_rank_id INT UNIQUE REFERENCES song_rank(sr_id)
 );
+
+
+/* ========================== TABLE audio  ========================== */
+
+CREATE TABLE audio (
+    track_id INT PRIMARY KEY REFERENCES tracks(track_id) ON DELETE CASCADE,
+    audio_features_accousticness VARCHAR(20000),
+    audio_features_danceability VARCHAR(20000),
+    audio_features_energy VARCHAR(20000),
+    audio_features_instrumentalness VARCHAR(20000),
+    audio_features_liveness VARCHAR(20000),
+    audio_features_speechiness VARCHAR(20000),
+    audio_features_tempo VARCHAR(20000),
+    audio_features_valence VARCHAR(20000)
+);
+
 
 
 /* ========================== TABLE temp_features  ========================== */
@@ -363,6 +361,8 @@ CREATE TABLE temporal_features (
 );
 
 
+
+
 /* ========================== TABLE temp_features  ========================== */
 
 CREATE TABLE license (
@@ -376,7 +376,8 @@ CREATE TABLE license (
 );
 
 
-/* ========================== TABLE associative users_track  ========================== */
+
+/* ========================== TABLE associative USERS TRACK  ========================== */
 
 CREATE TABLE users_track (
     user_id  INT REFERENCES users(user_id),
@@ -384,8 +385,7 @@ CREATE TABLE users_track (
     PRIMARY KEY (user_id, track_id)
 );
 
-
-/* ========================== TABLE playlist  ========================== */
+/* ========================== TABLE PLAYLIST  ========================== */
 
 CREATE TABLE playlist (
     playlist_id SERIAL PRIMARY KEY,
@@ -396,7 +396,7 @@ CREATE TABLE playlist (
 );
 
 
-/* ========================== TABLE playlist_track / playlist user ========================== */
+/* ========================== TABLE PLAYLIST TRACK / playlist user ========================== */
 
 CREATE TABLE playlist_track (
     playlist_id INT REFERENCES playlist(playlist_id),
@@ -404,15 +404,13 @@ CREATE TABLE playlist_track (
     PRIMARY KEY (playlist_id, track_id)
 );
 
-
 CREATE TABLE playlist_user (
     playlist_id INT REFERENCES playlist(playlist_id),
     user_id INT REFERENCES users(user_id),
     PRIMARY KEY (playlist_id, user_id)
 );
 
-
-/* ========================== TABLE artist  ========================== */
+/* ========================== TABLE ARTIST  ========================== */
 
 CREATE TABLE artist (
     artist_id                SERIAL PRIMARY KEY,
@@ -438,6 +436,7 @@ CREATE TABLE artist (
 );
 
 
+
 /* ========================== TABLE artistsocialscore et artist rank  ========================== */
 
 CREATE TABLE artist_social_score (
@@ -448,17 +447,18 @@ CREATE TABLE artist_social_score (
     social_features_artist_hottnesss DOUBLE PRECISION
 );
 
-
 CREATE TABLE artist_rank (
     ar_id SERIAL PRIMARY KEY,
     artist_id INT UNIQUE REFERENCES artist(artist_id),
     ranks_artist_discovery_rank DOUBLE PRECISION,
     ranks_artist_familiarity_rank DOUBLE PRECISION,
     ranks_artist_hottnesss_rank DOUBLE PRECISION
+
 );
 
 
-/* ========================== TABLE genre  ========================== */
+
+/* ========================== TABLE GENRE  ========================== */
 
 CREATE TABLE genre (
     genre_id        SERIAL UNIQUE PRIMARY KEY,
@@ -470,8 +470,7 @@ CREATE TABLE genre (
     tracks          INT
 );
 
-
-/* ========================== TABLE associative track_genre  ========================== */
+/* ========================== TABLE associative trackGENRE  ========================== */
 
 CREATE TABLE track_genre (
     track_id INT REFERENCES tracks(track_id),
@@ -480,7 +479,7 @@ CREATE TABLE track_genre (
 );
 
 
-/* ========================== TABLE publisher  ========================== */
+/* ========================== TABLE PUBLISHER  ========================== */
 
 CREATE TABLE publisher (
     publisher_id SERIAL PRIMARY KEY,
