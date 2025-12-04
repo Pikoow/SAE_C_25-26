@@ -51,6 +51,7 @@ CREATE TABLE favorite (
 
 CREATE TABLE album (
     album_id            SERIAL PRIMARY KEY,
+    album_handle        VARCHAR(65000),
     album_title         VARCHAR(65000),
     album_type          VARCHAR(65000),
     album_tracks        INT DEFAULT 0,
@@ -64,6 +65,41 @@ CREATE TABLE album (
     album_engineer      VARCHAR(65000),
     album_producer      VARCHAR(65000)
 );
+
+
+
+
+/* ========================== TABLE song_social_score  ========================== */
+
+CREATE TABLE song_social_score (
+    sss_id SERIAL PRIMARY KEY,
+    social_features_song_currency DOUBLE PRECISION,
+    social_features_song_hottness DOUBLE PRECISION
+);
+
+/* ========================== TABLE song_rank  ========================== */
+
+CREATE TABLE song_rank (
+    sr_id SERIAL PRIMARY KEY,
+    ranks_song_currency_rank DOUBLE PRECISION,
+    ranks_song_hottness_rank DOUBLE PRECISION
+);
+
+
+/* ========================== TABLE audio  ========================== */
+
+CREATE TABLE audio (
+    id SERIAL PRIMARY KEY,
+    audio_features_accousticness VARCHAR(20000),
+    audio_features_danceability VARCHAR(20000),
+    audio_features_energy VARCHAR(20000),
+    audio_features_instrumentalness VARCHAR(20000),
+    audio_features_liveness VARCHAR(20000),
+    audio_features_speechiness VARCHAR(20000),
+    audio_features_tempo VARCHAR(20000),
+    audio_features_valence VARCHAR(20000)
+);
+
 
 /* ========================== TABLE TRACKS  ========================== */
 
@@ -86,21 +122,262 @@ CREATE TABLE tracks (
     track_feature_id    INT,
     track_file          VARCHAR(65000),
     track_disk_number   INT,
-    track_bit_rate      INT
+    track_bit_rate      INT,
+    track_social_score_id INT UNIQUE REFERENCES song_social_score(sss_id),
+    track_social_rank_id INT UNIQUE REFERENCES song_rank(sr_id),
+    CONSTRAINT fk_track_feature
+        FOREIGN KEY (track_feature_id) REFERENCES audio(id)
 );
 
-/* ========================== TABLE SCORE TRACK  ========================== */
+/* ========================== TABLE temp_features  ========================== */
 
-CREATE TABLE score_track (
-    id_rank_track                 SERIAL PRIMARY KEY,
-    ranks_song_currency_rank      INT,
-    ranks_song_hotness_rank       INT,
-    social_features_song_currency FLOAT,
-    social_features_song_hotness  FLOAT,
-    track_id                      INT REFERENCES tracks(track_id)
+CREATE TABLE temporal_features (
+    tf_id SERIAL PRIMARY KEY,
+    track_id INT UNIQUE REFERENCES tracks(track_id),
+    temporal_features_000 DOUBLE PRECISION,
+    temporal_features_001 DOUBLE PRECISION,
+    temporal_features_002 DOUBLE PRECISION,
+    temporal_features_003 DOUBLE PRECISION,
+    temporal_features_004 DOUBLE PRECISION,
+    temporal_features_005 DOUBLE PRECISION,
+    temporal_features_006 DOUBLE PRECISION,
+    temporal_features_007 DOUBLE PRECISION,
+    temporal_features_008 DOUBLE PRECISION,
+    temporal_features_009 DOUBLE PRECISION,
+    temporal_features_010 DOUBLE PRECISION,
+    temporal_features_011 DOUBLE PRECISION,
+    temporal_features_012 DOUBLE PRECISION,
+    temporal_features_013 DOUBLE PRECISION,
+    temporal_features_014 DOUBLE PRECISION,
+    temporal_features_015 DOUBLE PRECISION,
+    temporal_features_016 DOUBLE PRECISION,
+    temporal_features_017 DOUBLE PRECISION,
+    temporal_features_018 DOUBLE PRECISION,
+    temporal_features_019 DOUBLE PRECISION,
+    temporal_features_020 DOUBLE PRECISION,
+    temporal_features_021 DOUBLE PRECISION,
+    temporal_features_022 DOUBLE PRECISION,
+    temporal_features_023 DOUBLE PRECISION,
+    temporal_features_024 DOUBLE PRECISION,
+    temporal_features_025 DOUBLE PRECISION,
+    temporal_features_026 DOUBLE PRECISION,
+    temporal_features_027 DOUBLE PRECISION,
+    temporal_features_028 DOUBLE PRECISION,
+    temporal_features_029 DOUBLE PRECISION,
+    temporal_features_030 DOUBLE PRECISION,
+    temporal_features_031 DOUBLE PRECISION,
+    temporal_features_032 DOUBLE PRECISION,
+    temporal_features_033 DOUBLE PRECISION,
+    temporal_features_034 DOUBLE PRECISION,
+    temporal_features_035 DOUBLE PRECISION,
+    temporal_features_036 DOUBLE PRECISION,
+    temporal_features_037 DOUBLE PRECISION,
+    temporal_features_038 DOUBLE PRECISION,
+    temporal_features_039 DOUBLE PRECISION,
+    temporal_features_040 DOUBLE PRECISION,
+    temporal_features_041 DOUBLE PRECISION,
+    temporal_features_042 DOUBLE PRECISION,
+    temporal_features_043 DOUBLE PRECISION,
+    temporal_features_044 DOUBLE PRECISION,
+    temporal_features_045 DOUBLE PRECISION,
+    temporal_features_046 DOUBLE PRECISION,
+    temporal_features_047 DOUBLE PRECISION,
+    temporal_features_048 DOUBLE PRECISION,
+    temporal_features_049 DOUBLE PRECISION,
+    temporal_features_050 DOUBLE PRECISION,
+    temporal_features_051 DOUBLE PRECISION,
+    temporal_features_052 DOUBLE PRECISION,
+    temporal_features_053 DOUBLE PRECISION,
+    temporal_features_054 DOUBLE PRECISION,
+    temporal_features_055 DOUBLE PRECISION,
+    temporal_features_056 DOUBLE PRECISION,
+    temporal_features_057 DOUBLE PRECISION,
+    temporal_features_058 DOUBLE PRECISION,
+    temporal_features_059 DOUBLE PRECISION,
+    temporal_features_060 DOUBLE PRECISION,
+    temporal_features_061 DOUBLE PRECISION,
+    temporal_features_062 DOUBLE PRECISION,
+    temporal_features_063 DOUBLE PRECISION,
+    temporal_features_064 DOUBLE PRECISION,
+    temporal_features_065 DOUBLE PRECISION,
+    temporal_features_066 DOUBLE PRECISION,
+    temporal_features_067 DOUBLE PRECISION,
+    temporal_features_068 DOUBLE PRECISION,
+    temporal_features_069 DOUBLE PRECISION,
+    temporal_features_070 DOUBLE PRECISION,
+    temporal_features_071 DOUBLE PRECISION,
+    temporal_features_072 DOUBLE PRECISION,
+    temporal_features_073 DOUBLE PRECISION,
+    temporal_features_074 DOUBLE PRECISION,
+    temporal_features_075 DOUBLE PRECISION,
+    temporal_features_076 DOUBLE PRECISION,
+    temporal_features_077 DOUBLE PRECISION,
+    temporal_features_078 DOUBLE PRECISION,
+    temporal_features_079 DOUBLE PRECISION,
+    temporal_features_080 DOUBLE PRECISION,
+    temporal_features_081 DOUBLE PRECISION,
+    temporal_features_082 DOUBLE PRECISION,
+    temporal_features_083 DOUBLE PRECISION,
+    temporal_features_084 DOUBLE PRECISION,
+    temporal_features_085 DOUBLE PRECISION,
+    temporal_features_086 DOUBLE PRECISION,
+    temporal_features_087 DOUBLE PRECISION,
+    temporal_features_088 DOUBLE PRECISION,
+    temporal_features_089 DOUBLE PRECISION,
+    temporal_features_090 DOUBLE PRECISION,
+    temporal_features_091 DOUBLE PRECISION,
+    temporal_features_092 DOUBLE PRECISION,
+    temporal_features_093 DOUBLE PRECISION,
+    temporal_features_094 DOUBLE PRECISION,
+    temporal_features_095 DOUBLE PRECISION,
+    temporal_features_096 DOUBLE PRECISION,
+    temporal_features_097 DOUBLE PRECISION,
+    temporal_features_098 DOUBLE PRECISION,
+    temporal_features_099 DOUBLE PRECISION,
+    temporal_features_100 DOUBLE PRECISION,
+    temporal_features_101 DOUBLE PRECISION,
+    temporal_features_102 DOUBLE PRECISION,
+    temporal_features_103 DOUBLE PRECISION,
+    temporal_features_104 DOUBLE PRECISION,
+    temporal_features_105 DOUBLE PRECISION,
+    temporal_features_106 DOUBLE PRECISION,
+    temporal_features_107 DOUBLE PRECISION,
+    temporal_features_108 DOUBLE PRECISION,
+    temporal_features_109 DOUBLE PRECISION,
+    temporal_features_110 DOUBLE PRECISION,
+    temporal_features_111 DOUBLE PRECISION,
+    temporal_features_112 DOUBLE PRECISION,
+    temporal_features_113 DOUBLE PRECISION,
+    temporal_features_114 DOUBLE PRECISION,
+    temporal_features_115 DOUBLE PRECISION,
+    temporal_features_116 DOUBLE PRECISION,
+    temporal_features_117 DOUBLE PRECISION,
+    temporal_features_118 DOUBLE PRECISION,
+    temporal_features_119 DOUBLE PRECISION,
+    temporal_features_120 DOUBLE PRECISION,
+    temporal_features_121 DOUBLE PRECISION,
+    temporal_features_122 DOUBLE PRECISION,
+    temporal_features_123 DOUBLE PRECISION,
+    temporal_features_124 DOUBLE PRECISION,
+    temporal_features_125 DOUBLE PRECISION,
+    temporal_features_126 DOUBLE PRECISION,
+    temporal_features_127 DOUBLE PRECISION,
+    temporal_features_128 DOUBLE PRECISION,
+    temporal_features_129 DOUBLE PRECISION,
+    temporal_features_130 DOUBLE PRECISION,
+    temporal_features_131 DOUBLE PRECISION,
+    temporal_features_132 DOUBLE PRECISION,
+    temporal_features_133 DOUBLE PRECISION,
+    temporal_features_134 DOUBLE PRECISION,
+    temporal_features_135 DOUBLE PRECISION,
+    temporal_features_136 DOUBLE PRECISION,
+    temporal_features_137 DOUBLE PRECISION,
+    temporal_features_138 DOUBLE PRECISION,
+    temporal_features_139 DOUBLE PRECISION,
+    temporal_features_140 DOUBLE PRECISION,
+    temporal_features_141 DOUBLE PRECISION,
+    temporal_features_142 DOUBLE PRECISION,
+    temporal_features_143 DOUBLE PRECISION,
+    temporal_features_144 DOUBLE PRECISION,
+    temporal_features_145 DOUBLE PRECISION,
+    temporal_features_146 DOUBLE PRECISION,
+    temporal_features_147 DOUBLE PRECISION,
+    temporal_features_148 DOUBLE PRECISION,
+    temporal_features_149 DOUBLE PRECISION,
+    temporal_features_150 DOUBLE PRECISION,
+    temporal_features_151 DOUBLE PRECISION,
+    temporal_features_152 DOUBLE PRECISION,
+    temporal_features_153 DOUBLE PRECISION,
+    temporal_features_154 DOUBLE PRECISION,
+    temporal_features_155 DOUBLE PRECISION,
+    temporal_features_156 DOUBLE PRECISION,
+    temporal_features_157 DOUBLE PRECISION,
+    temporal_features_158 DOUBLE PRECISION,
+    temporal_features_159 DOUBLE PRECISION,
+    temporal_features_160 DOUBLE PRECISION,
+    temporal_features_161 DOUBLE PRECISION,
+    temporal_features_162 DOUBLE PRECISION,
+    temporal_features_163 DOUBLE PRECISION,
+    temporal_features_164 DOUBLE PRECISION,
+    temporal_features_165 DOUBLE PRECISION,
+    temporal_features_166 DOUBLE PRECISION,
+    temporal_features_167 DOUBLE PRECISION,
+    temporal_features_168 DOUBLE PRECISION,
+    temporal_features_169 DOUBLE PRECISION,
+    temporal_features_170 DOUBLE PRECISION,
+    temporal_features_171 DOUBLE PRECISION,
+    temporal_features_172 DOUBLE PRECISION,
+    temporal_features_173 DOUBLE PRECISION,
+    temporal_features_174 DOUBLE PRECISION,
+    temporal_features_175 DOUBLE PRECISION,
+    temporal_features_176 DOUBLE PRECISION,
+    temporal_features_177 DOUBLE PRECISION,
+    temporal_features_178 DOUBLE PRECISION,
+    temporal_features_179 DOUBLE PRECISION,
+    temporal_features_180 DOUBLE PRECISION,
+    temporal_features_181 DOUBLE PRECISION,
+    temporal_features_182 DOUBLE PRECISION,
+    temporal_features_183 DOUBLE PRECISION,
+    temporal_features_184 DOUBLE PRECISION,
+    temporal_features_185 DOUBLE PRECISION,
+    temporal_features_186 DOUBLE PRECISION,
+    temporal_features_187 DOUBLE PRECISION,
+    temporal_features_188 DOUBLE PRECISION,
+    temporal_features_189 DOUBLE PRECISION,
+    temporal_features_190 DOUBLE PRECISION,
+    temporal_features_191 DOUBLE PRECISION,
+    temporal_features_192 DOUBLE PRECISION,
+    temporal_features_193 DOUBLE PRECISION,
+    temporal_features_194 DOUBLE PRECISION,
+    temporal_features_195 DOUBLE PRECISION,
+    temporal_features_196 DOUBLE PRECISION,
+    temporal_features_197 DOUBLE PRECISION,
+    temporal_features_198 DOUBLE PRECISION,
+    temporal_features_199 DOUBLE PRECISION,
+    temporal_features_200 DOUBLE PRECISION,
+    temporal_features_201 DOUBLE PRECISION,
+    temporal_features_202 DOUBLE PRECISION,
+    temporal_features_203 DOUBLE PRECISION,
+    temporal_features_204 DOUBLE PRECISION,
+    temporal_features_205 DOUBLE PRECISION,
+    temporal_features_206 DOUBLE PRECISION,
+    temporal_features_207 DOUBLE PRECISION,
+    temporal_features_208 DOUBLE PRECISION,
+    temporal_features_209 DOUBLE PRECISION,
+    temporal_features_210 DOUBLE PRECISION,
+    temporal_features_211 DOUBLE PRECISION,
+    temporal_features_212 DOUBLE PRECISION,
+    temporal_features_213 DOUBLE PRECISION,
+    temporal_features_214 DOUBLE PRECISION,
+    temporal_features_215 DOUBLE PRECISION,
+    temporal_features_216 DOUBLE PRECISION,
+    temporal_features_217 DOUBLE PRECISION,
+    temporal_features_218 DOUBLE PRECISION,
+    temporal_features_219 DOUBLE PRECISION,
+    temporal_features_220 DOUBLE PRECISION,
+    temporal_features_221 DOUBLE PRECISION,
+    temporal_features_222 DOUBLE PRECISION,
+    temporal_features_223 DOUBLE PRECISION
 );
 
-/* ========================== TABLE USERS TRACK  ========================== */
+
+
+
+/* ========================== TABLE temp_features  ========================== */
+
+CREATE TABLE license (
+    license_id SERIAL PRIMARY KEY,
+    license_parent_id INT, 
+    license_title VARCHAR(255),
+    license_short_title VARCHAR(50),
+    license_url VARCHAR(255),
+    track_license VARCHAR(255),
+    track_id INT REFERENCES tracks(track_id) 
+);
+
+
+
+/* ========================== TABLE associative USERS TRACK  ========================== */
 
 CREATE TABLE users_track (
     user_id  INT REFERENCES users(user_id),
@@ -111,19 +388,26 @@ CREATE TABLE users_track (
 /* ========================== TABLE PLAYLIST  ========================== */
 
 CREATE TABLE playlist (
-    playlist_id         SERIAL PRIMARY KEY,
-    playlist_name       VARCHAR(65000),
-    playlist_num_tracks INT DEFAULT 0,
-    -- list_track          LIST,
-    user_id             INT    REFERENCES users(user_id) ON DELETE CASCADE
+    playlist_id SERIAL PRIMARY KEY,
+    playlist_name VARCHAR(255) NOT NULL,
+    playlist_description TEXT,
+    /* list_tracks           ****************************************a voir si table lié pour la liste track**********************/
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
-/* ========================== TABLE PLAYLIST TRACK  ========================== */
+
+/* ========================== TABLE PLAYLIST TRACK / playlist user ========================== */
 
 CREATE TABLE playlist_track (
-    playlist_id INT REFERENCES playlist(playlist_id) ON DELETE CASCADE,
-    track_id    INT REFERENCES tracks(track_id)      ON DELETE CASCADE,
+    playlist_id INT REFERENCES playlist(playlist_id),
+    track_id INT REFERENCES tracks(track_id),
     PRIMARY KEY (playlist_id, track_id)
+);
+
+CREATE TABLE playlist_user (
+    playlist_id INT REFERENCES playlist(playlist_id),
+    user_id INT REFERENCES users(user_id),
+    PRIMARY KEY (playlist_id, user_id)
 );
 
 /* ========================== TABLE ARTIST  ========================== */
@@ -145,22 +429,32 @@ CREATE TABLE artist (
     artist_longitude         FLOAT,
     artist_associated_label  VARCHAR(65000),
     id_rank_artist           INT,
-    artist_social_score      INT,
-    user_id                  INT    REFERENCES users(user_id)
+    user_id                  INT    REFERENCES users(user_id),
+    artist_handle VARCHAR(255),
+    artist_members VARCHAR(255),
+    artist_date_created DATE
 );
 
-/* ========================== TABLE SCORE ARTIST  ========================== */
+/* ========================== TABLE artistsocialscore et artist rank  ========================== */
 
-CREATE TABLE score_artist (
-    id_rank_artist                     SERIAL PRIMARY KEY,
-    social_features_artist_discovery   FLOAT,
-    social_features_artist_familiarity FLOAT,
-    social_features_artist_hotness     FLOAT,
-    ranks_artist_discovery_rank        INT,
-    ranks_artist_familiarity_rank      INT,
-    ranks_artist_hotness_rank          INT,
-    artist_id                          INT    REFERENCES artist(artist_id)
+CREATE TABLE artist_social_score (
+    ass_id SERIAL PRIMARY KEY,
+    artist_id INT UNIQUE REFERENCES artist(artist_id),
+    social_features_artist_discovery DOUBLE PRECISION,
+    social_features_artist_familiarity DOUBLE PRECISION,
+    social_features_artist_hottnesss DOUBLE PRECISION
 );
+
+CREATE TABLE artist_rank (
+    ar_id SERIAL PRIMARY KEY,
+    artist_id INT UNIQUE REFERENCES artist(artist_id),
+    ranks_artist_discovery_rank DOUBLE PRECISION,
+    ranks_artist_familiarity_rank DOUBLE PRECISION,
+    ranks_artist_hottnesss_rank DOUBLE PRECISION
+
+);
+
+
 
 /* ========================== TABLE GENRE  ========================== */
 
@@ -170,35 +464,44 @@ CREATE TABLE genre (
     genre_title     VARCHAR(65000),
     genre_handle    VARCHAR(65000),
     genre_color     VARCHAR(65000),
-    low_level       BOOLEAN,
-    tracks          INT,
-    track_id        INT    REFERENCES tracks(track_id)
+    top_level       BOOLEAN,
+    tracks          INT
 );
+
+/* ========================== TABLE associative trackGENRE  ========================== */
+
+CREATE TABLE track_genre (
+    track_id INT REFERENCES tracks(track_id),
+    genre_id INT REFERENCES genre(genre_id),
+    PRIMARY KEY (track_id, genre_id)
+);
+
 
 /* ========================== TABLE PUBLISHER  ========================== */
 
 CREATE TABLE publisher (
-    publisher_id   SERIAL PRIMARY KEY,
-    publisher_name VARCHAR(65000)
+    publisher_id SERIAL PRIMARY KEY,
+    publisher_name VARCHAR(255) NOT NULL
 );
 
-/* ========================== TERNARY LINK TABLES ========================== */
 
-CREATE TABLE album_artist_track (
-    album_id  INT    REFERENCES album(album_id)   ON DELETE CASCADE,
-    artist_id INT    REFERENCES artist(artist_id) ON DELETE CASCADE,
-    track_id  INT    REFERENCES tracks(track_id)  ON DELETE CASCADE,
-    contribution_role VARCHAR(65000), -- optional: e.g. 'main', 'feat', 'producer'
-    PRIMARY KEY (album_id, artist_id, track_id)
+/* ========================== ternaire LINK TABLES ========================== */
+
+CREATE TABLE artist_album_track (
+    artist_id INT REFERENCES artist(artist_id),
+    album_id INT REFERENCES album(album_id),
+    track_id INT REFERENCES tracks(track_id),
+    PRIMARY KEY (artist_id, album_id, track_id)
 );
 
-CREATE TABLE artist_publisher_track (
-    artist_id    INT    REFERENCES artist(artist_id) ON DELETE CASCADE,
-    publisher_id INT    REFERENCES publisher(publisher_id) ON DELETE CASCADE,
-    track_id     INT    REFERENCES tracks(track_id)    ON DELETE CASCADE,
-    publisher_role VARCHAR(65000), -- optional: e.g. 'label', 'distributor'
-    PRIMARY KEY (artist_id, publisher_id, track_id)
+
+CREATE TABLE artist_track_publisher (
+    artist_id INT REFERENCES artist(artist_id),
+    track_id INT REFERENCES tracks(track_id),
+    publisher_id INT REFERENCES publisher(publisher_id),
+    PRIMARY KEY (artist_id, track_id, publisher_id)
 );
+
 
 /* ##################################################################### */
 /*                                 VUES                                  */
@@ -229,7 +532,7 @@ CREATE OR REPLACE VIEW tracks_features AS
         AVG(sa.social_features_artist_hotness) AS avg_artist_hotness,
         AVG(sa.social_features_artist_familiarity) AS avg_artist_familiarity
     FROM tracks t
-    LEFT JOIN album_artist_track aat ON aat.track_id = t.track_id
+    LEFT JOIN artist_album_track aat ON aat.track_id = t.track_id
     LEFT JOIN album a ON a.album_id = aat.album_id
     LEFT JOIN artist ar ON ar.artist_id = aat.artist_id
     LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
@@ -250,7 +553,7 @@ CREATE OR REPLACE VIEW album_features AS
         alb.album_tags,
         STRING_AGG(DISTINCT art.artist_name, ', ') AS artists
     FROM album alb
-    LEFT JOIN album_artist_track aat ON aat.album_id = alb.album_id
+    LEFT JOIN artist_album_track aat ON aat.album_id = alb.album_id
     LEFT JOIN artist art ON art.artist_id = aat.artist_id
     GROUP BY alb.album_id
 ;
@@ -273,7 +576,7 @@ CREATE OR REPLACE VIEW artist_features AS
         COUNT(DISTINCT apt.publisher_id) AS num_publishers
     FROM artist ar
     LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
-    LEFT JOIN album_artist_track aat ON aat.artist_id = ar.artist_id
+    LEFT JOIN artist_album_track aat ON aat.artist_id = ar.artist_id
     LEFT JOIN artist_publisher_track apt ON apt.artist_id = ar.artist_id
     GROUP BY ar.artist_id
 ;
@@ -320,13 +623,13 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE TRIGGER album_artist_track_insert
-AFTER INSERT ON album_artist_track
+CREATE TRIGGER artist_album_track_insert
+AFTER INSERT ON artist_album_track
 FOR EACH ROW
 EXECUTE FUNCTION update_album_track_count();
 
-CREATE TRIGGER album_artist_track_delete
-AFTER DELETE ON album_artist_track
+CREATE TRIGGER artist_album_track_delete
+AFTER DELETE ON artist_album_track
 FOR EACH ROW
 EXECUTE FUNCTION update_album_track_count();
 
