@@ -91,14 +91,14 @@ CREATE TABLE song_rank (
 
 CREATE TABLE audio (
     id SERIAL PRIMARY KEY,
-    audio_features_accousticness    VARCHAR(20000),
-    audio_features_danceability     VARCHAR(20000),
-    audio_features_energy           VARCHAR(20000),
-    audio_features_instrumentalness VARCHAR(20000),
-    audio_features_liveness         VARCHAR(20000),
-    audio_features_speechiness      VARCHAR(20000),
-    audio_features_tempo            VARCHAR(20000),
-    audio_features_valence          VARCHAR(20000)
+    audio_features_accousticness DOUBLE PRECISION,
+    audio_features_danceability DOUBLE PRECISION,
+    audio_features_energy DOUBLE PRECISION,
+    audio_features_instrumentalness DOUBLE PRECISION,
+    audio_features_liveness DOUBLE PRECISION,
+    audio_features_speechiness DOUBLE PRECISION,
+    audio_features_tempo DOUBLE PRECISION,
+    audio_features_valence DOUBLE PRECISION
 );
 
 
