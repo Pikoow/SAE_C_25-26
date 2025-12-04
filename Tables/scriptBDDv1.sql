@@ -547,7 +547,7 @@ CREATE OR REPLACE VIEW tracks_features AS
     LEFT JOIN artist_album_track aat ON aat.track_id = t.track_id
     LEFT JOIN album alb              ON alb.album_id = aat.album_id
     LEFT JOIN artist ar              ON ar.artist_id = aat.artist_id
-    LEFT JOIN audio au               ON au.id = t.track_feature_id
+    LEFT JOIN audio au               ON au.track_id = t.track_id
     LEFT JOIN song_social_score sss  ON sss.sss_id = t.track_social_score_id
     LEFT JOIN song_rank sr           ON sr.sr_id = t.track_social_rank_id
     GROUP BY t.track_id
