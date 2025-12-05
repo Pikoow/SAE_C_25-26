@@ -67,44 +67,10 @@ CREATE TABLE album (
 );
 
 
-
-
-/* ========================== TABLE song_social_score  ========================== */
-
-CREATE TABLE song_social_score (
-    sss_id SERIAL PRIMARY KEY,
-    social_features_song_currency DOUBLE PRECISION,
-    social_features_song_hottness DOUBLE PRECISION
-);
-
-/* ========================== TABLE song_rank  ========================== */
-
-CREATE TABLE song_rank (
-    sr_id SERIAL PRIMARY KEY,
-    ranks_song_currency_rank DOUBLE PRECISION,
-    ranks_song_hottness_rank DOUBLE PRECISION
-);
-
-
-/* ========================== TABLE audio  ========================== */
-
-CREATE TABLE audio (
-    id SERIAL PRIMARY KEY,
-    audio_features_accousticness VARCHAR(20000),
-    audio_features_danceability VARCHAR(20000),
-    audio_features_energy VARCHAR(20000),
-    audio_features_instrumentalness VARCHAR(20000),
-    audio_features_liveness VARCHAR(20000),
-    audio_features_speechiness VARCHAR(20000),
-    audio_features_tempo VARCHAR(20000),
-    audio_features_valence VARCHAR(20000)
-);
-
-
 /* ========================== TABLE TRACKS  ========================== */
 
 CREATE TABLE tracks (
-    track_id            SERIAL PRIMARY KEY,
+    track_id            INT PRIMARY KEY,
     track_title         VARCHAR(65000),
     track_duration      INT,
     track_genre_top     VARCHAR(65000),
@@ -122,12 +88,49 @@ CREATE TABLE tracks (
     track_feature_id    INT,
     track_file          VARCHAR(65000),
     track_disk_number   INT,
-    track_bit_rate      INT,
-    track_social_score_id INT UNIQUE REFERENCES song_social_score(sss_id),
-    track_social_rank_id INT UNIQUE REFERENCES song_rank(sr_id),
-    CONSTRAINT fk_track_feature
-        FOREIGN KEY (track_feature_id) REFERENCES audio(id)
+    track_bit_rate      INT
 );
+
+
+
+/* ========================== TABLE song_social_score  ========================== */
+
+CREATE TABLE song_social_score (
+    sss_id SERIAL PRIMARY KEY,
+    track_id INT UNIQUE REFERENCES tracks(track_id),
+    social_features_song_currency DOUBLE PRECISION,
+    social_features_song_hottness DOUBLE PRECISION
+);
+
+
+/* ========================== TABLE song_rank  ========================== */
+
+CREATE TABLE song_rank (
+    sr_id SERIAL PRIMARY KEY,
+    track_id INT UNIQUE REFERENCES tracks(track_id),
+    ranks_song_currency_rank DOUBLE PRECISION,
+    ranks_song_hottness_rank DOUBLE PRECISION
+);
+
+
+
+
+
+/* ========================== TABLE audio  ========================== */
+
+CREATE TABLE audio (
+    track_id INT PRIMARY KEY REFERENCES tracks(track_id) ON DELETE CASCADE,
+    audio_features_accousticness VARCHAR(20000),
+    audio_features_danceability VARCHAR(20000),
+    audio_features_energy VARCHAR(20000),
+    audio_features_instrumentalness VARCHAR(20000),
+    audio_features_liveness VARCHAR(20000),
+    audio_features_speechiness VARCHAR(20000),
+    audio_features_tempo VARCHAR(20000),
+    audio_features_valence VARCHAR(20000)
+);
+
+
 
 /* ========================== TABLE temp_features  ========================== */
 
@@ -435,6 +438,8 @@ CREATE TABLE artist (
     artist_date_created DATE
 );
 
+
+
 /* ========================== TABLE artistsocialscore et artist rank  ========================== */
 
 CREATE TABLE artist_social_score (
@@ -511,33 +516,46 @@ CREATE TABLE artist_track_publisher (
 CREATE OR REPLACE VIEW tracks_features AS
     SELECT
         t.track_id,
-        t.track_title,
-        t.track_duration,
-        t.track_genre_top,
-        t.track_genre,
-        t.track_tags,
-        t.track_listens,
-        t.track_favorite,
-        t.track_interest,
-        t.track_date_recorded,
-        t.track_date_created,
-        t.track_composer,
-        t.track_lyricist,
-        t.track_bit_rate,
-        t.track_disk_number,
-        STRING_AGG(DISTINCT a.album_id::text, ',') AS album_ids,
-        STRING_AGG(DISTINCT a.album_title, ', ') AS album_titles,
-        STRING_AGG(DISTINCT ar.artist_name, ', ') AS artist_names,
+        MAX(t.track_title)              AS track_title,
+        MAX(t.track_duration)           AS track_duration,
+        MAX(t.track_genre_top)          AS track_genre_top,
+        MAX(t.track_genre)              AS track_genre,
+        MAX(t.track_tags)               AS track_tags,
+        MAX(t.track_listens)            AS track_listens,
+        MAX(t.track_favorite)           AS track_favorite,
+        MAX(t.track_interest)           AS track_interest,
+        MAX(t.track_date_recorded)      AS track_date_recorded,
+        MAX(t.track_date_created)       AS track_date_created,
+        MAX(t.track_composer)           AS track_composer,
+        MAX(t.track_lyricist)           AS track_lyricist,
+        MAX(t.track_bit_rate)           AS track_bit_rate,
+        MAX(t.track_disk_number)        AS track_disk_number,
+        STRING_AGG(DISTINCT alb.album_id::text, ',') AS album_ids,
+        STRING_AGG(DISTINCT alb.album_title, ', ')   AS album_titles,
+        STRING_AGG(DISTINCT ar.artist_name, ', ')    AS artist_names,
         STRING_AGG(DISTINCT ar.artist_id::text, ',') AS artist_ids,
-        AVG(sa.social_features_artist_hotness) AS avg_artist_hotness,
-        AVG(sa.social_features_artist_familiarity) AS avg_artist_familiarity
+        MAX(au.audio_features_accousticness)    AS audio_features_accousticness,
+        MAX(au.audio_features_danceability)     AS audio_features_danceability,
+        MAX(au.audio_features_energy)           AS audio_features_energy,
+        MAX(au.audio_features_instrumentalness) AS audio_features_instrumentalness,
+        MAX(au.audio_features_liveness)         AS audio_features_liveness,
+        MAX(au.audio_features_speechiness)      AS audio_features_speechiness,
+        MAX(au.audio_features_tempo)            AS audio_features_tempo,
+        MAX(au.audio_features_valence)          AS audio_features_valence,
+        AVG(sss.social_features_song_currency)  AS avg_song_currency,
+        AVG(sss.social_features_song_hottness)  AS avg_song_hottness,
+        AVG(sr.ranks_song_currency_rank)        AS avg_song_currency_rank,
+        AVG(sr.ranks_song_hottness_rank)        AS avg_song_hottness_rank
     FROM tracks t
     LEFT JOIN artist_album_track aat ON aat.track_id = t.track_id
-    LEFT JOIN album a ON a.album_id = aat.album_id
-    LEFT JOIN artist ar ON ar.artist_id = aat.artist_id
-    LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
+    LEFT JOIN album alb              ON alb.album_id = aat.album_id
+    LEFT JOIN artist ar              ON ar.artist_id = aat.artist_id
+    LEFT JOIN audio au               ON au.track_id = t.track_id
+    LEFT JOIN song_social_score sss  ON sss.sss_id = t.track_social_score_id
+    LEFT JOIN song_rank sr           ON sr.sr_id = t.track_social_rank_id
     GROUP BY t.track_id
 ;
+
 
 
 CREATE OR REPLACE VIEW album_features AS
@@ -554,31 +572,33 @@ CREATE OR REPLACE VIEW album_features AS
         STRING_AGG(DISTINCT art.artist_name, ', ') AS artists
     FROM album alb
     LEFT JOIN artist_album_track aat ON aat.album_id = alb.album_id
-    LEFT JOIN artist art ON art.artist_id = aat.artist_id
+    LEFT JOIN artist art             ON art.artist_id = aat.artist_id
     GROUP BY alb.album_id
 ;
 
 
 CREATE OR REPLACE VIEW artist_features AS
     SELECT
-        ar.artist_id,
-        ar.artist_name,
-        ar.artist_tags,
-        ar.artist_location,
-        ar.artist_associated_label,
-        ar.artist_active_year_begin,
-        ar.artist_active_year_end,
-        ar.artist_favorites,
-        AVG(sa.social_features_artist_hotness) AS hotness,
-        AVG(sa.social_features_artist_familiarity) AS familiarity,
-        AVG(sa.social_features_artist_discovery) AS discovery,
-        COUNT(DISTINCT aat.track_id) AS num_tracks_associated,
-        COUNT(DISTINCT apt.publisher_id) AS num_publishers
-    FROM artist ar
-    LEFT JOIN score_artist sa ON sa.artist_id = ar.artist_id
-    LEFT JOIN artist_album_track aat ON aat.artist_id = ar.artist_id
-    LEFT JOIN artist_publisher_track apt ON apt.artist_id = ar.artist_id
-    GROUP BY ar.artist_id
+        art.artist_id,
+        art.artist_name,
+        art.artist_tags,
+        art.artist_location,
+        art.artist_associated_label,
+        art.artist_active_year_begin,
+        art.artist_active_year_end,
+        art.artist_favorites,
+        AVG(sa.social_features_artist_discovery)   AS avg_artist_discovery,
+        AVG(sa.social_features_artist_familiarity) AS avg_artist_familiarity,
+        AVG(sa.social_features_artist_hottnesss)   AS avg_sa_artist_hottness,
+        AVG(ar.ranks_artist_discovery_rank)        AS avg_artist_discovery_rank,
+        AVG(ar.ranks_artist_familiarity_rank)      AS avg_artist_familiarity_rank,
+        AVG(ar.ranks_artist_hottnesss_rank)        AS avg_ar_artist_hottness,
+        COUNT(DISTINCT aat.track_id)               AS num_tracks_associated
+    FROM artist art
+    LEFT JOIN artist_social_score sa     ON sa.artist_id = art.artist_id
+    LEFT JOIN artist_rank ar             ON ar.artist_id = art.artist_id
+    LEFT JOIN artist_album_track aat     ON aat.artist_id = art.artist_id
+    GROUP BY art.artist_id
 ;
 
 /* ========================== VIEW USER FEATURES  ========================== */
@@ -601,6 +621,7 @@ CREATE OR REPLACE VIEW user_features AS
     FROM users u
     LEFT JOIN favorite f ON f.user_id = u.user_id
 ;
+
 
 /* ##################################################################### */
 /*                               TRIGGERS                                */
