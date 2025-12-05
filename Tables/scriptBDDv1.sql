@@ -67,25 +67,6 @@ CREATE TABLE album (
 );
 
 
-
-/* ========================== TABLE song_social_score  ========================== */
-
-CREATE TABLE song_social_score (
-    sss_id SERIAL PRIMARY KEY,
-    social_features_song_currency DOUBLE PRECISION,
-    social_features_song_hottness DOUBLE PRECISION
-);
-
-/* ========================== TABLE song_rank  ========================== */
-
-CREATE TABLE song_rank (
-    sr_id SERIAL PRIMARY KEY,
-    ranks_song_currency_rank DOUBLE PRECISION,
-    ranks_song_hottness_rank DOUBLE PRECISION
-);
-
-
-
 /* ========================== TABLE TRACKS  ========================== */
 
 CREATE TABLE tracks (
@@ -107,10 +88,32 @@ CREATE TABLE tracks (
     track_feature_id    INT,
     track_file          VARCHAR(65000),
     track_disk_number   INT,
-    track_bit_rate      INT,
-    track_social_score_id INT UNIQUE REFERENCES song_social_score(sss_id),
-    track_social_rank_id INT UNIQUE REFERENCES song_rank(sr_id)
+    track_bit_rate      INT
 );
+
+
+
+/* ========================== TABLE song_social_score  ========================== */
+
+CREATE TABLE song_social_score (
+    sss_id SERIAL PRIMARY KEY,
+    track_id INT UNIQUE REFERENCES tracks(track_id),
+    social_features_song_currency DOUBLE PRECISION,
+    social_features_song_hottness DOUBLE PRECISION
+);
+
+
+/* ========================== TABLE song_rank  ========================== */
+
+CREATE TABLE song_rank (
+    sr_id SERIAL PRIMARY KEY,
+    track_id INT UNIQUE REFERENCES tracks(track_id),
+    ranks_song_currency_rank DOUBLE PRECISION,
+    ranks_song_hottness_rank DOUBLE PRECISION
+);
+
+
+
 
 
 /* ========================== TABLE audio  ========================== */
