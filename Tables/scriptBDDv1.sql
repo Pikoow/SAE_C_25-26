@@ -459,7 +459,7 @@ CREATE TABLE artist_rank (
 /* ========================== TABLE GENRE  ========================== */
 
 CREATE TABLE genre (
-    genre_id        SERIAL UNIQUE PRIMARY KEY,
+    genre_id        INT UNIQUE PRIMARY KEY,
     genre_parent_id INT,
     genre_title     VARCHAR(65000),
     genre_handle    VARCHAR(65000),
@@ -701,4 +701,5 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER track_set_date
 BEFORE INSERT ON tracks
+
 FOR EACH ROW EXECUTE FUNCTION set_track_created_date();
