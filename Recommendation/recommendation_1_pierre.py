@@ -127,11 +127,16 @@ def create_track_feature_vector(track):
     Crée un vecteur numérique représentant une track.
     Inclut :
       - durée normalisée
+      - bitrate normalisé
       - encodage simple des genres (multi-hash → vector 16D)
     """
     # 1) Durée normalisée (max 10 minutes)
     duration = track[2] if track[2] else 0
     features = [min(duration / 600, 1.0)]
+
+    # 2) Bitrate normalisé (max 320 kbps)
+    bitrate = track[11] if track[11] else 0
+    features.append(min(bitrate / 320, 1.0))
 
     # 2) Extraction des genres
     genres_text = f"{track[3] or ''} {track[4] or ''}".lower().replace(",", " ")
@@ -218,29 +223,20 @@ def add_recommendation_to_search():
 def main():
     while True:
         print("\n--- MENU ---")
-        print("1. Rechercher une track")
-        print("2. Recommandations")
-        print("3. Quitter")
+        print("1. Recommandations")
+        print("2. Quitter")
 
         choice = input("Votre choix : ").strip()
 
         if choice == '1':
-            t = input("Nom track : ")
-            a = input("Artiste : ")
-            results = search_track_by_name_and_artist(t, a)
-            for r in results:
-                print(f"- {r[1]} ({r[12]})")
-
-        elif choice == '2':
             add_recommendation_to_search()
 
-        elif choice == '3':
-            print("Au revoir !")
+        elif choice == '2':
+            print("Fermeture")
             break
 
         else:
             print("Choix invalide.")
-
 
 if __name__ == "__main__":
     main()
