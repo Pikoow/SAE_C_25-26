@@ -12,3 +12,9 @@ features.csv
 genres.csv
 raw_artists.csv
 raw_genres.csv
+clean_echonest.csv
+genre_clean.csv
+questionnaire_cleaned.csv
+tracks_clean.csv
+desktop.ini
+postgres.session.sql

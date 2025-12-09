@@ -16,8 +16,8 @@ def clean_raw_albums():
     EXPECTED_COLUMNS = 19
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    input_file = os.path.join(current_dir, "..", "..", "CSV", "Initial_CSV", "raw_albums.csv")
-    output_file = os.path.join(current_dir, "..", "..", "CSV", "Cleaned_CSV", "raw_albums_cleaned.csv")
+    input_file = os.path.join(current_dir, "raw_albums.csv")
+    output_file = os.path.join(current_dir, "raw_albums_cleaned.csv")
 
     df = pd.read_csv(input_file, sep=",", on_bad_lines="warn")
     new_df = pd.DataFrame(df)

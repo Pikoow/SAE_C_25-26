@@ -222,7 +222,6 @@ def add_recommendation_to_search():
 
 def main():
     while True:
-        print("\n--- MENU ---")
         print("1. Recommandations")
         print("2. Quitter")
 
@@ -232,7 +231,6 @@ def main():
             add_recommendation_to_search()
 
         elif choice == '2':
-            print("Fermeture")
             break
 
         else:
