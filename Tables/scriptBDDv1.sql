@@ -35,7 +35,6 @@ CREATE TABLE users (
     user_id_form             SERIAL UNIQUE
 );
 
-
 /* ========================== TABLE FAVORITE  ========================== */
 
 CREATE TABLE favorite (
@@ -48,11 +47,10 @@ CREATE TABLE favorite (
     user_id                INT    REFERENCES users(user_id)
 );
 
-
 /* ========================== TABLE ALBUM  ========================== */
 
 CREATE TABLE album (
-    album_id            SERIAL PRIMARY KEY,
+    album_id            INT PRIMARY KEY,
     album_handle        VARCHAR(65000),
     album_title         VARCHAR(65000),
     album_type          VARCHAR(65000),
@@ -68,6 +66,30 @@ CREATE TABLE album (
     album_producer      VARCHAR(65000)
 );
 
+/* ========================== TABLE ARTIST  ========================== */
+
+CREATE TABLE artist (
+    artist_id                INT PRIMARY KEY,
+    artist_password          VARCHAR(65000),
+    artist_name              VARCHAR(65000),
+    artist_bio               VARCHAR(65000),
+    artist_related_project   VARCHAR(65000),
+    artist_favorites         INT,
+    artist_image_file        VARCHAR(65000),
+    artist_active_year_begin DATE,
+    artist_active_year_end   DATE,
+    artist_tags              VARCHAR(65000),
+    artist_location          VARCHAR(65000),
+    artist_website           VARCHAR(65000),
+    artist_latitude          FLOAT,
+    artist_longitude         FLOAT,
+    artist_associated_label  VARCHAR(65000),
+    id_rank_artist           INT,
+    user_id                  INT    REFERENCES users(user_id),
+    artist_handle VARCHAR(255),
+    artist_members VARCHAR(255),
+    artist_date_created DATE
+);
 
 /* ========================== TABLE TRACKS  ========================== */
 
@@ -90,7 +112,9 @@ CREATE TABLE tracks (
     track_feature_id    INT,
     track_file          VARCHAR(65000),
     track_disk_number   INT,
-    track_bit_rate      INT
+    track_bit_rate      INT,
+    artist_id           INT REFERENCES artist(artist_id),
+    album_id            INT REFERENCES album(album_id)
 );
 
 
@@ -127,6 +151,7 @@ CREATE TABLE audio (
     audio_features_tempo VARCHAR(20000),
     audio_features_valence VARCHAR(20000)
 );
+
 
 
 /* ========================== TABLE temp_features  ========================== */
@@ -361,10 +386,12 @@ CREATE TABLE temporal_features (
 );
 
 
-/* ========================== TABLE temp_features  ========================== */
+
+
+/* ========================== TABLE license  ========================== */
 
 CREATE TABLE license (
-    license_id SERIAL PRIMARY KEY,
+    license_id serial unique PRIMARY KEY,
     license_parent_id INT, 
     license_title VARCHAR(255),
     license_short_title VARCHAR(50),
@@ -374,6 +401,7 @@ CREATE TABLE license (
 );
 
 
+
 /* ========================== TABLE associative USERS TRACK  ========================== */
 
 CREATE TABLE users_track (
@@ -381,7 +409,6 @@ CREATE TABLE users_track (
     track_id INT REFERENCES tracks(track_id),
     PRIMARY KEY (user_id, track_id)
 );
-
 
 /* ========================== TABLE PLAYLIST  ========================== */
 
@@ -402,38 +429,12 @@ CREATE TABLE playlist_track (
     PRIMARY KEY (playlist_id, track_id)
 );
 
-
 CREATE TABLE playlist_user (
     playlist_id INT REFERENCES playlist(playlist_id),
     user_id INT REFERENCES users(user_id),
     PRIMARY KEY (playlist_id, user_id)
 );
 
-
-/* ========================== TABLE ARTIST  ========================== */
-
-CREATE TABLE artist (
-    artist_id                SERIAL PRIMARY KEY,
-    artist_password          VARCHAR(65000),
-    artist_name              VARCHAR(65000),
-    artist_bio               VARCHAR(65000),
-    artist_related_project   VARCHAR(65000),
-    artist_favorites         INT,
-    artist_image_file        VARCHAR(65000),
-    artist_active_year_begin DATE,
-    artist_active_year_end   DATE,
-    artist_tags              VARCHAR(65000),
-    artist_location          VARCHAR(65000),
-    artist_website           VARCHAR(65000),
-    artist_latitude          FLOAT,
-    artist_longitude         FLOAT,
-    artist_associated_label  VARCHAR(65000),
-    id_rank_artist           INT,
-    user_id                  INT    REFERENCES users(user_id),
-    artist_handle VARCHAR(255),
-    artist_members VARCHAR(255),
-    artist_date_created DATE
-);
 
 
 /* ========================== TABLE artistsocialscore et artist rank  ========================== */
@@ -446,14 +447,15 @@ CREATE TABLE artist_social_score (
     social_features_artist_hottnesss DOUBLE PRECISION
 );
 
-
 CREATE TABLE artist_rank (
     ar_id SERIAL PRIMARY KEY,
     artist_id INT UNIQUE REFERENCES artist(artist_id),
     ranks_artist_discovery_rank DOUBLE PRECISION,
     ranks_artist_familiarity_rank DOUBLE PRECISION,
     ranks_artist_hottnesss_rank DOUBLE PRECISION
+
 );
+
 
 
 /* ========================== TABLE GENRE  ========================== */
@@ -469,6 +471,7 @@ CREATE TABLE genre (
 );
 
 
+
 /* ========================== TABLE associative trackGENRE  ========================== */
 
 CREATE TABLE track_genre (
@@ -481,8 +484,8 @@ CREATE TABLE track_genre (
 /* ========================== TABLE PUBLISHER  ========================== */
 
 CREATE TABLE publisher (
-    publisher_id SERIAL PRIMARY KEY,
-    publisher_name VARCHAR(255) NOT NULL
+    publisher_id int PRIMARY KEY,
+    publisher_name VARCHAR(255)
 );
 
 
@@ -701,5 +704,4 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER track_set_date
 BEFORE INSERT ON tracks
-
 FOR EACH ROW EXECUTE FUNCTION set_track_created_date();
