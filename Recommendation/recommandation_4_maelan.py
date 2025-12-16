@@ -218,7 +218,7 @@ def main():
             print(f"{i}. {title} — Écoutes : {listens}, Favoris : {favorites}, Score : {score}")
 
     print(f"\nTemps de réponse : {elapsed_time:.3f} secondes")
-    print(f"CPU utilisé par le modèle : {cpu_used:.3f} Hz")
+    print(f"CPU utilisé par le modèle : {cpu_used:.3f} secondes")
     print(f"RAM utilisé par le modèle: {ram_used:.3f} MB")
 
 if __name__ == "__main__":
