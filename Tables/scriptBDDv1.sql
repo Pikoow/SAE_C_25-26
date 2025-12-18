@@ -63,7 +63,9 @@ CREATE TABLE album (
     album_date_released DATE,
     album_date_created  DATE,
     album_engineer      VARCHAR(65000),
-    album_producer      VARCHAR(65000)
+    album_producer      VARCHAR(65000),
+    album_keynouns      JSONB,
+    album_keynames      JSONB
 );
 
 /* ========================== TABLE ARTIST  ========================== */
@@ -701,7 +703,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
 CREATE TRIGGER track_set_date
 BEFORE INSERT ON tracks
 FOR EACH ROW EXECUTE FUNCTION set_track_created_date();
+
+
+
+/* ##################################################################### */
+/*                               INDEX                                   */
+/* ##################################################################### */
+
+
+CREATE INDEX IF NOT EXISTS idx_album_keynouns
+ON sae.album USING GIN (album_keynouns);
