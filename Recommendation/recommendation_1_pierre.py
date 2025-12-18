@@ -25,34 +25,16 @@ def db_connect():
 ##########################################################
 
 def load_all_tracks():
-    """
-    Charge toutes les tracks complètes.
-    Utilisé pour le calcul de similarité globale.
-    """
     query = """
-    SELECT 
-        t.track_id,
-        t.track_title,
-        t.track_duration,
-        t.track_genre_top,
-        t.track_genre,
-        t.track_listens,
-        t.track_favorite,
-        t.track_interest,
-        t.track_date_recorded,
-        t.track_composer,
-        t.track_lyricist,
-        t.track_bit_rate,
-        a.artist_name,
-        a.artist_id,
-        al.album_title,
-        al.album_id
-    FROM sae.tracks t
-    LEFT JOIN sae.album_artist_track aat ON t.track_id = aat.track_id
-    LEFT JOIN sae.artist a ON a.artist_id = aat.artist_id
-    LEFT JOIN sae.album al ON al.album_id = aat.album_id;
+    SELECT
+        track_id,
+        track_title,
+        track_duration,
+        track_genre_top,
+        track_listens
+    FROM sae.tracks
+    GROUP BY track_id;
     """
-
     try:
         conn = db_connect()
         cur = conn.cursor()
@@ -61,9 +43,8 @@ def load_all_tracks():
         cur.close()
         conn.close()
         return data
-
-    except psycopg2.Error as e:
-        print("Erreur SQL (load_all_tracks) :", e)
+    except Exception as e:
+        print("Erreur SQL (load_all_tracks):", e)
         return []
 
 
@@ -71,50 +52,32 @@ def load_all_tracks():
 # RECHERCHE DE TRACK
 ##########################################################
 
-def search_track_by_name_and_artist(track_name, artist_name):
-    """
-    Recherche une track par titre et artiste (approximation via LIKE).
-    Retourne jusqu'à 10 résultats classés par nombre d'écoutes décroissant.
-    """
-    query = """
-    SELECT 
-        t.track_id,
-        t.track_title,
-        t.track_duration,
-        t.track_genre_top,
-        t.track_genre,
-        t.track_listens,
-        t.track_favorite,
-        t.track_interest,
-        t.track_date_recorded,
-        t.track_composer,
-        t.track_lyricist,
-        t.track_bit_rate,
-        a.artist_name,
-        a.artist_id,
-        al.album_title,
-        al.album_id
-    FROM sae.tracks t
-    LEFT JOIN sae.album_artist_track aat ON t.track_id = aat.track_id
-    LEFT JOIN sae.artist a ON a.artist_id = aat.artist_id
-    LEFT JOIN sae.album al ON al.album_id = aat.album_id
-    WHERE LOWER(t.track_title) LIKE LOWER(%s)
-      AND LOWER(a.artist_name) LIKE LOWER(%s)
-    ORDER BY t.track_listens DESC
+def search_track_by_name(track_name):
+    base_query = """
+    SELECT
+        track_id,
+        track_title,
+        track_duration,
+        track_genre_top,
+        track_listens
+    FROM sae.tracks
+    WHERE LOWER(track_title) LIKE LOWER(%s)
+    ORDER BY track_listens DESC
     LIMIT 10;
     """
+
+    params = [f"%{track_name}%"]
 
     try:
         conn = db_connect()
         cur = conn.cursor()
-        cur.execute(query, (f"%{track_name}%", f"%{artist_name}%"))
+        cur.execute(base_query, params)
         results = cur.fetchall()
         cur.close()
         conn.close()
         return results
-
-    except psycopg2.Error as e:
-        print("Erreur SQL (search) :", e)
+    except Exception as e:
+        print("Erreur SQL (search):", e)
         return []
 
 
@@ -123,26 +86,17 @@ def search_track_by_name_and_artist(track_name, artist_name):
 ##########################################################
 
 def create_track_feature_vector(track):
-    """
-    Crée un vecteur numérique représentant une track.
-    Inclut :
-      - durée normalisée
-      - bitrate normalisé
-      - encodage simple des genres (multi-hash → vector 16D)
-    """
-    # 1) Durée normalisée (max 10 minutes)
-    duration = track[2] if track[2] else 0
-    features = [min(duration / 600, 1.0)]
+    duration = track[2] or 0
+    bitrate = track[4] or 0
 
-    # 2) Bitrate normalisé (max 320 kbps)
-    bitrate = track[11] if track[11] else 0
-    features.append(min(bitrate / 320, 1.0))
+    features = [
+        min(duration / 600, 1.0),
+        min(bitrate / 320, 1.0)
+    ]
 
-    # 2) Extraction des genres
-    genres_text = f"{track[3] or ''} {track[4] or ''}".lower().replace(",", " ")
-    genres = [g for g in genres_text.split() if g]
+    genres_text = f"{track[3] or ''}".lower()
+    genres = genres_text.replace(",", " ").split()
 
-    # 3) Encodage multi-hot par hash (16 dimensions)
     genre_vec = np.zeros(16)
     for g in genres:
         genre_vec[abs(hash(g)) % 16] = 1
@@ -182,13 +136,12 @@ def recommend_similar_tracks(target_track_id, all_tracks, top_n=5):
 ##########################################################
 
 def add_recommendation_to_search():
-    """Recherche d’une track, puis proposition de recommandations similaires."""
-    print("\n=== RECHERCHE & RECOMMANDATION ===")
+    """Recherche d'une track, puis proposition de recommandations similaires."""
+    print("\n=== RECOMMENDATION ===")
 
     tname = input("Nom de la track : ").strip()
-    aname = input("Artiste (optionnel) : ").strip()
 
-    matches = search_track_by_name_and_artist(tname, aname)
+    matches = search_track_by_name(tname)
     if not matches:
         print("Aucune track trouvée.")
         return
@@ -196,7 +149,7 @@ def add_recommendation_to_search():
     # Affichage des résultats
     print("\nSélectionnez une track :")
     for i, tr in enumerate(matches, 1):
-        print(f"{i}. {tr[1]} - {tr[12] or 'Artiste inconnu'}")
+        print(f"{i}. {tr[1]}")
 
     try:
         choice = int(input("\nNuméro du choix : "))
@@ -205,7 +158,7 @@ def add_recommendation_to_search():
         print("Choix invalide.")
         return
 
-    print(f"\nTrack sélectionnée : {selected[1]} ({selected[12]})")
+    print(f"\nTrack sélectionnée : {selected[1]}")
 
     # Charger tout le catalogue pour les recommandations
     all_tracks = load_all_tracks()
@@ -213,7 +166,7 @@ def add_recommendation_to_search():
 
     print("\n=== TRACKS RECOMMANDÉES ===")
     for i, (_, sim, tr) in enumerate(recos, 1):
-        print(f"{i}. {tr[1]} - {tr[12]}  | Similarité : {sim:.2%}")
+        print(f"{i}. {tr[1]} | Similarité : {sim:.2%}")
 
 
 ##########################################################
@@ -222,19 +175,7 @@ def add_recommendation_to_search():
 
 def main():
     while True:
-        print("1. Recommandations")
-        print("2. Quitter")
-
-        choice = input("Votre choix : ").strip()
-
-        if choice == '1':
-            add_recommendation_to_search()
-
-        elif choice == '2':
-            break
-
-        else:
-            print("Choix invalide.")
+        add_recommendation_to_search()
 
 if __name__ == "__main__":
     main()

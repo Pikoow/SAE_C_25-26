@@ -18,3 +18,5 @@ questionnaire_cleaned.csv
 tracks_clean.csv
 desktop.ini
 postgres.session.sql
+*.csv
+.vscode/
