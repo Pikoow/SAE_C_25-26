@@ -35,6 +35,25 @@ CREATE TABLE users (
     user_id_form             SERIAL UNIQUE
 );
 
+
+/* ========================== TABLE user_fake  ========================== */
+
+CREATE TABLE user_fake (
+    user_id INT PRIMARY KEY,
+    user_age INT,
+    user_listening_duration INT,
+    user_average_duration TEXT,
+    user_status TEXT,
+    user_favorite_hour TEXT,
+    user_favorite_genre TEXT,
+    user_favorite_languages TEXT,
+    user_favorite_platforms TEXT,
+    user_gender TEXT,
+    user_job TEXT,
+    user_tags TEXT,
+    listened_tracks TEXT
+);
+
 /* ========================== TABLE FAVORITE  ========================== */
 
 CREATE TABLE favorite (
@@ -716,3 +735,4 @@ FOR EACH ROW EXECUTE FUNCTION set_track_created_date();
 
 CREATE INDEX IF NOT EXISTS idx_album_keynouns
 ON sae.album USING GIN (album_keynouns);
+
