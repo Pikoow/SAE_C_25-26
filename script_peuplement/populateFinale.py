@@ -30,7 +30,7 @@ USER_CSV_INPUT = os.path.join(SCRIPT_DIR, "questionnaire.csv")
 HOST = "localhost"
 DB = "postgres"
 USER = "postgres"
-PASSWORD = "PASSWORD_HERE"
+PASSWORD = "PikGV53440*"
 PORT = 5432
 
 # ============================================================

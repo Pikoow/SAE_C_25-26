@@ -3,7 +3,6 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json
 from nltk.stem import PorterStemmer
-import spacy
 
 import en_core_web_sm
 # import locale
@@ -15,11 +14,11 @@ nlp = en_core_web_sm.load()
 stemmer = PorterStemmer()
 
 DB_CONFIG = {
-    'dbname': 'mydb',
-    'user': 'admin',
-    'password': 'admin',
-    'host': 'localhost',
-    'port': '5432'
+    "host": "localhost",
+    "dbname": "postgres",
+    "user": "postgres",
+    "password": "PikGV53440*",
+    "port": 5432
 }
 
 STOP_WORDS = {

@@ -7,13 +7,9 @@ DB_CONFIG = {
     "host": "localhost",
     "dbname": "postgres",
     "user": "postgres",
-    "password": "PASSWORD_HERE",
+    "password": "PikGV53440*",
     "port": 5432
 }
-
-# Ordre d'exécution logique
-SQL_FILES = ["scriptBDDv1.sql", "scriptBDDdlc.sql"]
-PYTHON_SCRIPTS = ["populateFinale.py", "populateFinal2.py", "populateFinalDLC.py"]
 
 def run_sql_file(filename):
     print(f"--- Exécution de {filename} ---")
@@ -44,10 +40,12 @@ def main():
     print("=== DÉMARRAGE DE LA MISE EN SERVICE DE LA BDD ===\n")
 
     run_sql_file("Tables/scriptBDDv1.sql")
+    # run_sql_file("Tables/scriptBDDdlc.sql")
 
     run_python_script("script_peuplement/populateFinale.py")
-
     run_python_script("script_peuplement/populateFinal2.py")
+    run_python_script("script_peuplement/populateFinalDLC.py")
+    # run_python_script("script_peuplement/populateKeynouns.py")
 
     print("=== BASE DE DONNÉES OPÉRATIONNELLE ! ===")
 
