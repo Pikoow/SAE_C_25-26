@@ -1,16 +1,18 @@
 import pandas as pd
 import psycopg2
 import re
+import os
 
 # ============================================================
 # CONFIG
 # ============================================================
-CSV_PATH = "./clean_echonest.csv"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CSV_PATH = os.path.join(SCRIPT_DIR, "clean_echonest.csv")
 PG_CONFIG = {
     "host": "localhost",
     "dbname": "postgres",
     "user": "postgres",
-    "password": "6969",
+    "password": "PASSWORD_HERE",
     "port": 5432
 }
 

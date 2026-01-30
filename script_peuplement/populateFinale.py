@@ -13,21 +13,24 @@ import pandas as pd
 # ===================== CONFIG GLOBAL ========================
 # ============================================================
 
-# CSV paths (kept exactly as you provided)
-ALBUM_CSV_INPUT = "./raw_albums_cleaned.csv"
-ARTIST_CSV_INPUT = "./raw_artists_cleaned.csv"
-TRACK_CSV_INPUT = "./tracks_clean.csv"
-GENRE_CSV_INPUT = "genre_clean.csv"
-ECHONEST_CSV_INPUT = "./raw_echonest.csv"
-RAW_TRACKS_CSV = "raw_tracks.csv"
-USER_CSV_INPUT = "./questionnaire.csv"
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# CSV paths
+ALBUM_CSV_INPUT = os.path.join(SCRIPT_DIR, "raw_albums_cleaned.csv")
+ARTIST_CSV_INPUT = os.path.join(SCRIPT_DIR, "raw_artists_cleaned.csv")
+TRACK_CSV_INPUT = os.path.join(SCRIPT_DIR, "tracks_clean.csv")
+GENRE_CSV_INPUT = os.path.join(SCRIPT_DIR, "genre_clean.csv")
+ECHONEST_CSV_INPUT = os.path.join(SCRIPT_DIR, "raw_echonest.csv")
+RAW_TRACKS_CSV = os.path.join(SCRIPT_DIR, "raw_tracks.csv")
+USER_CSV_INPUT = os.path.join(SCRIPT_DIR, "questionnaire.csv")
 
 
 # PostgreSQL connection config
 HOST = "localhost"
 DB = "postgres"
 USER = "postgres"
-PASSWORD = "6969"
+PASSWORD = "PASSWORD_HERE"
 PORT = 5432
 
 # ============================================================

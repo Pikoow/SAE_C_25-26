@@ -10,10 +10,10 @@ import re
 
 DB_CONFIG = {
     "host": "localhost",
-    "port": "5433",
-    "database": "local_bdd",
-    "user": "admin",
-    "password": "admin",
+    "port": "5432",
+    "database": "postgres",
+    "user": "postgres",
+    "password": "PASSWORD_HERE",
     "options": "-c search_path=sae,public"
 }
 
