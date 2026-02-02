@@ -4,9 +4,11 @@ numpy
 sklearn
 seaborn
 prince
-psycopg2
+psycopg2-binary
 psutil
 sentence_transformers
 spacy
 ast
 nltk
+fastapi
+uvicorn
