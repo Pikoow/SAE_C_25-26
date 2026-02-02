@@ -1,7 +1,7 @@
 pandas
 matplotlib
 numpy
-sklearn
+scikit-learn
 seaborn
 prince
 psycopg2-binary
