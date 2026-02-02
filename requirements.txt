@@ -1,0 +1,12 @@
+pandas
+matplotlib
+numpy
+sklearn
+seaborn
+prince
+psycopg2
+psutil
+sentence_transformers
+spacy
+ast
+nltk
