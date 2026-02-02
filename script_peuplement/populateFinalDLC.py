@@ -13,7 +13,7 @@ DB_CONFIG = {
     "port": "5432",
     "database": "postgres",
     "user": "postgres",
-    "password": "PikGV53440*",
+    "password": "PASSWORD_HERE",
     "options": "-c search_path=sae,public"
 }
 
