@@ -2,8 +2,18 @@ from fastapi import FastAPI, HTTPException, Query
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import Optional
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="API Muse")
+
+#Erreur page web Cors
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Configuration de la connexion (identique à tes scripts de peuplement)
 DB_CONFIG = {
@@ -45,7 +55,8 @@ def get_all_tracks():
                 art.artist_name
             FROM sae.tracks t
             LEFT JOIN sae.album a ON t.album_id = a.album_id
-            LEFT JOIN sae.artist art ON t.artist_id = art.artist_id;
+            LEFT JOIN sae.artist art ON t.artist_id = art.artist_id 
+            LIMIT 50;
         """
         cur.execute(query)
         tracks = cur.fetchall()
