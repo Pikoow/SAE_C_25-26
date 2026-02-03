@@ -2,6 +2,10 @@ from fastapi import FastAPI, HTTPException, Query
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import Optional
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI(title="API Muse")
 
@@ -10,7 +14,7 @@ DB_CONFIG = {
     "host": "localhost",
     "dbname": "postgres",
     "user": "postgres",
-    "password": "PASSWORD_HERE",
+    "password": os.getenv("POSTGRES_PASSWORD"),
     "port": 5432
 }
 
@@ -136,7 +140,6 @@ def get_track_by_id(track_id: int):
         
         # Formater les genres
         track['genres'] = [genre['genre_title'] for genre in genres]
-        
         cur.close()
         conn.close()
         

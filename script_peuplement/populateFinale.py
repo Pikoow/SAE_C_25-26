@@ -8,6 +8,10 @@ from datetime import datetime, date
 
 import psycopg2
 import pandas as pd
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # ============================================================
 # ===================== CONFIG GLOBAL ========================
@@ -30,7 +34,7 @@ USER_CSV_INPUT = os.path.join(SCRIPT_DIR, "questionnaire.csv")
 HOST = "localhost"
 DB = "postgres"
 USER = "postgres"
-PASSWORD = "PASSWORD_HERE"
+PASSWORD = os.getenv("POSTGRES_PASSWORD")
 PORT = 5432
 
 # ============================================================

@@ -3,6 +3,10 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json
 from nltk.stem import PorterStemmer
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 import en_core_web_sm
 # import locale
@@ -17,7 +21,7 @@ DB_CONFIG = {
     "host": "localhost",
     "dbname": "postgres",
     "user": "postgres",
-    "password": "PASSWORD_HERE",
+    "password": os.getenv("POSTGRES_PASSWORD"),
     "port": 5432
 }
 

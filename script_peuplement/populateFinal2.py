@@ -2,6 +2,10 @@ import pandas as pd
 import psycopg2
 import re
 import os
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # ============================================================
 # CONFIG
@@ -12,7 +16,7 @@ PG_CONFIG = {
     "host": "localhost",
     "dbname": "postgres",
     "user": "postgres",
-    "password": "PASSWORD_HERE",
+    "password": os.getenv("POSTGRES_PASSWORD"),
     "port": 5432
 }
 

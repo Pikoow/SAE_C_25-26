@@ -3,6 +3,10 @@ import pandas as pd
 import psycopg2
 import sys
 import re
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # ============================================================
 # ===================== CONFIG GLOBAL ========================
@@ -13,7 +17,7 @@ DB_CONFIG = {
     "port": "5432",
     "database": "postgres",
     "user": "postgres",
-    "password": "PASSWORD_HERE",
+    "password": os.getenv("POSTGRES_PASSWORD"),
     "options": "-c search_path=sae,public"
 }
 

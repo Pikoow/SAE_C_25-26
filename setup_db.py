@@ -1,13 +1,17 @@
 import subprocess
 import psycopg2
 import sys
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # --- CONFIGURATION ---
 DB_CONFIG = {
     "host": "localhost",
     "dbname": "postgres",
     "user": "postgres",
-    "password": "PASSWORD_HERE",
+    "password": os.getenv("POSTGRES_PASSWORD"),
     "port": 5432
 }
 
