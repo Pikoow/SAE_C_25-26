@@ -1,0 +1,14 @@
+pandas
+matplotlib
+numpy
+scikit-learn
+seaborn
+prince
+psycopg2-binary
+psutil
+sentence_transformers
+spacy
+ast
+nltk
+fastapi
+uvicorn
