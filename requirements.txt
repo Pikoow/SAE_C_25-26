@@ -8,7 +8,7 @@ psycopg2-binary
 psutil
 sentence_transformers
 spacy
-ast
 nltk
 fastapi
 uvicorn
+dotenv
