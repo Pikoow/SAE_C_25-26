@@ -4,6 +4,12 @@ from psycopg2.extras import RealDictCursor
 from typing import Optional
 from dotenv import load_dotenv
 import os
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Recommendation'))
+
+from item_based_pierre import recommend_similar_tracks
 
 load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,7 +36,6 @@ DB_CONFIG = {
 
 def get_db_connection():
     try:
-        # On utilise RealDictCursor pour obtenir les résultats sous forme de dictionnaire (JSON)
         conn = psycopg2.connect(**DB_CONFIG, cursor_factory=RealDictCursor)
         return conn
     except Exception as e:
@@ -400,81 +405,25 @@ def get_album_tracks(album_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/search")
-def search(
-    q: str = Query(..., description="Terme de recherche"),
-    search_type: str = Query("all", description="Type de recherche: all, tracks, artists, albums")
+@app.get("/tracks/{track_id}/recommendations")
+def get_track_recommendations(
+    track_id: int,
+    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
 ):
-    """
-    Recherche globale dans les musiques, artistes et albums.
-    """
-    conn = get_db_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
-    
     try:
-        cur = conn.cursor()
-        results = {}
-        search_term = f"%{q}%"
+        # Now matches the updated function signature in item_based_pierre.py
+        recommendations = recommend_similar_tracks(target_track_id=track_id, top_n=limit)
+
+        if not recommendations:
+            raise HTTPException(status_code=404, detail="Track non trouvée ou aucune recommandation possible")
         
-        if search_type in ["all", "tracks"]:
-            tracks_query = """
-                SELECT 
-                    t.track_id,
-                    t.track_title,
-                    art.artist_name,
-                    a.album_title,
-                    t.track_duration,
-                    t.track_listens
-                FROM sae.tracks t
-                LEFT JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
-                LEFT JOIN sae.artist art ON aat.artist_id = art.artist_id
-                LEFT JOIN sae.album a ON aat.album_id = a.album_id
-                WHERE t.track_title ILIKE %s
-                ORDER BY t.track_listens DESC
-                LIMIT 20
-            """
-            cur.execute(tracks_query, (search_term,))
-            results['tracks'] = cur.fetchall()
-        
-        if search_type in ["all", "artists"]:
-            artists_query = """
-                SELECT 
-                    artist_id,
-                    artist_name,
-                    artist_location,
-                    artist_favorites
-                FROM sae.artist
-                WHERE artist_name ILIKE %s
-                ORDER BY artist_favorites DESC
-                LIMIT 20
-            """
-            cur.execute(artists_query, (search_term,))
-            results['artists'] = cur.fetchall()
-        
-        if search_type in ["all", "albums"]:
-            albums_query = """
-                SELECT 
-                    album_id,
-                    album_title,
-                    album_type,
-                    album_tracks,
-                    album_favorites
-                FROM sae.album
-                WHERE album_title ILIKE %s
-                ORDER BY album_favorites DESC
-                LIMIT 20
-            """
-            cur.execute(albums_query, (search_term,))
-            results['albums'] = cur.fetchall()
-        
-        cur.close()
-        conn.close()
-        
-        return results
+        return {
+            "target_track_id": track_id,
+            "count": len(recommendations),
+            "results": recommendations
+        }
     except Exception as e:
-        if conn: conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la recommandation : {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

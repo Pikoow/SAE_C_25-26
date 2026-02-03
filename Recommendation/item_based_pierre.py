@@ -1,4 +1,3 @@
-# track_search.py
 import psycopg2
 from dotenv import load_dotenv
 import os
@@ -15,81 +14,44 @@ DB_CONFIG = {
     'port': os.getenv("POSTGRES_PORT", '5432')
 }
 
-##########################################################
-# FONCTIONS GÉNÉRALES BASE DE DONNÉES
-##########################################################
+# Global cache for performance
+_TRACK_CACHE = None
+_FEATURE_MATRIX = None
+_TRACK_INDEX_MAP = {} # Maps track_id to row index in matrix
 
 def db_connect():
-    """Retourne une connexion PostgreSQL."""
     return psycopg2.connect(**DB_CONFIG)
 
-
-##########################################################
-# CHARGEMENT DE TOUTES LES TRACKS
-##########################################################
-
-def load_all_tracks():
+def load_data_into_cache():
+    """Fetches all tracks and prepares a global feature matrix."""
+    global _TRACK_CACHE, _FEATURE_MATRIX, _TRACK_INDEX_MAP
+    
     query = """
-    SELECT
-        track_id,
-        track_title,
-        track_duration,
-        track_genre_top,
-        track_listens
-    FROM sae.tracks
-    GROUP BY track_id;
+    SELECT track_id, track_title, track_duration, track_genre_top, track_bit_rate
+    FROM sae.tracks;
     """
     try:
         conn = db_connect()
         cur = conn.cursor()
         cur.execute(query)
-        data = cur.fetchall()
+        _TRACK_CACHE = cur.fetchall()
         cur.close()
         conn.close()
-        return data
+
+        # Build Matrix
+        all_features = []
+        for idx, track in enumerate(_TRACK_CACHE):
+            vec = create_track_feature_vector(track)
+            all_features.append(vec)
+            _TRACK_INDEX_MAP[track[0]] = idx
+        
+        _FEATURE_MATRIX = np.array(all_features)
+        print(f"Cache loaded: {len(_TRACK_CACHE)} tracks processed.")
     except Exception as e:
-        print("Erreur SQL (load_all_tracks):", e)
-        return []
-
-
-##########################################################
-# RECHERCHE DE TRACK
-##########################################################
-
-def search_track_by_name(track_name):
-    base_query = """
-    SELECT
-        track_id,
-        track_title,
-        track_duration,
-        track_genre_top,
-        track_listens
-    FROM sae.tracks
-    WHERE LOWER(track_title) LIKE LOWER(%s)
-    ORDER BY track_listens DESC
-    LIMIT 10;
-    """
-
-    params = [f"%{track_name}%"]
-
-    try:
-        conn = db_connect()
-        cur = conn.cursor()
-        cur.execute(base_query, params)
-        results = cur.fetchall()
-        cur.close()
-        conn.close()
-        return results
-    except Exception as e:
-        print("Erreur SQL (search):", e)
-        return []
-
-
-##########################################################
-# CONSTRUCTION VECTEUR DE CARACTÉRISTIQUES
-##########################################################
+        print("Erreur SQL (load_data_into_cache):", e)
 
 def create_track_feature_vector(track):
+    # track indices: 0:id, 1:title, 2:duration, 3:genre, 4:bitrate
     duration = track[2] or 0
     bitrate = track[4] or 0
 
@@ -107,79 +69,41 @@ def create_track_feature_vector(track):
 
     return np.concatenate([features, genre_vec])
 
-
-##########################################################
-# RECOMMANDATION PAR SIMILARITÉ
-##########################################################
-
-def recommend_similar_tracks(target_track_id, all_tracks, top_n=5):
+def recommend_similar_tracks(target_track_id, top_n=5):
     """
-    Retourne les N tracks les plus similaires à une track donnée.
-    Similarité : cosine similarity sur vecteurs de features.
+    Uses the vectorized feature matrix for lightning-fast recommendations.
     """
-    tracks = {t[0]: t for t in all_tracks}
+    global _TRACK_CACHE, _FEATURE_MATRIX, _TRACK_INDEX_MAP
 
-    if target_track_id not in tracks:
+    # Initialize cache if empty
+    if _TRACK_CACHE is None:
+        load_data_into_cache()
+
+    if target_track_id not in _TRACK_INDEX_MAP:
         return []
 
-    target_vec = create_track_feature_vector(tracks[target_track_id])
+    target_idx = _TRACK_INDEX_MAP[target_track_id]
+    target_vec = _FEATURE_MATRIX[target_idx].reshape(1, -1)
 
-    similarities = []
-    for tid, track in tracks.items():
+    # Calculate all similarities at once (Vectorized)
+    similarities = cosine_similarity(target_vec, _FEATURE_MATRIX)[0]
+
+    # Get indices of top_n + 1 (to exclude itself)
+    # argsort gives indices of sorted values; we take the last ones
+    related_indices = np.argsort(similarities)[-(top_n + 1):][::-1]
+
+    results = []
+    for idx in related_indices:
+        track = _TRACK_CACHE[idx]
+        tid = track[0]
+        
         if tid == target_track_id:
             continue
-        sim = cosine_similarity([target_vec], [create_track_feature_vector(track)])[0][0]
-        similarities.append((tid, sim, track))
+            
+        results.append({
+            "track_id": tid,
+            "track_title": track[1],
+            "similarity": round(float(similarities[idx]), 4)
+        })
 
-    similarities.sort(key=lambda x: x[1], reverse=True)
-    return similarities[:top_n]
-
-
-##########################################################
-# INTERFACE UTILISATEUR : RECOMMANDATION
-##########################################################
-
-def add_recommendation_to_search():
-    """Recherche d'une track, puis proposition de recommandations similaires."""
-    print("\n=== RECOMMENDATION ===")
-
-    tname = input("Nom de la track : ").strip()
-
-    matches = search_track_by_name(tname)
-    if not matches:
-        print("Aucune track trouvée.")
-        return
-
-    # Affichage des résultats
-    print("\nSélectionnez une track :")
-    for i, tr in enumerate(matches, 1):
-        print(f"{i}. {tr[1]}")
-
-    try:
-        choice = int(input("\nNuméro du choix : "))
-        selected = matches[choice - 1]
-    except:
-        print("Choix invalide.")
-        return
-
-    print(f"\nTrack sélectionnée : {selected[1]}")
-
-    # Charger tout le catalogue pour les recommandations
-    all_tracks = load_all_tracks()
-    recos = recommend_similar_tracks(selected[0], all_tracks, top_n=5)
-
-    print("\n=== TRACKS RECOMMANDÉES ===")
-    for i, (_, sim, tr) in enumerate(recos, 1):
-        print(f"{i}. {tr[1]} | Similarité : {sim:.2%}")
-
-
-##########################################################
-# MENU PRINCIPAL
-##########################################################
-
-def main():
-    while True:
-        add_recommendation_to_search()
-
-if __name__ == "__main__":
-    main()
+    return results[:top_n]
