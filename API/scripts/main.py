@@ -10,6 +10,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Recommendation'))
 
 from item_based_pierre import recommend_similar_tracks
+from item_based_stanislas import recommend_artists
 
 load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
@@ -167,11 +168,7 @@ def get_track_by_id(track_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/artists")
-def get_artists(
-    limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
-    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination"),
-    name: Optional[str] = Query(None, description="Filtrer par nom d'artiste")
-):
+def get_artists():
     """
     Récupère la liste des artistes avec leurs statistiques.
     """
@@ -182,7 +179,7 @@ def get_artists(
     try:
         cur = conn.cursor()
         
-        base_query = """
+        query = """
             SELECT 
                 artist_id,
                 artist_name,
@@ -191,28 +188,16 @@ def get_artists(
                 artist_active_year_begin,
                 artist_active_year_end,
                 artist_tags
-            FROM sae.artist
-            WHERE 1=1
+            FROM sae.artist;
         """
         
-        params = []
-        if name:
-            base_query += " AND artist_name ILIKE %s"
-            params.append(f"%{name}%")
-        
-        base_query += " ORDER BY artist_name LIMIT %s OFFSET %s"
-        params.extend([limit, offset])
-        
-        cur.execute(base_query, params)
+        cur.execute(query)
         artists = cur.fetchall()
-        
         cur.close()
         conn.close()
         
         return {
-            "total": len(artists),
-            "limit": limit,
-            "offset": offset,
+            "count": len(artists),
             "results": artists
         }
     except Exception as e:
@@ -424,6 +409,25 @@ def get_track_recommendations(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la recommandation : {str(e)}")
+    
+@app.get("/artists/{artist_id}/recommendations")
+def get_artist_recommendations(
+    artist_id: int,
+    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre d'artistes similaires")
+):
+    try:
+        recommendations = recommend_artists(artist_id=artist_id, top_k=limit)
+        
+        if not recommendations:
+            raise HTTPException(status_code=404, detail="Artiste non trouvé ou pas d'embedding disponible")
+        
+        return {
+            "target_artist_id": artist_id,
+            "count": len(recommendations),
+            "results": recommendations
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur recommandation artiste : {str(e)}")
 
 @app.get("/genres")
 def get_all_genres():

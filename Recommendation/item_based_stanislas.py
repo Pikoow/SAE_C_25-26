@@ -20,7 +20,7 @@ DB_CONFIG = {
     'password': os.getenv("POSTGRES_PASSWORD"),
     'host': 'localhost',
     'port': os.getenv("POSTGRES_PORT", '5432')
-}}
+}
 
 
 # ========================================================
