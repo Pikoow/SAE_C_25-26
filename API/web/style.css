@@ -32,12 +32,10 @@ header p {
     transition: color 0.3s;
 }
 
-/* Couleur orange au survol */
 header p:hover {
     color: #ED7A26;
 }
 
-/* On pousse le bouton vers la droite avec margin-left: auto */
 header button {
     margin-left: auto;
     background-color: #ED7A26; 
@@ -52,7 +50,7 @@ header button {
 }
 
 header button:hover {
-    background-color: #e07520;
+    background-color: #ED7A26;
     transform: scale(1.05);
 }
 
@@ -99,3 +97,123 @@ footer {
 .footer-content { display: flex; justify-content: space-around; }
 .footer-column h3 { font-size: 0.9rem; margin-bottom: 10px; }
 .footer-column ul { list-style: none; padding: 0; font-size: 0.8rem; color: #bbb; }
+
+/* Container principal pour aligner les 3 colonnes */
+.preferences-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 40px 5%;
+    gap: 20px;
+}
+
+/* Style de chaque colonne */
+.search-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-section h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+/* Barre de recherche avec icône loupe */
+.search-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 12px 12px 12px 45px; 
+    border: 2px solid #000;
+    border-radius: 12px;
+    font-size: 1rem;
+    background-image: url('./images/loupe.png');
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    background-size: 20px 20px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.search-wrapper input:focus {
+    border-color: #f38630;
+}
+
+.selection-area {
+    border-left: 4px solid #ED7A26; 
+    padding-left: 15px;
+    min-height: 400px;
+}
+
+.selection-area h3 {
+    font-size: 1rem;
+    text-decoration: underline;
+    margin-top: 0;
+    color: #333;
+}
+
+.badge-item {
+    background-color: #f38630;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+    user-select: none;
+    display: flex;
+    align-items: center;
+}
+
+.badge-item:hover {
+    background-color: #d36d1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.actions-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 40px 0; /* Espace au dessus et en dessous */
+    width: 100%;
+}
+
+.btn-reset, .btn-save {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 12px 40px;
+    border-radius: 12px;
+    cursor: pointer;
+    min-width: 180px;
+    transition: all 0.2s;
+}
+
+/* Bouton Réinitialiser (Outline orange) */
+.btn-reset {
+    background-color: white;
+    color: black;
+    border: 2px solid #f38630;
+}
+
+.btn-reset:hover {
+    background-color: #fff5ed;
+}
+
+/* Bouton Sauvegarder (Plein orange) */
+.btn-save {
+    background-color: #f38630;
+    color: black;
+    border: none;
+}
+
+.btn-save:hover {
+    background-color: #d36d1a;
+    transform: scale(1.05);
+}

@@ -1,124 +1,118 @@
-// Function pour afficher des genres sur la Page Préferences
-async function chargerGenres() {
-    const selectElement = document.getElementById("genre");
-    
-    if (!selectElement) {
-        return;
-    }
+function ajouterElementSelectionne(nom, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    console.log("Tentative de chargement des genres...");
+    const dejaPresent = Array.from(container.querySelectorAll('.badge-item span'))
+                             .some(span => span.textContent === nom);
+    if (dejaPresent) return;
+
+    // Apparation des élements
+    const badge = document.createElement("div");
+    badge.className = "badge-item";
+    badge.title = "Cliquez pour supprimer";
+    badge.innerHTML = `<span>${nom}</span>`;
+
+    badge.addEventListener("click", function() {
+        this.style.transform = "scale(0)";
+        this.style.opacity = "0";
+        setTimeout(() => this.remove(), 200);
+    });
+
+    container.appendChild(badge);
+}
+
+// Fonction pour l'Autocomplete des Genres
+async function chargerGenres() {
+    const inputElement = document.getElementById("genre");
+    if (!inputElement) return;
 
     try {
         const response = await fetch("http://127.0.0.1:8000/genres");
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP : ${response.status}`);
-        }
-
         const data = await response.json();
         const genres = data.results || data;
-        selectElement.innerHTML = '<option value="">-- Choisissez un genre --</option>';
 
         if (Array.isArray(genres)) {
-            genres.forEach(genre => {
-                const option = document.createElement("option");
-                const titre = genre.genre_title || "Sans titre";
-                option.value = genre.genre_id || genre.id;
-                option.textContent = `${titre}`;
-                selectElement.appendChild(option);
-            });
-            console.log("Liste remplie avec succès !");
-        } else {
-            console.error("Le format des données n'est pas un tableau", artists);
-        }
+            const listeGenres = genres.map(g => g.genre_title || "Sans titre");
 
+            $(inputElement).autocomplete({
+                source: listeGenres,
+                minLength: 1,
+                select: function(event, ui) {
+                    ajouterElementSelectionne(ui.item.value, "selected-genres-list");
+                    $(this).val("");
+                    return false;
+                }
+            });
+            
+            console.log("Autocomplete Genres configuré avec succès !");
+        }
     } catch (error) {
-        console.error("Erreur lors du fetch :", error);
-        selectElement.innerHTML = '<option>Erreur de chargement</option>';
+        console.error("Erreur lors du chargement des genres :", error);
     }
 }
 
-// Function pour afficher des artistes sur la Page Préferences
+// Fonction pour l'Autocomplete des Artistes
 async function chargerArtists() {
-    const selectElement = document.getElementById("artistes");
-    
-    if (!selectElement) {
-        return;
-    }
-
-    console.log("Tentative de chargement des artistes...");
+    const inputElement = document.getElementById("artistes");
+    if (!inputElement) return;
 
     try {
         const response = await fetch("http://127.0.0.1:8000/artists");
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP : ${response.status}`);
-        }
-
         const data = await response.json();
         const artists = data.results || data;
-        selectElement.innerHTML = '<option value="">-- Choisissez un artiste --</option>';
 
         if (Array.isArray(artists)) {
-            artists.forEach(artist => {
-                const option = document.createElement("option");
-                const titre = artist.artist_name || "Sans titre";
-                option.value = artist.artist_id || artist.id;
-                option.textContent = `${titre}`;
-                selectElement.appendChild(option);
-            });
-            console.log("Liste remplie avec succès !");
-        } else {
-            console.error("Le format des données n'est pas un tableau", artists);
-        }
+            const listeArtistes = artists.map(a => a.artist_name || "Sans titre");
 
+            $(inputElement).autocomplete({
+                source: listeArtistes,
+                minLength: 1,
+                select: function(event, ui) {
+                    ajouterElementSelectionne(ui.item.value, "selected-artists-list");
+                    $(this).val("");
+                    return false;
+                }
+            });
+            console.log("Autocomplete Artistes prêt !");
+        }
     } catch (error) {
-        console.error("Erreur lors du fetch :", error);
-        selectElement.innerHTML = '<option>Erreur de chargement</option>';
+        console.error("Erreur Artistes :", error);
     }
 }
 
-// Function pour afficher des musiques sur la Page Préferences
+// Fonction pour l'Autocomplete des Musiques
 async function chargerMusiques() {
-    const selectElement = document.getElementById("musique");
-    
-    if (!selectElement) {
-        return;
-    }
-
-    console.log("Tentative de chargement des musiques...");
+    const inputElement = document.getElementById("musique");
+    if (!inputElement) return;
 
     try {
         const response = await fetch("http://127.0.0.1:8000/tracks");
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP : ${response.status}`);
-        }
-
         const data = await response.json();
         const tracks = data.results || data;
-        selectElement.innerHTML = '<option value="">-- Choisissez une musique --</option>';
-
+        
         if (Array.isArray(tracks)) {
-            tracks.forEach(track => {
-                const option = document.createElement("option");
-                const titre = track.track_title || "Sans titre";
-                
-                option.value = titre;
-                option.textContent = `${titre}`;
-                selectElement.appendChild(option);
-            });
-            console.log("Liste remplie avec succès !");
-        } else {
-            console.error("Le format des données n'est pas un tableau", tracks);
-        }
+            const listeMusiques = tracks.map(t => t.track_title || "Sans titre");
 
+            $(inputElement).autocomplete({
+                source: listeMusiques,
+                minLength: 1,
+                select: function(event, ui) {
+                    ajouterElementSelectionne(ui.item.value, "selected-tracks-list");
+                    $(this).val("");
+                    return false;
+                }
+            });
+            console.log("Autocomplete Musiques prêt !");
+        }
     } catch (error) {
-        console.error("Erreur lors du fetch :", error);
-        selectElement.innerHTML = '<option>Erreur de chargement</option>';
+        console.error("Erreur Musiques :", error);
     }
 }
 
-chargerGenres();
-chargerArtists();
-chargerMusiques();
+/* Activation des fonctions */
+$(document).ready(function() {
+    console.log("DOM et jQuery prêts, chargement des données...");
+    chargerGenres();
+    chargerArtists();
+    chargerMusiques();
+});
