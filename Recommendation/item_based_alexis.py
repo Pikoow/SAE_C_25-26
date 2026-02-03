@@ -1,15 +1,19 @@
 import psycopg2
 import sys
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # ============================================================
 # CONFIGURATION
 # ============================================================
 DB_CONFIG = {
     "host": "localhost",
-    "port": "5433",
-    "database": "local_bdd",
-    "user": "admin",
-    "password": "admin",
+    "port": os.getenv("POSTGRES_PORT", "5432"),
+    "database": os.getenv("POSTGRES_DBNAME"),
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
     "options": "-c search_path=sae,public"
 }
 

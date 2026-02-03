@@ -19,10 +19,10 @@ stemmer = PorterStemmer()
 
 DB_CONFIG = {
     "host": "localhost",
-    "dbname": "postgres",
-    "user": "postgres",
+    "dbname": os.getenv("POSTGRES_DBNAME"),
+    "user": os.getenv("POSTGRES_USER"),
     "password": os.getenv("POSTGRES_PASSWORD"),
-    "port": 5432
+    "port": int(os.getenv("POSTGRES_PORT", 5432))
 }
 
 STOP_WORDS = {

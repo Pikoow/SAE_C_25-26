@@ -32,10 +32,10 @@ USER_CSV_INPUT = os.path.join(SCRIPT_DIR, "questionnaire.csv")
 
 # PostgreSQL connection config
 HOST = "localhost"
-DB = "postgres"
-USER = "postgres"
+DB = os.getenv("POSTGRES_DBNAME")
+USER = os.getenv("POSTGRES_USER")
 PASSWORD = os.getenv("POSTGRES_PASSWORD")
-PORT = 5432
+PORT = int(os.getenv("POSTGRES_PORT", 5432))
 
 # ============================================================
 # ===============   FONCTION UTILITAIRE   ====================

@@ -14,10 +14,10 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_PATH = os.path.join(SCRIPT_DIR, "clean_echonest.csv")
 PG_CONFIG = {
     "host": "localhost",
-    "dbname": "postgres",
-    "user": "postgres",
+    "dbname": os.getenv("POSTGRES_DBNAME"),
+    "user": os.getenv("POSTGRES_USER"),
     "password": os.getenv("POSTGRES_PASSWORD"),
-    "port": 5432
+    "port": int(os.getenv("POSTGRES_PORT", 5432))
 }
 
 # ============================================================

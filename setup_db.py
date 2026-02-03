@@ -9,10 +9,10 @@ load_dotenv()
 # --- CONFIGURATION ---
 DB_CONFIG = {
     "host": "localhost",
-    "dbname": "postgres",
-    "user": "postgres",
+    "dbname": os.getenv("POSTGRES_DBNAME"),
+    "user": os.getenv("POSTGRES_USER"),
     "password": os.getenv("POSTGRES_PASSWORD"),
-    "port": 5432
+    "port": int(os.getenv("POSTGRES_PORT", 5432))
 }
 
 def run_sql_file(filename):

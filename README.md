@@ -8,13 +8,13 @@ Téléchargez la dernière version.
 
 ## 2. Modification des fichiers
 
-Dans les fichiers :
-- script_peuplement/populateFinale
-- script_peuplement/populateFinal2
-- API/main.py
-- setup_db.py  
+Créer un fichier `.env` à la racine et complétez le à l'aide de la template.
 
-Changez les `PASSWORD_HERE` en votre mot de passe Postgres.
+Template :
+POSTGRES_DBNAME=votre nom de db
+POSTGRES_USER=votre nom de user
+POSTGRES_PASSWORD=votre password
+POSTGRES_PORT=votre port
 
 ## 3. Création de la base
 

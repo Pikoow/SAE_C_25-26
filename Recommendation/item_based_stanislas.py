@@ -5,20 +5,22 @@ import json
 import time
 import psutil
 import os
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+load_dotenv()
 
 # ==============================================================
 # CONFIGURATION DES PARAMÈTRES DE CONNEXION À LA BASE DE DONNÉES
 # ==============================================================
 DB_CONFIG = {
-    'dbname': 'mydb',
-    'user': 'admin',
-    'password': 'admin',
+    'dbname': os.getenv("POSTGRES_DBNAME"),
+    'user': os.getenv("POSTGRES_USER"),
+    'password': os.getenv("POSTGRES_PASSWORD"),
     'host': 'localhost',
-    'port': '5432'
-}
+    'port': os.getenv("POSTGRES_PORT", '5432')
+}}
 
 
 # ========================================================

@@ -22,10 +22,10 @@ app.add_middleware(
 # Configuration de la connexion (identique à tes scripts de peuplement)
 DB_CONFIG = {
     "host": "localhost",
-    "dbname": "postgres",
-    "user": "postgres",
+    "dbname": os.getenv("POSTGRES_DBNAME"),
+    "user": os.getenv("POSTGRES_USER"),
     "password": os.getenv("POSTGRES_PASSWORD"),
-    "port": 5432
+    "port": int(os.getenv("POSTGRES_PORT", 5432))
 }
 
 def get_db_connection():

@@ -1,5 +1,9 @@
 import pandas as pd
 import psycopg2
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # =========================
 # CONFIG
@@ -8,10 +12,10 @@ CSV_PATH = "synthetic_users_1000_real_tracks.csv"
 
 DB_CONFIG = {
     "host": "localhost",
-    "dbname": "postgres",
-    "user": "postgres",
-    "password": "6969",
-    "port": 5432
+    "dbname": os.getenv("POSTGRES_DBNAME"),
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
+    "port": int(os.getenv("POSTGRES_PORT", 5432))
 }
 
 # =========================

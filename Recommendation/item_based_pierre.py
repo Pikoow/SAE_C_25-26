@@ -1,14 +1,18 @@
 # track_search.py
 import psycopg2
+from dotenv import load_dotenv
+import os
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
+load_dotenv()
+
 DB_CONFIG = {
-    'dbname': 'mydb',
-    'user': 'admin',
-    'password': 'admin',
+    'dbname': os.getenv("POSTGRES_DBNAME"),
+    'user': os.getenv("POSTGRES_USER"),
+    'password': os.getenv("POSTGRES_PASSWORD"),
     'host': 'localhost',
-    'port': '5432'
+    'port': os.getenv("POSTGRES_PORT", '5432')
 }
 
 ##########################################################

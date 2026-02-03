@@ -1,13 +1,17 @@
 import psycopg2
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 import en_core_web_sm
 
 DB_CONFIG = {
-    'dbname': 'mydb',
-    'user': 'admin',
-    'password': 'admin',
+    'dbname': os.getenv("POSTGRES_DBNAME"),
+    'user': os.getenv("POSTGRES_USER"),
+    'password': os.getenv("POSTGRES_PASSWORD"),
     'host': 'localhost',
-    'port': '5432'
+    'port': os.getenv("POSTGRES_PORT", '5432')
 }
 
 # liste de nom (titre même éventuellement)
