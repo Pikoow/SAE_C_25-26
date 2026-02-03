@@ -3,13 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <title>API Demo</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h1>Données depuis une API</h1>
-  <button id="load">Charger les données</button>
-  <div id="result"></div>
-
-  <script src="script.js"></script>
+  <header>
+    <img class="logo" src="./images/Logo_Muse_SAE5.png" alt="Logo Muse" />
+    <nav style="display: flex;">
+        <p>Accueil</p>
+        <p>Playlists</p>
+        <p>Préférences</p>
+        <p>Documentation</p>
+    </nav>
+    <button>Contact</button>
+  </header>
+  <main>
+    <h1>Preferences</h1>
+    <div class="custom-select">
+      <label for="genre">Choisir une ou plusieurs genre(s) :</label>
+      <select id="genre" name="genre">
+      </select>
+    </div>
+    <div class="custom-select">
+      <label for="musique">Choisir un ou plusieurs artiste(s) :</label>
+      <select id="artistes" name="artistes">
+      </select>
+    </div>
+    <div class="custom-select">
+      <label for="musique">Choisir une ou plusieurs musique(s) :</label>
+      <select id="musique" name="musique">
+      </select>
+    </div>
+    <script src="script.js"></script>
+  </main>
+  <footer>
+    <div class="footer-top">
+      <h2 class="footer-logo">MuSE</h2>
+    </div>
+    <div class="footer-content">
+      <div class="footer-column">
+        <h3>Société</h3>
+        <ul>
+          <li>À propos</li>
+          <li>Offre d'emploi</li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Liens utiles</h3>
+        <ul>
+          <li>Nous contacter</li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Communauté</h3>
+        <ul>
+          <li>Développeurs</li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Légal</h3>
+        <ul>
+          <li>Mentions légales</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="social-icons">
+        <img src="./images/logo_github.png" alt="logo github">
+        <img src="./images/logo_instagram.png" alt="logo instagram">
+        <img src="./images/logo_linkedin.png" alt="logo linkedin">
+      </div>
+      <p class="copyright">© 2026 MuSE Français</p>
+    </div>
+  </footer>
 </body>
 </html>

@@ -476,6 +476,35 @@ def search(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/genres")
+def get_all_genres():
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        # On récupère tous les genres
+        query = """
+            SELECT 
+                genre_id, 
+                genre_title
+            FROM sae.genre;
+        """
+        cur.execute(query)
+        genres = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        return {
+            "count": len(genres),
+            "results": genres
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     # Lance le serveur sur le port 8000
