@@ -7,7 +7,7 @@ import os
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Recommendation'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Recommendation'))
 
 from item_based_pierre import recommend_similar_tracks
 
