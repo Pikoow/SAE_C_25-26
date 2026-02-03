@@ -117,7 +117,7 @@ def clean_tracks():
             return ",".join(x.strip().strip("'").strip('"') for x in v[1:-1].split(","))
         return v.strip() if isinstance(v, str) else v
 
-    df_track = df_track.applymap(clean_value)
+    df_track = df_track.apply(lambda col: col.map(clean_value))
     df_track = df_track[df_track["track_id"].notna()]
     df_track["track_id"] = df_track["track_id"].astype(int)
 
