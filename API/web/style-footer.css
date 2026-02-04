@@ -21,6 +21,40 @@ body {
     font-size: 0.875rem;
 }
 
+/* HEADER
+***************************/
+header {
+    background-color: var(--blanc);
+    color: var(--noir);
+    display: flex;
+    align-items: center;
+}
+
+header img {
+    width: 6.25em;
+    height: 6.25em;
+    margin-left: 1.875em;
+}
+
+header nav > a {
+    color: var(--noir);
+    font-weight: bold;
+    font-size: 1.25rem;
+    text-decoration: none;
+    margin-left: 1.25em;
+}
+
+header button {
+    background-color: var(--orange);
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-radius: 0.313em;
+}
+
+header button > a {
+    color: var(--blanc);
+    text-decoration: none;
+}
 
 /* FOOTER
 ***************************/
@@ -46,13 +80,13 @@ footer {
     justify-content: center;
     margin: 2em 0;
     flex-wrap: wrap;
-    gap: 6rem;
+    gap: 6em;
 }
 
 .navigation-footer > div {
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
+    gap: 0.625em;
 }
 
 .navigation-footer > div > p {
@@ -63,7 +97,7 @@ footer {
 .navigation-footer > div > div {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.5em;
 }
 
 .navigation-footer a {
@@ -83,7 +117,7 @@ footer {
 
 .barre-separation-footer {
     width: 100%;
-    height: 1px;
+    height: 0.063em;
     background-color: var(--blanc);
     margin-bottom: 1.25em;
 }
@@ -96,7 +130,7 @@ footer {
 }
 
 .reseaux-sociaux-footer img {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.625rem;
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.625em;
 }
