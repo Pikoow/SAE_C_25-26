@@ -390,7 +390,7 @@ def get_album_tracks(album_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/tracks/{track_id}/recommendations")
+@app.get("/tracks/{track_id}/reco")
 def get_track_recommendations(
     track_id: int,
     limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
@@ -410,7 +410,7 @@ def get_track_recommendations(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la recommandation : {str(e)}")
     
-@app.get("/artists/{artist_id}/recommendations")
+@app.get("/artists/{artist_id}/reco")
 def get_artist_recommendations(
     artist_id: int,
     limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre d'artistes similaires")
