@@ -3,8 +3,8 @@ import os
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-input_file = os.path.join(current_dir, "..", "..", "CSV", "Initial_CSV", "raw_artists.csv")
-output_file = os.path.join(current_dir, "..", "..", "CSV", "Cleaned_CSV", "raw_artists_cleaned.csv")
+input_file = os.path.join(current_dir, "..", "..", "script_peuplement", "raw_artists.csv")
+output_file = os.path.join(current_dir, "..", "..", "script_peuplement", "raw_artists_cleaned.csv")
 
 # === CHARGEMENT DES DONNÉES DU FICHIER CSV === #
 data_frame = pd.read_csv(input_file)
