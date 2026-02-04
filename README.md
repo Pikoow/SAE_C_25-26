@@ -34,4 +34,4 @@ Lancez le script `setup_db.py`.
 
 ## 4. Lancement de l'API
 
-Lancez le script : `API/main.py`
+Lancez le script : `API/scripts/main.py`

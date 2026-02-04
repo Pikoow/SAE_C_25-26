@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Rammetto+One&display=swap');
+
+:root {
+    --noir : rgb(0, 0, 0);
+    --blanc : rgb(255, 255, 255);
+    --orange: rgb(237, 122, 38);
+    --orange-clair: rgb(255, 154, 79);
+    --orange-fonce: rgb(253, 114, 8);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: var(--noir);
+    font-size: 0.875rem;
+}
+
+
+/* FOOTER
+***************************/
+footer {
+    background-color: var(--noir);
+    color: var(--blanc);
+    padding: 3.125em;
+
+}
+
+.titre-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.titre-footer h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.875rem;
+}
+
+.navigation-footer {
+    display: flex;
+    justify-content: center;
+    margin: 2em 0;
+    flex-wrap: wrap;
+    gap: 6rem;
+}
+
+.navigation-footer > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.navigation-footer > div > p {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+.navigation-footer > div > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.navigation-footer a {
+    text-decoration: none;
+    color: var(--blanc);
+    transition: color 0.25s ease;
+}
+
+.navigation-footer a {
+    text-decoration: none;
+    color: var(--blanc);
+}
+
+.navigation-footer a:hover {
+    color: var(--orange);
+}
+
+.barre-separation-footer {
+    width: 100%;
+    height: 1px;
+    background-color: var(--blanc);
+    margin-bottom: 1.25em;
+}
+
+.fin-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.reseaux-sociaux-footer img {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.625rem;
+}
