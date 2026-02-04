@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test API Brut</title>
+</head>
+<body>
+
+    <h1>Testeur API Muse</h1>
+
+    <div>
+        <label>Endpoint : </label>
+        <select id="endpointSelect" onchange="updateUrl()"></select>
+    </div>
+    <br>
+    <div>
+        <label>URL : </label>
+        <input type="text" id="urlInput" value="http://127.0.0.1:8000/" size="100">
+        <button onclick="sendRequest()">Envoyer la requête</button>
+    </div>
+
+    <hr>
+
+    <div>
+        <strong>Status :</strong> <span id="status">En attente</span>
+    </div>
+    <pre id="result">Les résultats s'afficheront ici...</pre>
+
+    <script>
+        const BASE_URL = "http://127.0.0.1:8000";
+
+        // Liste des endpoints
+        const endpoints = [
+            { label: "Accueil", path: "/" },
+            { label: "Toutes les tracks", path: "/tracks" },
+            { label: "Track par ID (ex: 1)", path: "/tracks/1" },
+            { label: "Recommandations Track (ex: 1)", path: "/tracks/1/recommendations?limit=5" },
+            { label: "Tous les artistes", path: "/artists?limit=50&offset=0" },
+            { label: "Recherche artiste (ex: Muse)", path: "/artists?name=Muse" },
+            { label: "Tracks d'un artiste (ex: 1)", path: "/artists/1/tracks" },
+            { label: "Tous les albums", path: "/albums?limit=50" },
+            { label: "Tracks d'un album (ex: 1)", path: "/albums/1/tracks" },
+            { label: "Tous les genres", path: "/genres" }
+        ];
+
+        // Initialisation de la liste déroulante
+        const select = document.getElementById('endpointSelect');
+        const input = document.getElementById('urlInput');
+        const statusSpan = document.getElementById('status');
+        const resultPre = document.getElementById('result');
+
+        // Remplir le select
+        endpoints.forEach(ep => {
+            const option = document.createElement('option');
+            option.value = ep.path;
+            option.text = ep.label;
+            select.appendChild(option);
+        });
+
+        // Mettre à jour l'input quand on change le select
+        function updateUrl() {
+            input.value = BASE_URL + select.value;
+        }
+
+        // Fonction d'envoi
+        async function sendRequest() {
+            const url = input.value;
+            statusSpan.textContent = "Chargement...";
+            resultPre.textContent = "";
+
+            try {
+                const response = await fetch(url);
+                statusSpan.textContent = response.status + " " + response.statusText;
+                
+                const data = await response.json();
+                // Affichage formaté (indentation de 4 espaces)
+                resultPre.textContent = JSON.stringify(data, null, 4);
+            } catch (error) {
+                statusSpan.textContent = "Erreur";
+                resultPre.textContent = "Impossible de contacter l'API : " + error;
+            }
+        }
+    </script>
+</body>
+</html>
