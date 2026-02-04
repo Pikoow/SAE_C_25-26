@@ -6,7 +6,7 @@ function ajouterElementSelectionne(nom, containerId) {
                              .some(span => span.textContent === nom);
     if (dejaPresent) return;
 
-    // Apparation des élements
+    // Apparition des élements
     const badge = document.createElement("div");
     badge.className = "badge-item";
     badge.title = "Cliquez pour supprimer";
