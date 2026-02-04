@@ -35,7 +35,11 @@ async function chargerGenres() {
             const listeGenres = genres.map(g => g.genre_title || "Sans titre");
 
             $(inputElement).autocomplete({
-                source: listeGenres,
+                source: function(request, response) {
+                    const term = request.term.toLowerCase();
+                    const matches = listeGenres.filter(item => item.toLowerCase().includes(term)).slice(0, 50);
+                    response(matches);
+                },
                 minLength: 1,
                 select: function(event, ui) {
                     ajouterElementSelectionne(ui.item.value, "selected-genres-list");
@@ -65,7 +69,11 @@ async function chargerArtists() {
             const listeArtistes = artists.map(a => a.artist_name || "Sans titre");
 
             $(inputElement).autocomplete({
-                source: listeArtistes,
+                source: function(request, response) {
+                    const term = request.term.toLowerCase();
+                    const matches = listeArtistes.filter(item => item.toLowerCase().includes(term)).slice(0, 50);
+                    response(matches);
+                },
                 minLength: 1,
                 select: function(event, ui) {
                     ajouterElementSelectionne(ui.item.value, "selected-artists-list");
@@ -94,7 +102,11 @@ async function chargerMusiques() {
             const listeMusiques = tracks.map(t => t.track_title || "Sans titre");
 
             $(inputElement).autocomplete({
-                source: listeMusiques,
+                source: function(request, response) {
+                    const term = request.term.toLowerCase();
+                    const matches = listeMusiques.filter(item => item.toLowerCase().includes(term)).slice(0, 50);
+                    response(matches);
+                },
                 minLength: 1,
                 select: function(event, ui) {
                     ajouterElementSelectionne(ui.item.value, "selected-tracks-list");

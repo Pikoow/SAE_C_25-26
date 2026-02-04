@@ -65,8 +65,7 @@ def get_all_tracks():
                 art.artist_name
             FROM sae.tracks t
             LEFT JOIN sae.album a ON t.album_id = a.album_id
-            LEFT JOIN sae.artist art ON t.artist_id = art.artist_id 
-            LIMIT 50;
+            LEFT JOIN sae.artist art ON t.artist_id = art.artist_id;
         """
         cur.execute(query)
         tracks = cur.fetchall()
