@@ -21,3 +21,5 @@ postgres.session.sql
 *.csv
 .vscode/
 .env
+__pycache__/
+*.pyc
