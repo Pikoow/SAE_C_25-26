@@ -32,6 +32,10 @@ header {
     padding: 1.5em 3em;
 }
 
+header > a {
+    text-decoration: none;
+}
+
 header h2 {
     font-family: 'Rammetto One', sans-serif;
     font-size: 1.875rem;
@@ -56,20 +60,30 @@ header nav > a {
     margin-left: 0;
 }
 
+header nav > a:hover {
+    color: var(--orange-fonce);
+}
+
 header button {
     background-color: var(--orange);
+    font-family: 'Outfit', sans-serif;
     font-size: 1.25rem;
     font-weight: bold;
     border-radius: 0.313em;
     border: none;
-    width: 5.25em;
-    height: 1.75em;
+    width: 5.5em;
+    height: 1.9em;
     flex: 0 0 auto;
+}
+
+header button:hover {
+    background-color: var(--orange-fonce);
 }
 
 header button > a {
     color: var(--blanc);
     text-decoration: none;
+    transition: ease 0.25s;
 }
 
 /* FOOTER
@@ -128,7 +142,7 @@ footer {
 }
 
 .navigation-footer a:hover {
-    color: var(--orange);
+    color: var(--orange-fonce);
 }
 
 .barre-separation-footer {
