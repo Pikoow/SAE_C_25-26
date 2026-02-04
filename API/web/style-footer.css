@@ -28,12 +28,24 @@ header {
     color: var(--noir);
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 1.5em 3em;
 }
 
-header img {
-    width: 6.25em;
-    height: 6.25em;
-    margin-left: 1.875em;
+header h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.875rem;
+    color: var(--noir);
+    margin-left: 0;
+    flex: 0 0 auto;
+}
+
+header nav {
+    margin-left: 0;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 2em;
 }
 
 header nav > a {
@@ -41,7 +53,7 @@ header nav > a {
     font-weight: bold;
     font-size: 1.25rem;
     text-decoration: none;
-    margin-left: 1.25em;
+    margin-left: 0;
 }
 
 header button {
@@ -49,6 +61,10 @@ header button {
     font-size: 1.25rem;
     font-weight: bold;
     border-radius: 0.313em;
+    border: none;
+    width: 5.25em;
+    height: 1.75em;
+    flex: 0 0 auto;
 }
 
 header button > a {
