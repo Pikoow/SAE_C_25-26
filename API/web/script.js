@@ -37,7 +37,7 @@ async function chargerGenres() {
             $(inputElement).autocomplete({
                 source: function(request, response) {
                     const term = request.term.toLowerCase();
-                    const matches = listeGenres.filter(item => item.toLowerCase().includes(term)).slice(0, 50);
+                    const matches = listeGenres.filter(item => item.toLowerCase().includes(term)).slice(0,15);
                     response(matches);
                 },
                 minLength: 1,
@@ -71,7 +71,7 @@ async function chargerArtists() {
             $(inputElement).autocomplete({
                 source: function(request, response) {
                     const term = request.term.toLowerCase();
-                    const matches = listeArtistes.filter(item => item.toLowerCase().includes(term)).slice(0, 50);
+                    const matches = listeArtistes.filter(item => item.toLowerCase().includes(term)).slice(0,15);
                     response(matches);
                 },
                 minLength: 1,
@@ -104,7 +104,7 @@ async function chargerMusiques() {
             $(inputElement).autocomplete({
                 source: function(request, response) {
                     const term = request.term.toLowerCase();
-                    const matches = listeMusiques.filter(item => item.toLowerCase().includes(term)).slice(0, 50);
+                    const matches = listeMusiques.filter(item => item.toLowerCase().includes(term)).slice(0,15);
                     response(matches);
                 },
                 minLength: 1,
