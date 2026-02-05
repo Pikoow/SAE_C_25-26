@@ -1,0 +1,48 @@
+.carrousel {
+    left: 10rem;
+    height: 10rem;
+    width: 15rem;
+    position: relative
+}
+
+.carrousel-slide {
+    position: absolute;
+    height: 100%;
+    width: 100%; 
+    opacity: 0;
+}
+
+.carrousel-slide.active {
+    opacity: 1;
+}
+
+.carrousel-slide img {
+    display: block;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+.carrousel button {
+    position:absolute;
+    height: 3rem;
+    width: 3rem;
+    font-size: 10rem;
+    z-index: 2;
+    cursor:pointer;
+    color: red;
+    transform: translateY(-50%);
+    top: 50%;
+}
+
+.carrousel li {
+    list-style: none;
+}
+
+#prev {
+    left: 5px;
+}
+
+#next {
+    right:5px;
+}

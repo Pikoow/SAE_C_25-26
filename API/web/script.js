@@ -148,3 +148,12 @@ $(document).ready(function() {
     chargerArtists();
     chargerMusiques();
 });
+
+
+/****************************************
+ *********** C A R R O U S E L **********
+ ****************************************/
+
+
+const buttons = document.querySelectorAll(".carrousel-button");
+console.log(buttons)
