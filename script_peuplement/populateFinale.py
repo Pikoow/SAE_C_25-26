@@ -14,22 +14,23 @@ import pandas as pd
 # ===================== CONFIG GLOBAL ========================
 # ============================================================
 
-# CSV paths (kept exactly as you provided)
-ALBUM_CSV_INPUT = "./raw_albums_cleaned.csv"
-ARTIST_CSV_INPUT = "./raw_artists_cleaned.csv"
-TRACK_CSV_INPUT = "./aatracks_clean_test.csv"
-GENRE_CSV_INPUT = "genre_clean.csv"
-ECHONEST_CSV_INPUT = "./raw_echonest.csv"
-RAW_TRACKS_CSV = "raw_tracks.csv"
-USER_CSV_INPUT = "./questionnaire.csv"
+# CSV paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+ALBUM_CSV_INPUT   = os.path.join(BASE_DIR, "raw_albums_cleaned.csv")
+ARTIST_CSV_INPUT  = os.path.join(BASE_DIR, "raw_artists_cleaned.csv")
+TRACK_CSV_INPUT   = os.path.join(BASE_DIR, "aatracks_clean_test.csv")
+GENRE_CSV_INPUT   = os.path.join(BASE_DIR, "genre_clean.csv")
+ECHONEST_CSV_INPUT = os.path.join(BASE_DIR, "raw_echonest.csv")
+RAW_TRACKS_CSV    = os.path.join(BASE_DIR, "raw_tracks.csv")
+USER_CSV_INPUT    = os.path.join(BASE_DIR, "questionnaire.csv")
 
 # PostgreSQL connection config
 HOST = "localhost"
-DB = "postgres"
-USER = "postgres"
-PASSWORD = "6969"
-PORT = 5432
+DB = os.getenv("POSTGRES_DBNAME")
+USER = os.getenv("POSTGRES_USER")
+PASSWORD = os.getenv("POSTGRES_PASSWORD")
+PORT = int(os.getenv("POSTGRES_PORT", 5432))
 
 # ============================================================
 # ===============   FONCTION UTILITAIRE   ====================

@@ -651,12 +651,6 @@ CREATE OR REPLACE VIEW user_features AS
 /*                               TRIGGERS                                */
 /* ##################################################################### */
 
-
-CREATE TRIGGER trg_album_track_count
-AFTER INSERT OR DELETE ON sae.artist_album_track
-FOR EACH ROW
-EXECUTE FUNCTION sae.update_album_track_count();
-
 CREATE OR REPLACE FUNCTION sae.update_album_track_count()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -673,7 +667,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+CREATE TRIGGER trg_album_track_count
+AFTER INSERT OR DELETE ON sae.artist_album_track
+FOR EACH ROW
+EXECUTE FUNCTION sae.update_album_track_count();
 
 CREATE TRIGGER artist_album_track_insert
 AFTER INSERT ON artist_album_track

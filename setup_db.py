@@ -49,6 +49,7 @@ def main():
     run_python_script("script_peuplement/populateFinale.py")
     run_python_script("script_peuplement/populateFinal2.py")
     run_python_script("script_peuplement/populateFinalDLC.py")
+    run_python_script("script_peuplement/populateternairedeconla.py")
     # run_python_script("script_peuplement/populateKeynouns.py")
 
     print("=== BASE DE DONNÉES OPÉRATIONNELLE ! ===")

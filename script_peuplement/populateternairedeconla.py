@@ -13,15 +13,16 @@ import pandas as pd
 # ============================================================
 # ========= CONFIG GLOBAL (import csv + bdd login) ===========
 # ============================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-track_input = "./aatracks_clean_test.csv"
+track_input   = os.path.join(BASE_DIR, "aatracks_clean_test.csv")
 
-# PostgreSQL connection config -- to edit
+# PostgreSQL connection config
 HOST = "localhost"
-DB = "postgres"
-USER = "postgres"
-PASSWORD = "6969"
-PORT = 5432
+DB = os.getenv("POSTGRES_DBNAME")
+USER = os.getenv("POSTGRES_USER")
+PASSWORD = os.getenv("POSTGRES_PASSWORD")
+PORT = int(os.getenv("POSTGRES_PORT", 5432))
 
 # ============================================================
 # ===================== IMPORT ===============================
