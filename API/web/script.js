@@ -1,14 +1,16 @@
-function ajouterElementSelectionne(nom, containerId) {
+function ajouterElementSelectionne(nom, containerId, idElement) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const dejaPresent = Array.from(container.querySelectorAll('.badge-item span'))
-                             .some(span => span.textContent === nom);
-    if (dejaPresent) return;
+    if (document.getElementById(`item-${idElement}`)) {
+        console.warn("Cet élément est déjà sélectionné");
+        return;
+    }
 
-    // Apparition des élements
     const badge = document.createElement("div");
     badge.className = "badge-item";
+    
+    badge.id = `${idElement}`; 
     badge.title = "Cliquez pour supprimer";
     badge.innerHTML = `<span>${nom}</span>`;
 
@@ -99,17 +101,21 @@ async function chargerMusiques() {
         const tracks = data.results || data;
         
         if (Array.isArray(tracks)) {
-            const listeMusiques = tracks.map(t => t.track_title || "Sans titre");
+            const listeMusiques = tracks.map(t => ({
+                label : t.track_title || "Sans titre",
+                value : t.track_title || "Sans titre",
+                id : t.track_id
+            }));
 
             $(inputElement).autocomplete({
                 source: function(request, response) {
                     const term = request.term.toLowerCase();
-                    const matches = listeMusiques.filter(item => item.toLowerCase().includes(term)).slice(0,15);
+                    const matches = listeMusiques.filter(item => item.label.toLowerCase().includes(term)).slice(0, 15);
                     response(matches);
                 },
                 minLength: 1,
                 select: function(event, ui) {
-                    ajouterElementSelectionne(ui.item.value, "selected-tracks-list");
+                    ajouterElementSelectionne(ui.item.value, "selected-tracks-list", ui.item.id);
                     $(this).val("");
                     return false;
                 }
@@ -119,6 +125,20 @@ async function chargerMusiques() {
     } catch (error) {
         console.error("Erreur Musiques :", error);
     }
+}
+/*
+async function Sauvegarde(params) {
+    
+    const btnSave = document.querySelector("#btn-save");
+
+}
+*/
+/* Bouton Reset: Vide les listes */
+function Reset() {
+    $('#selected-genres-list').empty();
+    $('#selected-artists-list').empty();
+    $('#selected-tracks-list').empty();
+    console.log("Listes réinitialisées !");
 }
 
 /* Activation des fonctions */
