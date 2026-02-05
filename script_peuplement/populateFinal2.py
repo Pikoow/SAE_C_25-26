@@ -1,23 +1,17 @@
 import pandas as pd
 import psycopg2
 import re
-import os
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
 
 # ============================================================
 # CONFIG
 # ============================================================
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_PATH = os.path.join(SCRIPT_DIR, "clean_echonest.csv")
+CSV_PATH = "./clean_echonest.csv"
 PG_CONFIG = {
     "host": "localhost",
-    "dbname": os.getenv("POSTGRES_DBNAME"),
-    "user": os.getenv("POSTGRES_USER"),
-    "password": os.getenv("POSTGRES_PASSWORD"),
-    "port": int(os.getenv("POSTGRES_PORT", 5432))
+    "dbname": "postgres",
+    "user": "postgres",
+    "password": "6969",
+    "port": 5432
 }
 
 # ============================================================
@@ -49,7 +43,7 @@ def populate_artist_social_and_rank(df):
         "ranks_artist_hottnesss_rank": "echonest_ranks_artist_hotttnesss_rank"
     }
 
-    # Vérifications
+    # Verifications
     for col in list(social_cols.values()) + list(rank_cols.values()):
         if col.lower() not in df.columns:
             raise KeyError(f"Colonne manquante dans CSV : {col}")
@@ -57,7 +51,7 @@ def populate_artist_social_and_rank(df):
     conn = psycopg2.connect(**PG_CONFIG)
     cur = conn.cursor()
 
-    cur.execute("SELECT track_id, artist_id FROM sae.tracks;")
+    cur.execute("SELECT track_id, track_artist_id FROM sae.tracks;")
     track_to_artist = {t: a for t, a in cur.fetchall()}
 
     insert_social = """
@@ -86,6 +80,10 @@ def populate_artist_social_and_rank(df):
             ranks_artist_hottnesss_rank = EXCLUDED.ranks_artist_hottnesss_rank;
     """
 
+    # Recuperer tous les artist_id valides depuis la table artist
+    cur.execute("SELECT artist_id FROM sae.artist;")
+    valid_artist_ids = {row[0] for row in cur.fetchall()}
+    
     inserted = skipped = 0
 
     for _, row in df.iterrows():
@@ -95,6 +93,11 @@ def populate_artist_social_and_rank(df):
             continue
 
         artist_id = track_to_artist[tid]
+
+        # filtrage FK
+        if artist_id not in valid_artist_ids:
+            skipped += 1
+            continue
 
         cur.execute(insert_social, (
             artist_id,
@@ -116,7 +119,7 @@ def populate_artist_social_and_rank(df):
     cur.close()
     conn.close()
 
-    print(f"FIN : {inserted} insérés, {skipped} ignorés.")
+    print(f"FIN : {inserted} inseres, {skipped} ignores.")
 
 
 # ============================================================
@@ -172,7 +175,7 @@ def populate_song_rank(df):
     cur.close()
     conn.close()
 
-    print(f"FIN : {inserted} insérés, {skipped} ignorés.")
+    print(f"FIN : {inserted} inseres, {skipped} ignores.")
 
 
 # ============================================================
@@ -233,7 +236,7 @@ def populate_temporal_features(df):
     cur.close()
     conn.close()
 
-    print(f"FIN : {inserted} insérés, {skipped} ignorés.")
+    print(f"FIN : {inserted} inseres, {skipped} ignores.")
 
 
 # ============================================================
@@ -296,7 +299,7 @@ def populate_song_social_score(df):
     cur.close()
     conn.close()
 
-    print(f"FIN : {inserted} insérés, {skipped} ignorés.")
+    print(f"FIN : {inserted} inseres, {skipped} ignores.")
 
 
 # ============================================================
@@ -310,7 +313,7 @@ def main():
     populate_temporal_features(df)
     populate_song_social_score(df)
 
-    print("\n=== IMPORT COMPLET TERMINÉ ===")
+    print("\n=== IMPORT COMPLET TERMINe ===")
 
 
 if __name__ == "__main__":

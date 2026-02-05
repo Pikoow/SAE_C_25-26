@@ -3,39 +3,33 @@ import json
 import tempfile
 import os
 import re
+import io
 import math
 from datetime import datetime, date
 
 import psycopg2
 import pandas as pd
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
 
 # ============================================================
 # ===================== CONFIG GLOBAL ========================
 # ============================================================
 
-# Get the directory where this script is located
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# CSV paths
-ALBUM_CSV_INPUT = os.path.join(SCRIPT_DIR, "raw_albums_cleaned.csv")
-ARTIST_CSV_INPUT = os.path.join(SCRIPT_DIR, "raw_artists_cleaned.csv")
-TRACK_CSV_INPUT = os.path.join(SCRIPT_DIR, "tracks_clean.csv")
-GENRE_CSV_INPUT = os.path.join(SCRIPT_DIR, "genre_clean.csv")
-ECHONEST_CSV_INPUT = os.path.join(SCRIPT_DIR, "raw_echonest.csv")
-RAW_TRACKS_CSV = os.path.join(SCRIPT_DIR, "raw_tracks.csv")
-USER_CSV_INPUT = os.path.join(SCRIPT_DIR, "questionnaire.csv")
+# CSV paths (kept exactly as you provided)
+ALBUM_CSV_INPUT = "./raw_albums_cleaned.csv"
+ARTIST_CSV_INPUT = "./raw_artists_cleaned.csv"
+TRACK_CSV_INPUT = "./aatracks_clean_test.csv"
+GENRE_CSV_INPUT = "genre_clean.csv"
+ECHONEST_CSV_INPUT = "./raw_echonest.csv"
+RAW_TRACKS_CSV = "raw_tracks.csv"
+USER_CSV_INPUT = "./questionnaire.csv"
 
 
 # PostgreSQL connection config
 HOST = "localhost"
-DB = os.getenv("POSTGRES_DBNAME")
-USER = os.getenv("POSTGRES_USER")
-PASSWORD = os.getenv("POSTGRES_PASSWORD")
-PORT = int(os.getenv("POSTGRES_PORT", 5432))
+DB = "postgres"
+USER = "postgres"
+PASSWORD = "6969"
+PORT = 5432
 
 # ============================================================
 # ===============   FONCTION UTILITAIRE   ====================
@@ -78,7 +72,7 @@ def parse_age_from_range(s):
     return None
 
 def parse_duration_to_minutes(s):
-    """Parse des durées de type '2h', '1h30', '90 min', '45 minutes' en minutes entières."""
+    """Parse des durees de type '2h', '1h30', '90 min', '45 minutes' en minutes entières."""
     if not s:
         return None
     s = str(s).lower().strip()
@@ -91,18 +85,6 @@ def parse_duration_to_minutes(s):
     if m:
         return int(m.group(1))
     return None
-
-def parse_average_duration_pref(s):
-    """Tente d'extraire une valeur moyenne en minutes depuis préférences ('3-4 min' -> 3 or 3.5)."""
-    if not s:
-        return None
-    s = str(s).lower()
-    m = re.search(r'(\d{1,3})(?:\s*[-–to]\s*(\d{1,3}))?', s)
-    if m:
-        a = int(m.group(1))
-        b = int(m.group(2)) if m.group(2) else None
-        return int(a) if b is None else int((a + b) / 2)
-    return parse_duration_to_minutes(s)
 
 def parse_platforms(s):
     """Renvoie une liste à partir d'une chaîne 'Spotify, YouTube / Apple Music'."""
@@ -126,9 +108,9 @@ def normalize_job(s):
         return "special"
     if s == "autre":
         return "other"
-    if s == "secteur tertiaire (commerce, transport, santé, éducation, administration, banque, tourisme, culture, loisirs)":
+    if s == "secteur tertiaire (commerce, transport, sante, education, administration, banque, tourisme, culture, loisirs)":
         return "Tertiaire"
-    if s == "secteur secondaire (industrie, construction, agroalimentaire, artisanat de production, énergie...)":
+    if s == "secteur secondaire (industrie, construction, agroalimentaire, artisanat de production, energie...)":
         return "Secondaire"
     if s == "secteur primaire (agriculture, pêche, sylviculture, extraction minière, chasse...)":
         return "Primaire"
@@ -138,8 +120,8 @@ def normalize_favorite_hour(s):
     if not s:
         return None
     s = str(s).lower()
-    if "toute" in s and "journée" in s:
-        return json.dumps(["Toute la journée"], ensure_ascii=False)
+    if "toute" in s and "journee" in s:
+        return json.dumps(["Toute la journee"], ensure_ascii=False)
     parts = re.split(r'[;,/]| et ', s)
     results = set()
     for p in parts:
@@ -174,7 +156,7 @@ def normalize_favorite_language(s):
             results.add("FR")
         elif "anglais" in p_clean:
             results.add("EN")
-        elif "géorgienne" in p_clean:
+        elif "georgienne" in p_clean:
             results.add("GE")
         elif "malgash" in p_clean:
             results.add("MG")
@@ -231,7 +213,7 @@ ALBUM_COLUMN_MAP = {
 }
 
 def import_albums():
-    print("[ALBUMS] Début import albums")
+    print("[ALBUMS] Debut import albums")
     temp_fd, temp_path = tempfile.mkstemp(suffix=".csv")
     os.close(temp_fd)
 
@@ -258,7 +240,7 @@ def import_albums():
                 new_row.append(value)
             writer.writerow(new_row)
 
-    print("[ALBUMS] CSV temp créé :", temp_path)
+    print("[ALBUMS] CSV temp cree :", temp_path)
 
     conn = psycopg2.connect(host=HOST, database=DB, user=USER, password=PASSWORD, port=PORT)
     cur = conn.cursor()
@@ -277,7 +259,7 @@ def import_albums():
     conn.close()
     
     os.remove(temp_path)
-    print("[ALBUMS] Import albums terminé !")
+    print("[ALBUMS] Import albums termine !")
 
 # ============================================================
 # =====================   IMPORT ARTIST   ====================
@@ -321,7 +303,7 @@ ARTIST_COLUMN_MAP = {
 }
 
 def import_artists():
-    print("[ARTISTS] Début import artists")
+    print("[ARTISTS] Debut import artists")
     temp_fd, temp_path = tempfile.mkstemp(suffix=".csv")
     os.close(temp_fd)
 
@@ -351,7 +333,7 @@ def import_artists():
                 new_row.append(value)
             writer.writerow(new_row)
 
-    print("[ARTISTS] CSV temp créé :", temp_path)
+    print("[ARTISTS] CSV temp cree :", temp_path)
 
     conn = psycopg2.connect(host=HOST, database=DB, user=USER, password=PASSWORD, port=PORT)
     cur = conn.cursor()
@@ -370,7 +352,7 @@ def import_artists():
     conn.close()
 
     os.remove(temp_path)
-    print("[ARTISTS] Import artists terminé !")
+    print("[ARTISTS] Import artists termine !")
 
 # ============================================================
 # =====================   IMPORT TRACKS  =====================
@@ -388,7 +370,7 @@ def parse_date_track(value):
             return None
 
 def import_tracks():
-    print("[TRACKS] Début import tracks")
+    print("[TRACKS] Debut import tracks")
     df = pd.read_csv(TRACK_CSV_INPUT)
 
     df_sql = pd.DataFrame({
@@ -405,7 +387,7 @@ def import_tracks():
         "track_composer": df["track_composer"],
         "track_lyricist": df["track_lyricist"],
         "track_tags": df["track_tags"],
-        "track_artist_id": None,
+        "track_artist_id": df["artist_id"],
         "track_rank_id": None,
         "track_feature_id": None,
         "track_file": None,
@@ -438,7 +420,7 @@ def import_tracks():
     cur.executemany(sql, data)
     conn.commit()
 
-    print("[TRACKS] Import tracks terminé :", len(data), "lignes insérées.")
+    print("[TRACKS] Import tracks termine :", len(data), "lignes inserees.")
 
     cur.close()
     conn.close()
@@ -448,7 +430,7 @@ def import_tracks():
 # ============================================================
 
 def import_genre():
-    print("[GENRE] Début import genre")
+    print("[GENRE] Debut import genre")
     CSV_PATH = GENRE_CSV_INPUT
 
     PG_CONFIG = {
@@ -515,8 +497,8 @@ def import_genre():
     conn.close()
 
     print("===================================")
-    print("[GENRE] IMPORT GENRE TERMINÉ")
-    print("Lignes insérées :", count)
+    print("[GENRE] IMPORT GENRE TERMINe")
+    print("Lignes inserees :", count)
     print("===================================")
 
 # ============================================================
@@ -524,7 +506,7 @@ def import_genre():
 # ============================================================
 
 def import_echonest_audio():
-    print("[ECHONEST] Début import Echonest audio")
+    print("[ECHONEST] Debut import Echonest audio")
     CSV_PATH = ECHONEST_CSV_INPUT
     PG_CONFIG = {
         "host": HOST,
@@ -547,7 +529,7 @@ def import_echonest_audio():
     if track_id_row is None:
         raise ValueError("[ECHONEST] Impossible de trouver la ligne contenant 'track_id'.")
 
-    print(f"[ECHONEST] Ligne track_id trouvée : {track_id_row}")
+    print(f"[ECHONEST] Ligne track_id trouvee : {track_id_row}")
     data_start = track_id_row + 1
 
     header_rows = raw.iloc[:track_id_row+1].fillna("").astype(str)
@@ -602,7 +584,7 @@ def import_echonest_audio():
     df_audio["track_id"] = pd.to_numeric(df_audio["track_id"], errors="coerce").astype("Int64")
     df_audio = df_audio.where(pd.notnull(df_audio), None)
 
-    print("[ECHONEST] Préparation du DataFrame audio terminée.")
+    print("[ECHONEST] Preparation du DataFrame audio terminee.")
     print(df_audio.head())
 
     print("[ECHONEST] Connexion à PostgreSQL…")
@@ -612,7 +594,7 @@ def import_echonest_audio():
     # Charger les track_id existants
     cur.execute("SELECT track_id FROM sae.tracks;")
     existing_ids = {row[0] for row in cur.fetchall()}
-    print(f"[ECHONEST] {len(existing_ids)} track_id trouvés dans tracks.")
+    print(f"[ECHONEST] {len(existing_ids)} track_id trouves dans tracks.")
 
     insert_sql = """
     INSERT INTO sae.audio (
@@ -658,9 +640,9 @@ def import_echonest_audio():
     conn.close()
 
     print("=======================================")
-    print("[ECHONEST] IMPORT TERMINÉ")
-    print(f"[ECHONEST] Lignes insérées : {rows_inserted}")
-    print(f"[ECHONEST] Lignes ignorées (track_id non présent dans tracks) : {rows_skipped}")
+    print("[ECHONEST] IMPORT TERMINe")
+    print(f"[ECHONEST] Lignes inserees : {rows_inserted}")
+    print(f"[ECHONEST] Lignes ignorees (track_id non present dans tracks) : {rows_skipped}")
     print("=======================================")
 
 # ============================================================
@@ -668,7 +650,7 @@ def import_echonest_audio():
 # ============================================================
 
 def import_license():
-    print("[LICENSE] Début import license")
+    print("[LICENSE] Debut import license")
     conn = psycopg2.connect(
         dbname=DB,
         user=USER,
@@ -699,7 +681,7 @@ def import_license():
 
             track_id = clean_int(row["track_id"])
 
-            # Vérifier que le track existe
+            # Verifier que le track existe
             cur.execute("SELECT 1 FROM sae.tracks WHERE track_id = %s;", (track_id,))
             if not cur.fetchone():
                 continue
@@ -728,14 +710,14 @@ def import_license():
     conn.commit()
     cur.close()
     conn.close()
-    print(f"[LICENSE] Import terminé. Lignes insérées: {inserted}")
+    print(f"[LICENSE] Import termine. Lignes inserees: {inserted}")
 
 # ============================================================
 # =====================   IMPORT PUBLISHER  ====================
 # ============================================================
 
 def import_publisher():
-    print("[PUBLISHER] Début import publisher")
+    print("[PUBLISHER] Debut import publisher")
     conn = psycopg2.connect(
         dbname=DB,
         user=USER,
@@ -794,13 +776,55 @@ def import_publisher():
     conn.close()
 
     print("===================================")
-    print("[PUBLISHER] Terminé — valeurs NULL ignorées.")
-    print("Lignes insérées :", count)
+    print("[PUBLISHER] Termine — valeurs NULL ignorees.")
+    print("Lignes inserees :", count)
     print("===================================")
 
 # ============================================================
 # =====================   IMPORT USERS (QUESTIONNAIRE) =======
 # ============================================================
+
+def parse_average_duration_pref(value: str):
+    if not value:
+        return None
+
+    text = value.strip().lower()
+
+    # Cas neutre
+    if "ne se prononce pas" in text:
+        return "Ne se prononce pas"
+
+    # Convert helper
+    import re
+
+    def to_minutes(s):
+        s = s.strip()
+        m = re.match(r"(\d+)\s*minute(?:s)?(?:\s*(\d+))?", s)
+        if not m:
+            return None
+        minutes = int(m.group(1))
+        if m.group(2):
+            minutes += int(m.group(2)) / 60
+        return minutes
+
+    # Moins de 1 min 30
+    if "moins de 1 minute 30" in text:
+        return 1.5 / 2  # moyenne → 0.75
+
+    # Plus de 5 min
+    if "plus de 5 minutes" in text:
+        return 5  # minimum garanti, pas de borne superieure
+
+    # Intervalles normaux "De X à Y"
+    if text.startswith("de "):
+        parts = text.replace("de ", "").split(" à ")
+        if len(parts) == 2:
+            a = to_minutes(parts[0])
+            b = to_minutes(parts[1])
+            return (a + b) / 2 if a is not None and b is not None else None
+
+    return None
+
 
 # TARGET_COLUMNS used for COPY
 USERS_TARGET_COLUMNS = [
@@ -834,28 +858,28 @@ def transform_user_row(csv_row):
     age_src = csv_row.get("🎉 Dans quelle tranche d’âge vous situez-vous ?", "") or csv_row.get("🎉 Dans quelle tranche d’âge vous situez-vous ? ", "")
     out["user_age"] = parse_age_from_range(age_src)
     out["user_year_created"] = date.today().isoformat()
-    out["user_location"] = safe_strip(csv_row.get("📍 D'où écoutez-vous ?", ""))
-    out["user_listening_duration"] = parse_duration_to_minutes(csv_row.get("🎧 Combien de temps écoutez-vous de la musique par jour ?", ""))
-    out["user_average_duration"] = parse_average_duration_pref(csv_row.get("🕰️ Quelle durée de musique préférez-vous ?", ""))
+    out["user_location"] = safe_strip(csv_row.get("📍 D'où ecoutez-vous ?", ""))
+    out["user_listening_duration"] = parse_duration_to_minutes(csv_row.get("⌚️ Environ combien de temps par jour consacrez-vous aux plateformes de streaming ? (Si vous avez repondu \"Non\" à la première question vous pouvez passer celle-ci)", ""))
+    out["user_average_duration"] = parse_average_duration_pref(csv_row.get("🕰️ Quelle duree de musique preferez-vous ?", ""))
     out["user_status"] = safe_strip(csv_row.get("💼 Quelle est votre situation ?", ""))
-    out["user_favorite_genre"] = safe_strip(csv_row.get("🎶 Quels genres de musique écoutez-vous ?", ""))
-    out["user_favorite_language"] = normalize_favorite_language(csv_row.get("🗣️🎵 Avez-vous des préférences pour la langue de la musique ?", ""))
+    out["user_favorite_genre"] = safe_strip(csv_row.get("🕺🔥 Quel genre de musique ecoutez-vous ?", ""))
+    out["user_favorite_language"] = normalize_favorite_language(csv_row.get("🗣️🎵 Avez-vous des preferences pour la langue de la musique ?", ""))
     
-    platforms_raw = csv_row.get("💬 Si oui, lesquelles utilisez-vous ? (vous pouvez en sélectionner plusieurs)", "")
+    platforms_raw = csv_row.get("💬 Si oui, lesquelles utilisez-vous ? (vous pouvez en selectionner plusieurs)", "") or csv_row.get("💻 Parmi ces plateformes de streaming, laquelle / lesquelles utilisez-vous ? (Si vous avez repondu \"Non\" à la première question vous pouvez passer celle-ci)","")
     platforms_list = parse_platforms(platforms_raw)
     uses_streaming = (csv_row.get("👉 Utilisez-vous des plateformes de streaming ?", "") or "").strip().lower()
     if uses_streaming and uses_streaming in ("non", "non " , "no", "non merci"):
         platforms_list = []
     out["user_favorite_platforms"] = json.dumps(platforms_list, ensure_ascii=False) if platforms_list else None
 
-    out["user_favorite_hour"] = normalize_favorite_hour(csv_row.get("🕙 Sur quels créneaux horaires écoutez-vous de la musique ?", ""))
+    out["user_favorite_hour"] = normalize_favorite_hour(csv_row.get("🕙 Sur quels creneaux horaires ecoutez-vous de la musique ?", ""))
     out["user_gender"] = safe_strip(csv_row.get("♀️♂️⚧️ À quel genre vous identifiez-vous ?", ""))
     out["user_job"] = normalize_job(csv_row.get("🔍 Dans quelle domaine travaillez-vous ?", ""))
 
     tags_parts = []
-    t1 = csv_row.get("🔂 Avez-vous tendance à toujours écouter les mêmes artistes/playlists ou à en découvrir de nouveaux ?", "")
+    t1 = csv_row.get("🔂 Avez-vous tendance à toujours ecouter les mêmes artistes/playlists ou à en decouvrir de nouveaux ?", "")
     if t1: tags_parts.append(safe_strip(t1))
-    t2 = csv_row.get("🔄 Changez vous régulièrement de style / genre de musique ?", "")
+    t2 = csv_row.get("🔄 Changez vous regulièrement de style / genre de musique ?", "")
     if t2: tags_parts.append(safe_strip(t2))
     out["user_tags"] = ", ".join(tags_parts) if tags_parts else None
 
@@ -873,7 +897,7 @@ def transform_user_row(csv_row):
     return out
 
 def import_users():
-    print("[USERS] Début import users (questionnaire)")
+    print("[USERS] Debut import users (questionnaire)")
     CSV_INPUT = USER_CSV_INPUT
     TARGET_TABLE = "sae.users"
 
@@ -882,7 +906,7 @@ def import_users():
         rows = list(reader)
 
     if not rows:
-        print("[USERS] Aucune ligne trouvée dans le CSV.")
+        print("[USERS] Aucune ligne trouvee dans le CSV.")
         return
 
     temp_fd, temp_path = tempfile.mkstemp(suffix=".csv")
@@ -903,7 +927,7 @@ def import_users():
                     row_for_csv.append(str(val))
             writer.writerow(row_for_csv)
 
-    print("[USERS] CSV temporaire créé :", temp_path, " — lignes :", len(rows))
+    print("[USERS] CSV temporaire cree :", temp_path, " — lignes :", len(rows))
 
     conn = psycopg2.connect(host=HOST, database=DB, user=USER, password=PASSWORD, port=PORT)
     cur = conn.cursor()
@@ -977,7 +1001,7 @@ def main():
         print("[MAIN] Erreur lors de l'import users :", e)
 
     print("\n========================================")
-    print("TOUS LES IMPORTS TERMINÉS")
+    print("TOUS LES IMPORTS TERMINeS")
     print("========================================")
 
 if __name__ == "__main__":
