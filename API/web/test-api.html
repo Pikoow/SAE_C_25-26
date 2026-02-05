@@ -1,31 +1,92 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Test API Brut</title>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Test API Brut</title>
+        <link rel="stylesheet" href="style-footer.css"/>
+    </head>
+    <body>
+        <header>
+            <h2>MuSE</h2> 
+            <!--<img src="../images/logos/muse.png" alt="MuSE">-->
+            <nav>
+                <a href="#accueil">Accueil</a>
+                <a href="#playlists">Playlists</a>
+                <a href="#preferences">Préférences</a>
+                <a href="#documentation">Documentation</a>
+            </nav>
+            <button>
+                <a href="#contact">Contact</a>
+            </button>
+        </header>
+        <main>
+            <h1>Testeur API Muse</h1>
+            <p>Utilisez cette page pour tester les différents endpoints de l'API MuSE.</p>
+            <br>
 
-    <h1>Testeur API Muse</h1>
+            <div>
+                <label>Endpoint : </label>
+                <select id="endpointSelect" onchange="updateUrl()"></select>
+            </div>
+            <br>
+            <div>
+                <label>URL : </label>
+                <input type="text" id="urlInput" value="http://127.0.0.1:8000/" size="100">
+                <br>
+                <button onclick="sendRequest()">Envoyer la requête</button>
+            </div>
 
-    <div>
-        <label>Endpoint : </label>
-        <select id="endpointSelect" onchange="updateUrl()"></select>
-    </div>
-    <br>
-    <div>
-        <label>URL : </label>
-        <input type="text" id="urlInput" value="http://127.0.0.1:8000/" size="100">
-        <button onclick="sendRequest()">Envoyer la requête</button>
-    </div>
+            <hr>
 
-    <hr>
-
-    <div>
-        <strong>Status :</strong> <span id="status">En attente</span>
-    </div>
-    <pre id="result">Les résultats s'afficheront ici...</pre>
-
+            <div>
+                <strong>Status :</strong> <span id="status">En attente</span>
+            </div>
+            <pre id="result">Les résultats s'afficheront ici...</pre>
+        </main>
+        <footer>
+            <div class="titre-footer">
+                <h2>MuSE</h2>
+            </div>
+            <div class="navigation-footer">
+                <div>
+                    <p>Société</p>
+                    <div>
+                        <a href="#">À propos de nous</a>
+                        <a href="#">Offre d'emploi</a>
+                    </div>
+                </div>
+                <div>
+                    <p>Liens utiles</p>
+                    <div>
+                        <a href="#">Nous contacter</a>
+                    </div>
+                </div>
+                <div>
+                    <p>Communauté</p>
+                    <div>
+                        <a href="#">Développeurs</a>
+                    </div>
+                </div>
+                <div>
+                    <p>Légal</p>
+                    <div>
+                        <a href="#">Mentions légales</a>
+                    </div>
+                </div>
+            </div>
+            <div class="barre-separation-footer"></div>
+            <div class="fin-footer">
+                <div class="reseaux-sociaux-footer">
+                    <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"/></a>
+                    <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"/></a>
+                    <a href="#"><img src="../images/icones/github.avif" alt="GitHub"/></a>
+                    <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"/></a>
+                </div>
+                <p>© 2026 MuSE Français</p>
+            </div>
+        </footer>    
+    </body>
+    
     <script>
         const BASE_URL = "http://127.0.0.1:8000";
 
@@ -81,5 +142,124 @@
             }
         }
     </script>
-</body>
+    <style>
+    /* ===== MAIN - harmonisé avec le design MuSE ===== */
+    main {
+        padding: 2rem 3rem;
+        max-width: 1200px;
+        margin: 2rem auto;
+        background: var(--blanc);
+        color: var(--noir);
+        border-radius: 0.75em;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        font-family: 'Outfit', sans-serif;
+    }
+
+    main h1 {
+        font-size: 2rem;
+        color: var(--orange-fonce);
+        margin-bottom: 0.5rem;
+    }
+
+    main p {
+        color: rgb(60, 60, 60);
+        margin-bottom: 1.5rem;
+        font-size: 1rem;
+    }
+
+    /* ===== Formulaire API ===== */
+    main div {
+        margin-bottom: 1rem;
+    }
+
+    main label {
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    #endpointSelect,
+    #urlInput {
+        width: 100%;
+        padding: 0.6em 0.8em;
+        border-radius: 0.4em;
+        border: 1px solid rgb(200, 200, 200);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        background: var(--blanc);
+        color: var(--noir);
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #endpointSelect:focus,
+    #urlInput:focus {
+        outline: none;
+        border-color: var(--orange);
+        box-shadow: 0 0 0 2px rgba(237, 122, 38, 0.2);
+    }
+
+    main button {
+        margin-top: 0.8rem;
+        padding: 0.6em 1.4em;
+        border: none;
+        border-radius: 0.4em;
+        background-color: var(--orange);
+        color: var(--blanc);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    main button:hover {
+        background-color: var(--orange-fonce);
+        transform: translateY(-1px);
+    }
+
+    /* ===== Séparation ===== */
+    main hr {
+        border: none;
+        height: 1px;
+        background: rgb(220, 220, 220);
+        margin: 1.5rem 0;
+    }
+
+    /* ===== Status ===== */
+    #status {
+        font-weight: bold;
+        color: var(--orange-fonce);
+    }
+
+    /* ===== Box Résultats (large + scrollable) ===== */
+    #result {
+        margin-top: 1rem;
+        background: rgb(245, 245, 245);
+        border: 1px solid rgb(220, 220, 220);
+        border-radius: 0.6em;
+        padding: 1rem;
+        max-height: 450px;
+        overflow-y: auto;
+        overflow-x: auto;
+        font-size: 0.9rem;
+        font-family: monospace;
+        color: var(--noir);
+        white-space: pre;
+        width: 100%;
+    }
+
+    /* Scrollbar custom */
+    #result::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    #result::-webkit-scrollbar-thumb {
+        background: var(--orange);
+        border-radius: 10px;
+    }
+
+    #result::-webkit-scrollbar-track {
+        background: rgb(235, 235, 235);
+    }
+</style>
 </html>
