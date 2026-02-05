@@ -114,6 +114,7 @@ CREATE TABLE artist (
 
 /* ========================== TABLE TRACKS  ========================== */
 
+
 CREATE TABLE tracks (
     track_id            INT PRIMARY KEY,
     track_title         VARCHAR(65000),
@@ -133,9 +134,7 @@ CREATE TABLE tracks (
     track_feature_id    INT,
     track_file          VARCHAR(65000),
     track_disk_number   INT,
-    track_bit_rate      INT,
-    artist_id           INT REFERENCES artist(artist_id),
-    album_id            INT REFERENCES album(album_id)
+    track_bit_rate      INT
 );
 
 
@@ -437,7 +436,7 @@ CREATE TABLE playlist (
     playlist_id SERIAL PRIMARY KEY,
     playlist_name VARCHAR(255) NOT NULL,
     playlist_description TEXT,
-    /* list_tracks           ****************************************a voir si table lié pour la liste track**********************/
+    /* list_tracks           ****************************************a voir si table lie pour la liste track**********************/
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -512,11 +511,17 @@ CREATE TABLE publisher (
 
 /* ========================== ternaire LINK TABLES ========================== */
 
+
 CREATE TABLE artist_album_track (
-    artist_id INT REFERENCES artist(artist_id),
-    album_id INT REFERENCES album(album_id),
-    track_id INT REFERENCES tracks(track_id),
-    PRIMARY KEY (artist_id, album_id, track_id)
+    artist_id INT,
+    album_id INT,
+    track_id INT,
+
+    PRIMARY KEY (artist_id, album_id, track_id),
+
+    FOREIGN KEY (track_id) REFERENCES tracks(track_id) ON DELETE CASCADE,
+    FOREIGN KEY (album_id) REFERENCES album(album_id) ON DELETE CASCADE,
+    FOREIGN KEY (artist_id) REFERENCES artist(artist_id) ON DELETE CASCADE
 );
 
 
@@ -646,21 +651,28 @@ CREATE OR REPLACE VIEW user_features AS
 /*                               TRIGGERS                                */
 /* ##################################################################### */
 
-CREATE OR REPLACE FUNCTION update_album_track_count()
+
+CREATE TRIGGER trg_album_track_count
+AFTER INSERT OR DELETE ON sae.artist_album_track
+FOR EACH ROW
+EXECUTE FUNCTION sae.update_album_track_count();
+
+CREATE OR REPLACE FUNCTION sae.update_album_track_count()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        UPDATE album
+        UPDATE sae.album
         SET album_tracks = COALESCE(album_tracks, 0) + 1
         WHERE album_id = NEW.album_id;
     ELSIF TG_OP = 'DELETE' THEN
-        UPDATE album
+        UPDATE sae.album
         SET album_tracks = GREATEST(COALESCE(album_tracks, 0) - 1, 0)
         WHERE album_id = OLD.album_id;
     END IF;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
+
 
 
 CREATE TRIGGER artist_album_track_insert
@@ -735,4 +747,3 @@ FOR EACH ROW EXECUTE FUNCTION set_track_created_date();
 
 CREATE INDEX IF NOT EXISTS idx_album_keynouns
 ON sae.album USING GIN (album_keynouns);
-
