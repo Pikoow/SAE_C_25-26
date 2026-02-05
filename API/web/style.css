@@ -1,59 +1,178 @@
-/* Importation d'une police moderne */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+/* GÉNÉRALITÉS
+***************************/
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Rammetto+One&display=swap');
+
+:root {
+    --noir : rgb(0, 0, 0);
+    --blanc : rgb(255, 255, 255);
+    --orange: rgb(237, 122, 38);
+    --orange-clair: rgb(255, 154, 79);
+    --orange-fonce: rgb(253, 114, 8);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Outfit', sans-serif;
+    color: var(--noir);
+    font-size: 0.875rem;
 }
 
-main{
-    margin : 1em;
-}
 
+/* HEADER
+***************************/
 header {
+    background-color: var(--blanc);
+    color: var(--noir);
     display: flex;
     align-items: center;
-    padding: 10px 40px;
-    background-color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    justify-content: space-between;
+    padding: 1.5em 3em;
 }
 
-.logo {
-    height: 100px;
-    margin-right: 40px;
+header > a {
+    text-decoration: none;
 }
 
-/* Texte gras*/
-header p {
-    margin: 0 20px;
-    font-weight: 700; 
-    cursor: pointer;
-    color: #000;
-    transition: color 0.3s;
+header h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.875rem;
+    color: var(--noir);
+    margin-left: 0;
+    flex: 0 0 auto;
 }
 
-header p:hover {
-    color: #ED7A26;
+header nav {
+    margin-left: 0;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 2em;
+}
+
+header nav > a {
+    color: var(--noir);
+    font-weight: bold;
+    font-size: 1.25rem;
+    text-decoration: none;
+    margin-left: 0;
+}
+
+header nav > a:hover {
+    color: var(--orange-fonce);
 }
 
 header button {
-    margin-left: auto;
-    background-color: #ED7A26; 
-    color: white;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 8px;
+    background-color: var(--orange);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
     font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
+    border-radius: 0.313em;
+    border: none;
+    width: 5.5em;
+    height: 1.9em;
+    flex: 0 0 auto;
     transition: transform 0.2s, background-color 0.2s;
 }
 
 header button:hover {
-    background-color: #ED7A26;
     transform: scale(1.05);
 }
- 
+
+header button > a {
+    color: var(--blanc);
+    text-decoration: none;
+    transition: ease 0.25s;
+}
+
+
+/* FOOTER
+***************************/
+footer {
+    background-color: var(--noir);
+    color: var(--blanc);
+    padding: 3.125em;
+
+}
+
+.titre-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.titre-footer h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.875rem;
+}
+
+.navigation-footer {
+    display: flex;
+    justify-content: center;
+    margin: 2em 0;
+    flex-wrap: wrap;
+    gap: 6em;
+}
+
+.navigation-footer > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625em;
+}
+
+.navigation-footer > div > p {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+.navigation-footer > div > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.navigation-footer a {
+    text-decoration: none;
+    color: var(--blanc);
+    transition: color 0.25s ease;
+}
+
+.navigation-footer a {
+    text-decoration: none;
+    color: var(--blanc);
+}
+
+.navigation-footer a:hover {
+    color: var(--orange-fonce);
+}
+
+.barre-separation-footer {
+    width: 100%;
+    height: 0.063em;
+    background-color: var(--blanc);
+    margin-bottom: 1.25em;
+}
+
+.fin-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.reseaux-sociaux-footer img {
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.625em;
+}
+
+
+/* PAGE PRÉFÉRENCES
+***************************/ 
 /* Container principal pour aligner les 3 colonnes */
 .preferences-container {
     display: flex;
