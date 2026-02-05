@@ -171,10 +171,129 @@ footer {
 }
 
 
+/* PAGE TEST API
+***************************/
+.test-api main {
+    padding: 2rem 3rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    background: var(--blanc);
+    color: var(--noir);
+    border-radius: 0.75em;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    font-family: 'Outfit', sans-serif;
+}
+
+.test-api main h1 {
+    font-size: 2rem;
+    color: var(--orange-fonce);
+    margin-bottom: 0.5rem;
+}
+
+.test-api main p {
+    color: rgb(60, 60, 60);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+/* ===== Formulaire API ===== */
+.test-api main div {
+    margin-bottom: 1rem;
+}
+
+.test-api main label {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.test-api #endpointSelect, .test-api #urlInput {
+    width: 100%;
+    padding: 0.6em 0.8em;
+    border-radius: 0.4em;
+    border: 1px solid rgb(200, 200, 200);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    background: var(--blanc);
+    color: var(--noir);
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.test-api #endpointSelect:focus, .test-api #urlInput:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 2px rgba(237, 122, 38, 0.2);
+}
+
+.test-api main button {
+    margin-top: 0.8rem;
+    padding: 0.6em 1.4em;
+    border: none;
+    border-radius: 0.4em;
+    background-color: var(--orange);
+    color: var(--blanc);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.test-api main button:hover {
+    background-color: var(--orange-fonce);
+    transform: translateY(-1px);
+}
+
+/* ===== Séparation ===== */
+.test-api main hr {
+    border: none;
+    height: 1px;
+    background: rgb(220, 220, 220);
+    margin: 1.5rem 0;
+}
+
+/* ===== Status ===== */
+.test-api #status {
+    font-weight: bold;
+    color: var(--orange-fonce);
+}
+
+/* ===== Box Résultats (large + scrollable) ===== */
+.test-api #result {
+    margin-top: 1rem;
+    background: rgb(245, 245, 245);
+    border: 1px solid rgb(220, 220, 220);
+    border-radius: 0.6em;
+    padding: 1rem;
+    max-height: 450px;
+    overflow-y: auto;
+    overflow-x: auto;
+    font-size: 0.9rem;
+    font-family: monospace;
+    color: var(--noir);
+    white-space: pre;
+    width: 100%;
+}
+
+/* Scrollbar custom */
+.test-api #result::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.test-api #result::-webkit-scrollbar-thumb {
+    background: var(--orange);
+    border-radius: 10px;
+}
+
+.test-api #result::-webkit-scrollbar-track {
+    background: rgb(235, 235, 235);
+}
+
+
 /* PAGE PRÉFÉRENCES
 ***************************/ 
 /* Container principal pour aligner les 3 colonnes */
-.preferences-container {
+.preferences .preferences-container {
     display: flex;
     justify-content: space-between;
     padding: 40px 5%;
@@ -182,26 +301,26 @@ footer {
 }
 
 /* Style de chaque colonne */
-.search-section {
+.preferences .search-section {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-.search-section h2 {
+.preferences .search-section h2 {
     font-family: 'Inter', sans-serif;
     font-size: 1.5rem;
     margin-bottom: 15px;
 }
 
 /* Barre de recherche avec icône loupe */
-.search-wrapper {
+.preferences .search-wrapper {
     position: relative;
     width: 100%;
     margin-bottom: 20px;
 }
 
-.search-wrapper input {
+.preferences .search-wrapper input {
     width: 100%;
     padding: 12px 12px 12px 45px; 
     border: 2px solid #000;
@@ -216,24 +335,24 @@ footer {
     outline: none;
 }
 
-.search-wrapper input:focus {
+.preferences .search-wrapper input:focus {
     border-color: #f38630;
 }
 
-.selection-area {
+.preferences .selection-area {
     border-left: 4px solid #ED7A26; 
     padding-left: 15px;
     min-height: 400px;
 }
 
-.selection-area h3 {
+.preferences .selection-area h3 {
     font-size: 1rem;
     text-decoration: underline;
     margin-top: 0;
     color: #333;
 }
 
-.badge-item {
+.preferences .badge-item {
     background-color: #f38630;
     color: white;
     padding: 8px 15px;
@@ -245,13 +364,13 @@ footer {
     align-items: center;
 }
 
-.badge-item:hover {
+.preferences .badge-item:hover {
     background-color: #d36d1a;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.actions-container {
+.preferences .actions-container {
     display: flex;
     justify-content: center;
     gap: 30px;
@@ -259,7 +378,7 @@ footer {
     width: 100%;
 }
 
-.btn-reset, .btn-save {
+.preferences .btn-reset, .btn-save {
     font-family: 'Inter', sans-serif;
     font-size: 1.2rem;
     font-weight: bold;
@@ -271,24 +390,24 @@ footer {
 }
 
 /* Bouton Réinitialiser (Outline orange) */
-.btn-reset {
+.preferences .btn-reset {
     background-color: white;
     color: black;
     border: 2px solid #f38630;
 }
 
-.btn-reset:hover {
+.preferences .btn-reset:hover {
     background-color: #fff5ed;
 }
 
 /* Bouton Sauvegarder (Plein orange) */
-.btn-save {
+.preferences .btn-save {
     background-color: #f38630;
     color: black;
     border: none;
 }
 
-.btn-save:hover {
+.preferences .btn-save:hover {
     background-color: #d36d1a;
     transform: scale(1.05);
 }

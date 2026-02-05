@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Préférences</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
-  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-  <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
-  <script src="script.js"></script>
+    <meta charset="UTF-8">
+    <title>Préférences</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
+    <script src="script.js"></script>
 </head>
-<body>
-  <header>
+
+<body class="preferences">
+    <header>
         <a href="accueil.html"><h2>MuSE</h2></a>
-        <!--<img src="../images/logos/muse.png" alt="MuSE">-->
         <nav>
             <a href="#accueil">Accueil</a>
             <a href="#playlists">Playlists</a>
@@ -23,44 +23,46 @@
             <a href="#contact">Contact</a>
         </button>
     </header>
-  <h2>Préférences</h2>
-  <main class="preferences-container">
-    <section class="search-section">
-      <h2>Genres</h2>
-      <div class="search-wrapper">
-          <input type="text" id="genre" placeholder="Rechercher un genre">
-      </div>
-      <div class="selection-area">
-          <h3>Genres sélectionnés</h3>
-          <div id="selected-genres-list"></div>
-      </div>
-    </section>
-    <section class="search-section">
-        <h2>Artistes</h2>
-        <div class="search-wrapper">
-            <input type="text" id="artistes" placeholder="Rechercher un artiste">
-        </div>
-        <div class="selection-area">
-            <h3>Artistes sélectionnés</h3>
-            <div id="selected-artists-list"></div>
-        </div>
-    </section>
-    <section class="search-section">
-        <h2>Musiques</h2>
-        <div class="search-wrapper">
-            <input type="text" id="musique" placeholder="Rechercher une musique">
-        </div>
-        <div class="selection-area">
-            <h3>Musiques sélectionnés</h3>
-            <div id="selected-tracks-list"></div>
-        </div>
-    </section>
-  </main>
-  <div class="actions-container">
-      <button id="btn-reset" class="btn-reset">Réinitialiser</button>
-      <button id="btn-save" class="btn-save">Sauvegarder</button>
-  </div>
-  <footer>
+
+    <h2>Préférences</h2>
+    <main class="preferences-container">
+        <section class="search-section">
+            <h2>Genres</h2>
+            <div class="search-wrapper">
+                <input type="text" id="genre" placeholder="Rechercher un genre">
+            </div>
+            <div class="selection-area">
+                <h3>Genres sélectionnés</h3>
+                <div id="selected-genres-list"></div>
+            </div>
+        </section>
+        <section class="search-section">
+            <h2>Artistes</h2>
+            <div class="search-wrapper">
+                <input type="text" id="artistes" placeholder="Rechercher un artiste">
+            </div>
+            <div class="selection-area">
+                <h3>Artistes sélectionnés</h3>
+                <div id="selected-artists-list"></div>
+            </div>
+        </section>
+        <section class="search-section">
+            <h2>Musiques</h2>
+            <div class="search-wrapper">
+                <input type="text" id="musique" placeholder="Rechercher une musique">
+            </div>
+            <div class="selection-area">
+                <h3>Musiques sélectionnés</h3>
+                <div id="selected-tracks-list"></div>
+            </div>
+        </section>
+    </main>
+    <div class="actions-container">
+        <button id="btn-reset" class="btn-reset">Réinitialiser</button>
+        <button id="btn-save" class="btn-save">Sauvegarder</button>
+    </div>
+
+    <footer>
         <div class="titre-footer">
             <h2>MuSE</h2>
         </div>
