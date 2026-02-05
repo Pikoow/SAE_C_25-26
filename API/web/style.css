@@ -23,9 +23,13 @@ body {
     font-size: 0.875rem;
 }
 
+a {
+    text-decoration:none;
+}
 
 /* HEADER
 ***************************/
+
 header {
     background-color: var(--blanc);
     color: var(--noir);
