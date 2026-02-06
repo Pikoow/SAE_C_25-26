@@ -64,7 +64,7 @@ header nav > a {
 }
 
 header nav > a:hover {
-    color: var(--orange-fonce);
+    color: var(--orange);
 }
 
 header button {
@@ -147,7 +147,7 @@ footer {
 }
 
 .navigation-footer a:hover {
-    color: var(--orange-fonce);
+    color: var(--orange);
 }
 
 .barre-separation-footer {
@@ -415,13 +415,13 @@ footer {
 /* PAGE ACCUEIL
 ***************************/
 .accueil section:first-of-type {
-    background-color: var(--blanc);
+    background-color: var(--noir);
 }
 
 .accueil main section > h2 {
     font-family: 'Rammetto One', sans-serif;
-    font-size: 1.875rem;
-    color: var(--noir);
+    font-size: 1.25rem;
+    color: var(--blanc);
     display: flex;
     justify-content: center;
     margin-bottom: 1.25em;
@@ -429,44 +429,51 @@ footer {
 }
 
 .accueil #albums-container {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); 
-    gap: 1.25em;
-    margin-top: 1.25em;
-    padding: 1.25em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1em;
+    padding: 0 3.125em 3.125em 3.125em;
 }
 
 .accueil .album-card {
+    display: flex;
+    align-items: center;
+    gap: 1.2em;
+    width: 30em;
     background-color: var(--blanc);
-    padding: 0.938em;
-    border-radius: 0.625em;
-    color: var(--noir);
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.accueil .album-card img {
-    margin-top: 0.625em;
-    border-radius: 0.5em;
-}
-
-.accueil .album-card {
-    background-color: var(--blanc);
-    padding: 0.938em;
+    padding: 1em 1.5em;
     border-radius: 0.75em;
-    text-align: center;
     color: var(--noir);
-    transition: transform 0.2s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .accueil .album-card:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
-.accueil .album-cover {
-    width: 100%;
-    max-width: 12.5em;
-    border-radius: 0.625em;
-    margin-bottom: 0.625em;
+.accueil .album-card img, .accueil .album-cover {
+    width: 80px;
+    height: 80px;
+    border-radius: 0.5em;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.accueil .album-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.accueil .album-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.3em;
+}
+
+.accueil .album-info p {
+    font-size: 0.9rem;
+    color: rgb(100, 100, 100);
 }
 

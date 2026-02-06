@@ -25,7 +25,7 @@
 
     <main>
         <section>
-            <h2>Explorer de nouvelles choses</h2>
+            <h2>Explorez de nouvelles choses</h2>
             <div id="albums-container"></div>
         </section>
     </main>
@@ -75,7 +75,7 @@
 
     <script>
     document.addEventListener("DOMContentLoaded", function () {
-        fetch("http://127.0.0.1:8000/albums?limit=10")
+        fetch("http://127.0.0.1:8000/albums?limit=9")
             .then(response => response.json())
             .then(data => {
                 const container = document.getElementById("albums-container");
@@ -93,9 +93,11 @@
                     }
                     albumCard.innerHTML = `
                         <img src="${imageUrl}" alt="${album.album_title}" class="album-cover">
-                        <h3>${album.album_title}</h3>
+                        <div class="album-info">
+                            <h3>${album.album_title}</h3>
+                            <p>${album.artist_name ?? "Artiste inconnu"}</p>
+                        </div>
                     `;
-
                     container.appendChild(albumCard);
                 });
             })
