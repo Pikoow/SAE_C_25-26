@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+MODEL = SentenceTransformer("all-MiniLM-L6-v2")
+
 # ==================================================
 # DB CONFIG
 # ==================================================
@@ -96,44 +98,36 @@ def compute_missing_embeddings(df, model):
 # PUBLIC API FUNCTION
 # ==================================================
 def recommend_artists(artist_id: int, top_k: int = 5):
-    """
-    Returns a list of similar artists (API friendly)
-    """
+    conn = db_connect()
+    try:
+        df = pd.read_sql("SELECT artist_id, artist_name, artist_embedding FROM sae.artist WHERE artist_embedding IS NOT NULL;", conn)
+        
+        if df.empty or artist_id not in df["artist_id"].values:
+            return []
 
-    ensure_embedding_column()
+        target_row = df.loc[df.artist_id == artist_id]
+        target_emb = np.array(target_row["artist_embedding"].values[0]).reshape(1, -1)
+        
+        all_ids = df["artist_id"].values
+        all_names = df["artist_name"].values
+        matrix = np.array(df["artist_embedding"].tolist())
 
-    df = fetch_artists()
-    if df.empty:
-        return []
-
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-    df = compute_missing_embeddings(df, model)
-
-    if artist_id not in df["artist_id"].values:
-        return []
-
-    # Convert embeddings
-    df["embedding_np"] = df["artist_embedding"].apply(
-        lambda x: np.array(x) if isinstance(x, list) else np.array(json.loads(x))
-    )
-
-    target_emb = df.loc[df.artist_id == artist_id, "embedding_np"].values[0]
-    all_embs = np.stack(df["embedding_np"].values)
-
-    similarities = cosine_similarity([target_emb], all_embs)[0]
-    df["similarity"] = similarities
-
-    reco = (
-        df[df.artist_id != artist_id]
-        .sort_values("similarity", ascending=False)
-        .head(top_k)
-    )
-
-    return [
-        {
-            "artist_id": int(row.artist_id),
-            "artist_name": row.artist_name,
-            "similarity": float(round(row.similarity, 4))
-        }
-        for _, row in reco.iterrows()
-    ]
+        similarities = cosine_similarity(target_emb, matrix)[0]
+        
+        indices = np.argsort(similarities)[::-1]
+        
+        results = []
+        for idx in indices:
+            if all_ids[idx] == artist_id:
+                continue
+            results.append({
+                "artist_id": int(all_ids[idx]),
+                "artist_name": str(all_names[idx]),
+                "similarity": float(round(similarities[idx], 4))
+            })
+            if len(results) >= top_k:
+                break
+                
+        return results
+    finally:
+        conn.close()

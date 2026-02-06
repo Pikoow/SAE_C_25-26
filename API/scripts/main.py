@@ -626,31 +626,36 @@ def get_artist_recommendations(
     artist_id: int,
     limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
 ):
-    """Recommandation d'artistes similaires via l'algorithme de Stanislas"""
+    """Recommandation d'artistes optimisée"""
     try:
-        conn = get_db_connection()
-        if not conn:
-            raise HTTPException(status_code=500, detail="Erreur de connexion")
-        
-        cur = conn.cursor()
-        cur.execute("SELECT artist_name FROM sae.artist WHERE artist_id = %s", (artist_id,))
-        artist = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        if not artist:
-            raise HTTPException(status_code=404, detail="Artiste non trouvé")
-
         recommendations = recommend_artists(artist_id=artist_id, top_k=limit)
+        
+        if not recommendations:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("SELECT artist_name FROM sae.artist WHERE artist_id = %s", (artist_id,))
+            artist_exists = cur.fetchone()
+            cur.close()
+            conn.close()
+            
+            if not artist_exists:
+                raise HTTPException(status_code=404, detail="Artiste non trouvé")
+            return {
+                "target_artist_id": artist_id,
+                "count": 0,
+                "results": [],
+                "message": "Embeddings manquants pour cet artiste"
+            }
         
         return {
             "target_artist_id": artist_id,
-            "target_artist_name": artist["artist_name"],
             "count": len(recommendations),
             "results": recommendations
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur reco artiste: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur reco: {str(e)}")
 
 @app.get("/genres")
 def get_all_genres(
