@@ -92,7 +92,7 @@
                         imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                     }
                     albumCard.innerHTML = `
-                        <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_music.png'">
+                        <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='../images/no_image_music.png'">
                         <div class="album-info">
                             <h3>${album.album_title}</h3>
                             <p>${album.artist_name ?? "Artiste inconnu"}</p>
