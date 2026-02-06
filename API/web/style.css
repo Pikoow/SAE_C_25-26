@@ -173,7 +173,7 @@ footer {
 
 /* PAGE TEST API
 ***************************/
-.test-api main {
+.test-api main, section {
     padding: 2rem 3rem;
     max-width: 1200px;
     margin: 2rem auto;
@@ -184,24 +184,24 @@ footer {
     font-family: 'Outfit', sans-serif;
 }
 
-.test-api main h1 {
+.test-api main h1, section h1 {
     font-size: 2rem;
     color: var(--orange-fonce);
     margin-bottom: 0.5rem;
 }
 
-.test-api main p {
+.test-api main p, section p {
     color: rgb(60, 60, 60);
     margin-bottom: 1.5rem;
     font-size: 1rem;
 }
 
 /* ===== Formulaire API ===== */
-.test-api main div {
+.test-api main div, section div {
     margin-bottom: 1rem;
 }
 
-.test-api main label {
+.test-api main label, section label {
     font-weight: bold;
     font-size: 1rem;
 }
