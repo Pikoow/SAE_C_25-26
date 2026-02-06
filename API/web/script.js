@@ -2,14 +2,14 @@ function ajouterElementSelectionne(nom, containerId, idElement) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    if (document.getElementById(`item-${idElement}`)) {
+    if (document.getElementById(`${idElement}`)) {
         console.warn("Cet élément est déjà sélectionné");
         return;
     }
 
     const badge = document.createElement("div");
     badge.className = "badge-item";
-    
+    console.log(idElement);
     badge.id = `${idElement}`; 
     badge.title = "Cliquez pour supprimer";
     badge.innerHTML = `<span>${nom}</span>`;
@@ -34,17 +34,21 @@ async function chargerGenres() {
         const genres = data.results || data;
 
         if (Array.isArray(genres)) {
-            const listeGenres = genres.map(g => g.genre_title || "Sans titre");
+            const ListeGenres = genres.map(g => ({
+                label : g.genre_title || "Sans titre",
+                value : g.genre_title || "Sans titre",
+                id : g.genre_id
+            }));
 
             $(inputElement).autocomplete({
                 source: function(request, response) {
                     const term = request.term.toLowerCase();
-                    const matches = listeGenres.filter(item => item.toLowerCase().includes(term)).slice(0,15);
+                    const matches = ListeGenres.filter(item => item.label.toLowerCase().includes(term)).slice(0, 15);
                     response(matches);
                 },
                 minLength: 1,
                 select: function(event, ui) {
-                    ajouterElementSelectionne(ui.item.value, "selected-genres-list");
+                    ajouterElementSelectionne(ui.item.value, "selected-genres-list",ui.item.id);
                     $(this).val("");
                     return false;
                 }
@@ -63,22 +67,26 @@ async function chargerArtists() {
     if (!inputElement) return;
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/artists");
+        const response = await fetch("http://127.0.0.1:8000/artists?limit=5000");
         const data = await response.json();
         const artists = data.results || data;
 
         if (Array.isArray(artists)) {
-            const listeArtistes = artists.map(a => a.artist_name || "Sans titre");
+            const listeArtistes = artists.map(a => ({
+                label : a.artist_name || "Sans titre",
+                value : a.artist_name || "Sans titre",
+                id : a.artist_id
+            }));
 
             $(inputElement).autocomplete({
                 source: function(request, response) {
                     const term = request.term.toLowerCase();
-                    const matches = listeArtistes.filter(item => item.toLowerCase().includes(term)).slice(0,15);
+                    const matches = listeArtistes.filter(item => item.label.toLowerCase().includes(term)).slice(0, 15);
                     response(matches);
                 },
                 minLength: 1,
                 select: function(event, ui) {
-                    ajouterElementSelectionne(ui.item.value, "selected-artists-list");
+                    ajouterElementSelectionne(ui.item.value, "selected-artists-list", ui.item.id);
                     $(this).val("");
                     return false;
                 }
@@ -96,7 +104,7 @@ async function chargerMusiques() {
     if (!inputElement) return;
 
     try {
-        const response = await fetch("http://127.0.0.1:8000/tracks");
+        const response = await fetch("http://127.0.0.1:8000/tracks?limit=5000");
         const data = await response.json();
         const tracks = data.results || data;
         
@@ -126,15 +134,42 @@ async function chargerMusiques() {
         console.error("Erreur Musiques :", error);
     }
 }
-/*
-async function Sauvegarde(params) {
-    
-    const btnSave = document.querySelector("#btn-save");
 
+async function Sauvegarde() {
+    const elements = document.querySelectorAll('.badge-item');
+    if (elements.length === 0) {
+        console.warn("Aucun .badge-item trouvé.");
+        return;
+    }
+    const queryParams = new URLSearchParams();
+    elements.forEach(el => {
+        if (el.id) {
+            queryParams.append('track_id', el.id);
+        }
+    });
+    queryParams.append('limit', 5);
+    const url = `http://127.0.0.1:8000/recommendations/multi?${queryParams.toString()}`;
+    console.log("Appel API :", url);
+    try {
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            const errorDetail = await response.json();
+            throw new Error(`Erreur ${response.status}: ${errorDetail.detail}`);
+        }
+
+        const data = await response.json();
+        const reco = data.results || [];
+        console.log("Musiques similaires trouvées :", reco);
+        
+    } catch (error) {
+        console.error("Erreur lors de la récupération :", error);
+    }
 }
-*/
+
 /* Bouton Reset: Vide les listes */
 function Reset() {
+
     $('#selected-genres-list').empty();
     $('#selected-artists-list').empty();
     $('#selected-tracks-list').empty();
@@ -147,6 +182,7 @@ $(document).ready(function() {
     chargerGenres();
     chargerArtists();
     chargerMusiques();
+    Sauvegarde();
 });
 
 
