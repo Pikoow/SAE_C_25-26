@@ -624,39 +624,33 @@ def get_track_recommendations(
 @app.get("/artists/{artist_id}/reco")
 def get_artist_recommendations(
     artist_id: int,
-    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre d'artistes similaires")
+    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
 ):
+    """Recommandation d'artistes similaires via l'algorithme de Stanislas"""
     try:
-        # Vérifier si l'artiste existe
         conn = get_db_connection()
         if not conn:
-            raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+            raise HTTPException(status_code=500, detail="Erreur de connexion")
         
         cur = conn.cursor()
-        check_query = "SELECT artist_id FROM sae.artist WHERE artist_id = %s"
-        cur.execute(check_query, (artist_id,))
-        if not cur.fetchone():
-            cur.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="Artiste non trouvé")
-        
+        cur.execute("SELECT artist_name FROM sae.artist WHERE artist_id = %s", (artist_id,))
+        artist = cur.fetchone()
         cur.close()
         conn.close()
-        
+
+        if not artist:
+            raise HTTPException(status_code=404, detail="Artiste non trouvé")
+
         recommendations = recommend_artists(artist_id=artist_id, top_k=limit)
-        
-        if not recommendations:
-            raise HTTPException(status_code=404, detail="Pas de recommandation disponible")
         
         return {
             "target_artist_id": artist_id,
+            "target_artist_name": artist["artist_name"],
             "count": len(recommendations),
             "results": recommendations
         }
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur recommandation artiste : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur reco artiste: {str(e)}")
 
 @app.get("/genres")
 def get_all_genres(
