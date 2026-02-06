@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Recommendation'))
 
 from item_based_pierre import recommend_similar_tracks
+from item_based_preferences import recommend_similar_tracks_multi
 from item_based_stanislas import recommend_artists
 
 load_dotenv()
@@ -48,7 +49,7 @@ def read_root():
 
 @app.get("/tracks")
 def get_all_tracks(
-    limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
+    limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
 ):
     conn = get_db_connection()
@@ -211,7 +212,7 @@ def get_track_by_id(track_id: int):
 
 @app.get("/artists")
 def get_artists(
-    limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
+    limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
 ):
     """
@@ -620,7 +621,41 @@ def get_track_recommendations(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la recommandation : {str(e)}")
-    
+
+@app.get("/recommendations/multi")
+def get_track_recommendations_multi(
+    track_id: list[int] = Query([], description="Liste des IDs de musiques"),
+    limit: int = Query(5, ge=1, le=50)
+):
+    try:
+        if not track_id:
+            raise HTTPException(status_code=400, detail="Aucun ID fourni")
+
+        conn = get_db_connection()
+        if not conn:
+            raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+        
+        cur = conn.cursor()
+        check_query = "SELECT track_id FROM sae.tracks WHERE track_id IN %s"
+        cur.execute(check_query, (tuple(track_id),))
+        
+        found_tracks = cur.fetchall()
+        cur.close()
+        conn.close()
+
+        if not found_tracks:
+            raise HTTPException(status_code=404, detail="Aucune des musiques n'existe")
+        
+        recommendations = recommend_similar_tracks_multi(track_id, top_n=limit)
+
+        return {
+            "target_ids": track_id,
+            "count": len(recommendations),
+            "results": recommendations
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/artists/{artist_id}/reco")
 def get_artist_recommendations(
     artist_id: int,
@@ -659,7 +694,7 @@ def get_artist_recommendations(
 
 @app.get("/genres")
 def get_all_genres(
-    limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
+    limit: Optional[int] = Query(500, ge=1, le=500, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
 ):
     conn = get_db_connection()
