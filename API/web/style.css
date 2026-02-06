@@ -411,3 +411,57 @@ footer {
     background-color: #d36d1a;
     transform: scale(1.05);
 }
+
+/* PAGE ACCUEIL
+***************************/
+.accueil main section > h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.875rem;
+    color: var(--noir);
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.accueil #albums-container {
+    background-color: var(--noir);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); 
+    gap: 20px;
+    margin-top: 20px;
+    padding: 20px;
+}
+
+.accueil .album-card {
+    background-color: var(--blanc);
+    padding: 15px;
+    border-radius: 10px;
+    color: var(--noir);
+    text-align: center;
+}
+
+.accueil .album-card img {
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+.accueil .album-card {
+    background-color: var(--blanc);
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    color: var(--noir);
+    transition: transform 0.2s ease;
+}
+
+.accueil .album-card:hover {
+    transform: scale(1.05);
+}
+
+.accueil .album-cover {
+    width: 100%;
+    max-width: 200px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
