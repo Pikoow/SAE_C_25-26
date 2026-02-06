@@ -157,18 +157,42 @@ $(document).ready(function() {
 
 const carrousel_buttons = document.querySelectorAll(".carrousel-button");
 const carrousel_slides = document.querySelectorAll(".carrousel-slide");
-console.log(carrousel_buttons,carrousel_slides)
+// console.log(carrousel_buttons,carrousel_slides)
 
 carrousel_buttons.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         // console.log(e.target.id)
         const get_next_slide = e.target.id === 'next' ? 1 :-1;
-        const slide_active = document.querySelector(".active");
+        const slide_actives = document.querySelectorAll(".active");
+        let slide_active = slide_actives[1];
+        // console.log(slide_active)
         new_active = get_next_slide + [...carrousel_slides].indexOf(slide_active);
-
+        // new_active = (new_active + carrousel_slides.length) % carrousel_slides.length
+        
+        
         if (new_active < 0) new_active = [...carrousel_slides].length -1
-        if (new_active >= [...carrousel_slides].length) new_active = [0]
+        if (new_active >= [...carrousel_slides].length) new_active = 0
+
+        new_right  = (new_active + 1) % carrousel_slides.length
+        new_left   = (new_active - 1 + carrousel_slides.length) % carrousel_slides.length
+        
+        // console.log("pre",new_left,new_active,new_right)
+        
+        // if (new_right < 0) new_right = [...carrousel_slides].length -1
+        // if (new_right >= [...carrousel_slides].length) new_right = 0
+        
+        // if (new_left < 0) new_left = [...carrousel_slides].length -1
+        // if (new_left >= [...carrousel_slides].length) new_left = 0
+        
+
+        console.log(new_left,new_active,new_right)
+
+        carrousel_slides.forEach(slide =>
+            slide.classList.remove("active")
+        );
+
         carrousel_slides[new_active].classList.add("active");
-        slide_active.classList.remove("active");
+        carrousel_slides[new_right].classList.add("active");
+        carrousel_slides[new_left].classList.add("active");
     })
 })

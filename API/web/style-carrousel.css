@@ -1,15 +1,17 @@
 .carrousel {
-    left: 10rem;
-    height: 10rem;
-    width: 15rem;
+    /* left: 10rem; */
+    height: 100%;
+    width: 100%;
     position: relative
 }
 
 .carrousel-slide {
-    position: absolute;
-    height: 100%;
-    width: 100%; 
-    opacity: 0;
+    position: relative;
+    height: 25%;
+    width: 25%; 
+    opacity: 0.3;
+    transition: transform 0.3s cubic-bezier(.4,.79,.61,.96);
+    transform: translate3d(0, 0, 0);
 }
 
 .carrousel-slide.active {
@@ -33,6 +35,13 @@
     color: red;
     transform: translateY(-50%);
     top: 50%;
+}
+
+.carrousel-container {
+    height: 290px;
+    width: 100%;
+    position: relative;
+    padding: 20px;
 }
 
 .carrousel li {
