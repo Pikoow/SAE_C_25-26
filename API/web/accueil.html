@@ -79,32 +79,20 @@
             .then(response => response.json())
             .then(data => {
                 const container = document.getElementById("albums-container");
-
                 data.results.forEach(album => {
                     const albumCard = document.createElement("div");
                     albumCard.classList.add("album-card");
-
-                    // Récupération du nom du fichier (si jamais c'est une URL complète)
                     let filename = null;
-
                     if (album.album_image_file) {
-                        const match = album.album_image_file.match(/([^/]+\.(jpg|png))$/i);
+                        const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                         filename = match ? match[1] : album.album_image_file;
                     }
-
-                    // Construction de l’URL FMA
                     let imageUrl = "https://via.placeholder.com/290?text=No+Image";
-
                     if (filename) {
-                        imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" 
-                                    + filename +
-                                    "&width=290&height=290&type=album";
+                        imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                     }
-
                     albumCard.innerHTML = `
-                        <img src="${imageUrl}" 
-                            alt="${album.album_title}" 
-                            class="album-cover">
+                        <img src="${imageUrl}" alt="${album.album_title}" class="album-cover">
                         <h3>${album.album_title}</h3>
                     `;
 

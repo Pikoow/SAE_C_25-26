@@ -2,7 +2,7 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>Test API Brut</title>
+        <title>API MuSE</title>
         <link rel="stylesheet" href="style.css"/>
     </head>
     <body class="test-api">
@@ -11,16 +11,16 @@
             <!--<img src="../images/logos/muse.png" alt="MuSE">-->
             <nav>
                 <a href="accueil.html">Accueil</a>
-            <a href="playlists.html">Playlists</a>
-            <a href="preferences.html">Préférences</a>
-            <a href="api.html">API</a>
+                <a href="playlists.html">Playlists</a>
+                <a href="preferences.html">Préférences</a>
+                <a href="api.html">API</a>
             </nav>
             <button>
                 <a href="#contact">Contact</a>
             </button>
         </header>
         <main>
-            <h1>Testeur API Muse</h1>
+            <h1>Testez l'API !</h1>
             <p>Utilisez cette page pour tester les différents endpoints de l'API MuSE.</p>
             <br>
 
@@ -43,6 +43,40 @@
             </div>
             <pre id="result">Les résultats s'afficheront ici...</pre>
         </main>
+        <section>
+            <h1>Documentation de l'API</h1>
+            <p>Ici sont expliqués les différents endpoints de l'API MuSE.</p>
+            <br>
+
+            <h2>Endpoints disponibles :</h2>
+            <br>
+            <h3>GET /tracks</h3>
+            <p>Récupère la liste de toutes les tracks disponibles.</p>
+            <br>
+            <h3>GET /tracks/{id}</h3>
+            <p>Récupère les détails d'une track spécifique en utilisant son ID.</p>
+            <br>
+            <h3>GET /tracks/{id}/recommendations?limit={n}</h3>
+            <p>Récupère une liste de recommandations de tracks similaires à la track spécifiée par son ID. Le paramètre "limit" permet de définir le nombre de recommandations à retourner.</p>
+            <br>
+            <h3>GET /artists?limit={n}&offset={m}</h3>
+            <p>Récupère la liste de tous les artistes disponibles, avec pagination. Le paramètre "limit" définit le nombre d'artistes à retourner, tandis que "offset" définit le point de départ pour la pagination.</p>
+            <br>
+            <h3>GET /artists?name={name}</h3>
+            <p>Récupère la liste des artistes dont le nom correspond à la valeur spécifiée dans le paramètre "name".</p>
+            <br>
+            <h3>GET /artists/{id}/tracks</h3>
+            <p>Récupère la liste de toutes les tracks associées à un artiste spécifique en utilisant son ID.</p>
+            <br>
+            <h3>GET /albums?limit={n}</h3>
+            <p>Récupère la liste de tous les albums disponibles, avec pagination. Le paramètre "limit" définit le nombre d'albums à retourner.</p>
+            <br>
+            <h3>GET /albums/{id}/tracks</h3>
+            <p>Récupère la liste de toutes les tracks associées à un album spécifique en utilisant son ID.</p>
+            <br>
+            <h3>GET /genres</h3>
+            <p>Récupère la liste de tous les genres musicaux disponibles.</p>
+        </section>
         <footer>
             <div class="titre-footer">
                 <h2>MuSE</h2>
