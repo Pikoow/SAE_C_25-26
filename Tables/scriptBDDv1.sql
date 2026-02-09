@@ -552,6 +552,7 @@ CREATE OR REPLACE VIEW tracks_features AS
         MAX(t.track_date_created)       AS track_date_created,
         MAX(t.track_composer)           AS track_composer,
         MAX(t.track_lyricist)           AS track_lyricist,
+        MAX(t.track_file)               AS track_file,
         MAX(t.track_bit_rate)           AS track_bit_rate,
         MAX(t.track_disk_number)        AS track_disk_number,
         STRING_AGG(DISTINCT alb.album_id::text, ',') AS album_ids,

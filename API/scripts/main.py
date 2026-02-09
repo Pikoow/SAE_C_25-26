@@ -66,6 +66,7 @@ def get_all_tracks(
                 track_duration,
                 track_genre_top,
                 track_listens,
+                track_file,
                 album_titles,
                 artist_names
             FROM sae.tracks_features
@@ -122,6 +123,7 @@ def get_track_by_id(track_id: int):
                 track_composer,
                 track_lyricist,
                 track_tags,
+                track_file,
                 track_bit_rate,
                 album_ids,
                 album_titles,
@@ -342,6 +344,7 @@ def get_artist_tracks(
                 t.track_genre_top,
                 t.track_listens,
                 t.track_favorite,
+                t.track_file,
                 a.album_title,
                 a.album_image_file
             FROM sae.tracks t
@@ -536,6 +539,7 @@ def get_album_tracks(
                 t.track_duration,
                 t.track_genre_top,
                 t.track_listens,
+                t.track_file,
                 t.track_favorite,
                 art.artist_name
             FROM sae.tracks t
@@ -771,6 +775,7 @@ def get_genre_tracks(
                 t.track_title,
                 t.track_duration,
                 t.track_listens,
+                t.track_file,
                 t.track_favorite,
                 art.artist_name,
                 alb.album_title
