@@ -816,6 +816,55 @@ def get_genre_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/ternaire/{genre}/{genre_secondaire}")
+def get_all_id_ternaire(
+    genre: str,
+    genre_secondaire : str,
+    limit: Optional[int] = Query(500, ge=1, le=500, description="Nombre maximum de résultats"),
+    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
+):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        # On récupère tous les genres
+        query = """
+            SELECT DISTINCT
+                e.artist_id,
+                a.artist_name
+            FROM sae.artist_album_track e
+            INNER JOIN sae.tracks t ON e.track_id = t.track_id
+            INNER JOIN sae.artist a ON e.artist_id = a.artist_id
+            INNER JOIN sae.genre g ON g.genre_id = ANY(string_to_array(t.track_genre, ',')::int[])
+            WHERE (t.track_genre_top = %s OR g.genre_title = %s)
+            AND t.track_genre_top IS NOT NULL 
+            AND t.track_genre_top != 'NaN'
+            LIMIT %s OFFSET %s
+        """
+        cur.execute(query, (genre,genre_secondaire,limit, offset))
+        id = cur.fetchall()
+        
+        # Compter le total
+        count_query = "SELECT COUNT(*) as total FROM sae.artist_album_track"
+        cur.execute(count_query)
+        total = cur.fetchone()['total']
+        
+        cur.close()
+        conn.close()
+        
+        return {
+            "total": total,
+            "count": len(id),
+            "limit": limit,
+            "offset": offset,
+            "results": id
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     # Lance le serveur sur le port 8000
