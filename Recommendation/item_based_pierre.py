@@ -14,10 +14,9 @@ DB_CONFIG = {
     'port': os.getenv("POSTGRES_PORT", '5432')
 }
 
-# Global cache for performance
 _TRACK_CACHE = None
 _FEATURE_MATRIX = None
-_TRACK_INDEX_MAP = {} # Maps track_id to row index in matrix
+_TRACK_INDEX_MAP = {}
 
 def db_connect():
     return psycopg2.connect(**DB_CONFIG)
@@ -27,8 +26,11 @@ def load_data_into_cache():
     global _TRACK_CACHE, _FEATURE_MATRIX, _TRACK_INDEX_MAP
     
     query = """
-    SELECT track_id, track_title, track_duration, track_genre_top, track_bit_rate
-    FROM sae.tracks;
+    SELECT DISTINCT t.track_id, t.track_title, t.track_duration, t.track_genre_top, t.track_bit_rate, 
+           aat.artist_id, a.artist_name
+    FROM sae.tracks t
+    LEFT JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
+    LEFT JOIN sae.artist a ON aat.artist_id = a.artist_id;
     """
     try:
         conn = db_connect()
@@ -75,7 +77,6 @@ def recommend_similar_tracks(target_track_id, top_n=5):
     """
     global _TRACK_CACHE, _FEATURE_MATRIX, _TRACK_INDEX_MAP
 
-    # Initialize cache if empty
     if _TRACK_CACHE is None:
         load_data_into_cache()
 
@@ -85,11 +86,8 @@ def recommend_similar_tracks(target_track_id, top_n=5):
     target_idx = _TRACK_INDEX_MAP[target_track_id]
     target_vec = _FEATURE_MATRIX[target_idx].reshape(1, -1)
 
-    # Calculate all similarities at once (Vectorized)
     similarities = cosine_similarity(target_vec, _FEATURE_MATRIX)[0]
 
-    # Get indices of top_n + 1 (to exclude itself)
-    # argsort gives indices of sorted values; we take the last ones
     related_indices = np.argsort(similarities)[-(top_n + 1):][::-1]
 
     results = []
@@ -103,6 +101,8 @@ def recommend_similar_tracks(target_track_id, top_n=5):
         results.append({
             "track_id": tid,
             "track_title": track[1],
+            "artist_id": track[5],
+            "artist_name": track[6],
             "similarity": round(float(similarities[idx]), 4)
         })
 

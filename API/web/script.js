@@ -137,22 +137,22 @@ async function chargerMusiques() {
 
 async function Sauvegarde() {
     const elements = document.querySelectorAll('.badge-item');
+    
     if (elements.length === 0) {
-        console.warn("Aucun .badge-item trouvé.");
-        return;
+        return [];
     }
+
     const queryParams = new URLSearchParams();
     elements.forEach(el => {
-        if (el.id) {
-            queryParams.append('track_id', el.id);
-        }
+        if (el.id) queryParams.append('track_id', el.id);
     });
     queryParams.append('limit', 5);
-    const url = `http://127.0.0.1:8000/recommendations/multi?${queryParams.toString()}`;
-    console.log("Appel API :", url);
-    try {
 
+    const url = `http://127.0.0.1:8000/recommendations/multi?${queryParams.toString()}`;
+
+    try {
         const response = await fetch(url);
+        
         if (!response.ok) {
             const errorDetail = await response.json();
             throw new Error(`Erreur ${response.status}: ${errorDetail.detail}`);
@@ -160,10 +160,12 @@ async function Sauvegarde() {
 
         const data = await response.json();
         const reco = data.results || [];
-        console.log("Musiques similaires trouvées :", reco);
         
+        return reco; 
+
     } catch (error) {
         console.error("Erreur lors de la récupération :", error);
+        throw error;
     }
 }
 

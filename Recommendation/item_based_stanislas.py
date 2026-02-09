@@ -38,7 +38,7 @@ def fetch_artists():
     return df
 
 # ==================================================
-# ENSURE EMBEDDING COLUMN
+# COLONNE EMBEDDING
 # ==================================================
 def ensure_embedding_column():
     conn = db_connect()
