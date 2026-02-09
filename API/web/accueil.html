@@ -8,6 +8,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script src="script.js"></script>
+    <script src="audio-player.js"></script>
 </head>
 <body class="accueil">
     <header>
@@ -129,6 +130,8 @@
                             <h3>${track.track_title}</h3>
                             <p>${track.artist_name || "Artiste inconnu"}</p>
                         `;
+                        trackCard.dataset.trackId = track.track_id;
+
                         container.appendChild(trackCard);
                     });
                 })
@@ -137,7 +140,7 @@
                 });
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
+        /*document.addEventListener("DOMContentLoaded", function () {
             fetch("http://127.0.0.1:8000/artists/1/reco")
                 .then(response => response.json())
                 .then(data => {
@@ -155,7 +158,7 @@
                 .catch(error => {
                     console.error("Erreur lors du chargement des recommandations d'artistes :", error);
                 });
-        });
+        });*/
     </script>
 
 </body>
