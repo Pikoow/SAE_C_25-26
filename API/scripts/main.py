@@ -407,8 +407,10 @@ def get_albums(
                 album_listens,
                 album_favorites,
                 album_image_file,
-                album_date_released
-            FROM sae.album
+                album_date_released,
+                album_tags,
+                artists
+            FROM sae.album_features
             WHERE 1=1
         """
         

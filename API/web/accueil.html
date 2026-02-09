@@ -82,21 +82,17 @@
                     data.results.forEach(album => {
                         const albumCard = document.createElement("div");
                         albumCard.classList.add("album-card");
-                        
-                        // Gestion de l'image
                         let filename = null;
                         if (album.album_image_file) {
                             const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                             filename = match ? match[1] : album.album_image_file;
                         }
-                        let imageUrl = "https://via.placeholder.com/290?text=No+Image";
-                        if (filename) {
+                        let imageUrl = "https://freemusicarchive.org/img/default/album.jpg";
+                        if (filename != "album.jpg") {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
-                        
-                        // Utiliser le champ 'artists' retourné par la vue album_features
-                        const artistName = album.artists || "Artiste inconnu";
-                        
+                        const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
+
                         albumCard.innerHTML = `
                             <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='../images/no_image_music.png'">
                             <div class="album-info">
