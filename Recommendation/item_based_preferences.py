@@ -14,10 +14,9 @@ DB_CONFIG = {
     'port': os.getenv("POSTGRES_PORT", '5432')
 }
 
-# Global cache for performance
 _TRACK_CACHE = None
 _FEATURE_MATRIX = None
-_TRACK_INDEX_MAP = {} # Maps track_id to row index in matrix
+_TRACK_INDEX_MAP = {}
 
 def db_connect():
     return psycopg2.connect(**DB_CONFIG)

@@ -14,10 +14,9 @@ DB_CONFIG = {
     'port': os.getenv("POSTGRES_PORT", '5432')
 }
 
-# Global cache for performance
 _TRACK_CACHE = None
 _FEATURE_MATRIX = None
-_TRACK_INDEX_MAP = {} # Maps track_id to row index in matrix
+_TRACK_INDEX_MAP = {}
 
 def db_connect():
     return psycopg2.connect(**DB_CONFIG)
@@ -75,7 +74,6 @@ def recommend_similar_tracks(target_track_id, top_n=5):
     """
     global _TRACK_CACHE, _FEATURE_MATRIX, _TRACK_INDEX_MAP
 
-    # Initialize cache if empty
     if _TRACK_CACHE is None:
         load_data_into_cache()
 
@@ -85,11 +83,8 @@ def recommend_similar_tracks(target_track_id, top_n=5):
     target_idx = _TRACK_INDEX_MAP[target_track_id]
     target_vec = _FEATURE_MATRIX[target_idx].reshape(1, -1)
 
-    # Calculate all similarities at once (Vectorized)
     similarities = cosine_similarity(target_vec, _FEATURE_MATRIX)[0]
 
-    # Get indices of top_n + 1 (to exclude itself)
-    # argsort gives indices of sorted values; we take the last ones
     related_indices = np.argsort(similarities)[-(top_n + 1):][::-1]
 
     results = []
