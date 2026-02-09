@@ -28,6 +28,14 @@
             <h2>Explorez de nouvelles choses</h2>
             <div id="albums-container"></div>
         </section>
+        <section>
+            <h2>Recommandations de tracks</h2>
+            <div id="tracks-container"></div>
+        </section>
+        <section>
+            <h2>Recommandations d'artistes</h2>
+            <div id="artists-container"></div>
+        </section>
     </main>
 
     <footer>
@@ -109,6 +117,47 @@
                 })
                 .catch(error => {
                     console.error("Erreur lors du chargement des albums :", error);
+                });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("http://127.0.0.1:8000/tracks/81466/reco")
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById("tracks-container");
+                    data.results.forEach(track => {
+                        const trackCard = document.createElement("div");
+                        trackCard.classList.add("track-card");
+                        
+                        trackCard.innerHTML = `
+                            <h3>${track.track_title}</h3>
+                            <p>${track.artist_name || "Artiste inconnu"}</p>
+                        `;
+                        container.appendChild(trackCard);
+                    });
+                })
+                .catch(error => {
+                    console.error("Erreur lors du chargement des recommandations de tracks :", error);
+                });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("http://127.0.0.1:8000/artists/1/reco")
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById("artists-container");
+                    data.results.forEach(artist => {
+                        const artistCard = document.createElement("div");
+                        artistCard.classList.add("artist-card");
+                        
+                        artistCard.innerHTML = `
+                            <h3>${artist.artist_name}</h3>
+                        `;
+                        container.appendChild(artistCard);
+                    });
+                })
+                .catch(error => {
+                    console.error("Erreur lors du chargement des recommandations d'artistes :", error);
                 });
         });
     </script>
