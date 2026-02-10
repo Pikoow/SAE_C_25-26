@@ -1,26 +1,48 @@
+// Fonction Gestion des elements des liste(Ajouter/Supression)
 function ajouterElementSelectionne(nom, containerId, idElement) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    if (document.getElementById(`${idElement}`)) {
+    if (document.getElementById(idElement)) {
         console.warn("Cet élément est déjà sélectionné");
         return;
     }
 
     const badge = document.createElement("div");
     badge.className = "badge-item";
-    console.log(idElement);
-    badge.id = `${idElement}`; 
+    badge.id = idElement; 
     badge.title = "Cliquez pour supprimer";
     badge.innerHTML = `<span>${nom}</span>`;
 
     badge.addEventListener("click", function() {
         this.style.transform = "scale(0)";
         this.style.opacity = "0";
-        setTimeout(() => this.remove(), 200);
+        
+        setTimeout(() => {
+            this.remove();
+            
+            if (containerId === "selected-artists-list") {
+                const resteDesArtistes = container.querySelectorAll('.badge-item').length;
+                
+                if (resteDesArtistes === 0) {
+                    $('#selected-tracks-list').empty();
+                } else {
+                    chargerMusiques();
+                }
+            }
+        }, 200);
     });
 
     container.appendChild(badge);
+
+    if(containerId === "selected-genres-list") {
+        chargerArtists();
+    }
+
+    if (containerId === "selected-artists-list") {
+        chargerMusiques();
+    }
+
 }
 
 // Fonction pour l'Autocomplete des Genres
@@ -64,10 +86,20 @@ async function chargerGenres() {
 // Fonction pour l'Autocomplete des Artistes
 async function chargerArtists() {
     const inputElement = document.getElementById("artistes");
-    if (!inputElement) return;
+    const elements = document.querySelectorAll('.badge-item');
 
+    if (!inputElement) return;
+    const genresNames = Array.from(elements)
+        .map(el => el.textContent.trim())
+        .filter(name => name);
+
+    const genre1 = genresNames[0] || "None"; 
+    const genre2 = genresNames[1] || genre1;
+    const url = `http://127.0.0.1:8000/ternaire/${genre1}/${genre2}`;
+    console.log("URL construite :", url);
+    
     try {
-        const response = await fetch("http://127.0.0.1:8000/artists?limit=5000");
+        const response = await fetch(url);
         const data = await response.json();
         const artists = data.results || data;
 
@@ -101,24 +133,41 @@ async function chargerArtists() {
 // Fonction pour l'Autocomplete des Musiques
 async function chargerMusiques() {
     const inputElement = document.getElementById("musique");
-    if (!inputElement) return;
+    const artistContainer = document.getElementById("selected-artists-list"); 
+    if (!inputElement || !artistContainer) return;
 
+    const elements = artistContainer.querySelectorAll('.badge-item');
+
+    const artistIds = Array.from(elements)
+        .map(el => el.getAttribute('data-id') || el.id)
+        .filter(id => id);
+
+    const url = `http://127.0.0.1:8000/artists/${artistIds}/tracks`;
+    console.log("URL construite :", url);
     try {
-        const response = await fetch("http://127.0.0.1:8000/tracks?limit=5000");
+        const response = await fetch(url);
         const data = await response.json();
-        const tracks = data.results || data;
-        
+        const tracks = data.tracks || data.results || data;
+
+        console.log("Tableau final extrait :", tracks);
+
         if (Array.isArray(tracks)) {
             const listeMusiques = tracks.map(t => ({
-                label : t.track_title || "Sans titre",
-                value : t.track_title || "Sans titre",
-                id : t.track_id
+                label: t.track_title || "Sans titre",
+                value: t.track_title || "Sans titre",
+                id: t.track_id
             }));
+
+            if ($(inputElement).data("ui-autocomplete")) {
+                $(inputElement).autocomplete("destroy");
+            }
 
             $(inputElement).autocomplete({
                 source: function(request, response) {
                     const term = request.term.toLowerCase();
-                    const matches = listeMusiques.filter(item => item.label.toLowerCase().includes(term)).slice(0, 15);
+                    const matches = listeMusiques
+                        .filter(item => item.label.toLowerCase().includes(term))
+                        .slice(0, 15);
                     response(matches);
                 },
                 minLength: 1,
@@ -128,7 +177,7 @@ async function chargerMusiques() {
                     return false;
                 }
             });
-            console.log("Autocomplete Musiques prêt !");
+            console.log("Autocomplete Musiques mis à jour avec", listeMusiques.length, "titres.");
         }
     } catch (error) {
         console.error("Erreur Musiques :", error);
@@ -160,7 +209,7 @@ async function Sauvegarde() {
 
         const data = await response.json();
         const reco = data.results || [];
-        
+        console.log(reco)
         return reco; 
 
     } catch (error) {
@@ -180,10 +229,7 @@ function Reset() {
 
 /* Activation des fonctions */
 $(document).ready(function() {
-    console.log("DOM et jQuery prêts, chargement des données...");
     chargerGenres();
-    chargerArtists();
-    chargerMusiques();
     Sauvegarde();
 });
 
