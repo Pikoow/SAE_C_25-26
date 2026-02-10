@@ -185,36 +185,35 @@ async function chargerMusiques() {
 }
 
 async function Sauvegarde() {
-    const elements = document.querySelectorAll('.badge-item');
-    
-    if (elements.length === 0) {
-        return [];
-    }
+    const container = document.getElementById("selected-tracks-list");
+    if (!container) return [];
+
+    const elements = container.querySelectorAll('.badge-item');
+    if (elements.length === 0) return [];
 
     const queryParams = new URLSearchParams();
+    
     elements.forEach(el => {
-        if (el.id) queryParams.append('track_id', el.id);
+        const id = el.getAttribute('data-id') || el.id;
+        if (id) {
+            queryParams.append('track_id', id);
+        }
     });
+
     queryParams.append('limit', 5);
 
     const url = `http://127.0.0.1:8000/recommendations/multi?${queryParams.toString()}`;
+    console.log("Appel reco multi :", url);
 
     try {
         const response = await fetch(url);
-        
-        if (!response.ok) {
-            const errorDetail = await response.json();
-            throw new Error(`Erreur ${response.status}: ${errorDetail.detail}`);
-        }
+        if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
 
         const data = await response.json();
-        const reco = data.results || [];
-        console.log(reco)
-        return reco; 
-
+        return data.results || data; 
     } catch (error) {
-        console.error("Erreur lors de la récupération :", error);
-        throw error;
+        console.error("Erreur Sauvegarde :", error);
+        return [];
     }
 }
 
