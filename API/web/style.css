@@ -6,9 +6,12 @@
 :root {
     --noir : rgb(0, 0, 0);
     --blanc : rgb(255, 255, 255);
+    --gris-clair : rgb(200, 200, 200);
+    --gris-fonce : rgb(42, 42, 42);
     --orange: rgb(237, 122, 38);
     --orange-clair: rgb(255, 154, 79);
     --orange-fonce: rgb(253, 114, 8);
+    --bleu: rgb(49, 158, 146);
 }
 
 * {
@@ -414,11 +417,13 @@ footer {
 
 /* PAGE ACCUEIL
 ***************************/
+/* SECTION ALBUMS
+**************************/
 .accueil section:first-of-type {
     background-color: var(--noir);
 }
 
-.accueil main section > h2 {
+.accueil .albums h2 {
     font-family: 'Rammetto One', sans-serif;
     font-size: 1.25rem;
     color: var(--blanc);
@@ -440,11 +445,11 @@ footer {
     display: flex;
     align-items: center;
     gap: 1.2em;
-    width: 30em;
-    background-color: var(--blanc);
+    width: 25em;
+    background-color: var(--gris-fonce);
     padding: 1em 1.5em;
     border-radius: 0.75em;
-    color: var(--noir);
+    color: var(--blanc);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
@@ -454,8 +459,8 @@ footer {
 }
 
 .accueil .album-card img, .accueil .album-cover {
-    width: 80px;
-    height: 80px;
+    width: 75px;
+    height: 75px;
     border-radius: 0.5em;
     object-fit: cover;
     flex-shrink: 0;
@@ -474,6 +479,78 @@ footer {
 
 .accueil .album-info p {
     font-size: 0.9rem;
-    color: rgb(100, 100, 100);
+    color: var(--gris-clair);
 }
+
+/* SECTION TRACKS
+**************************/
+.accueil #tracks-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+
+.accueil .tracks h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.25rem;
+    color: var(--noir);
+    display: flex;
+    margin-bottom: 1.25em;
+}
+
+.accueil .tracks {
+    background-color: var(--blanc);
+    padding: 3.125em 3.125em 3.125em 3.125em;
+}
+
+.accueil .track-card {
+    display: flex;
+    align-items: center;
+    gap: 1.2em;
+    width: 25em;
+    background-color: var(--blanc);
+    border: 1px solid var(--gris-clair);
+    padding: 1em 1.5em;
+    border-radius: 0.75em;
+    color: var(--noir);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.accueil .track-card:hover {
+    transform: scale(1.02);
+}
+
+.accueil .track-card img, .accueil .track-cover {
+    width: 75px;
+    height: 75px;
+    border-radius: 0.5em;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.accueil .track-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.accueil .track-info h3 {
+    color: var(--noir);
+    font-size: 1.1rem;
+    margin-bottom: 0.3em;
+}
+
+.accueil .track-info p {
+    font-size: 0.9rem;
+    color: var(--gris-fonce);
+}
+
+/* SECTION ARTISTS
+**************************/
+.accueil .artists {
+    background-color: var(--blanc);
+    padding: 0 3.125em 3.125em 3.125em;
+}
+
 
