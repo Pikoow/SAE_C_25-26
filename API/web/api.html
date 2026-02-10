@@ -532,11 +532,9 @@
   <script>
     const BASE_URL = "http://127.0.0.1:8000";
 
-    // Liste des endpoints mise à jour depuis main.py
+    // Liste des endpoints
     const endpoints = [
       { label: "Accueil", path: "/" },
-
-      // Tracks
       { label: "Toutes les tracks", path: "/tracks?limit=50&offset=0" },
       { label: "Track par ID", path: "/tracks/1" },
       { label: "Recommandations Track", path: "/tracks/1/reco?limit=5" },
@@ -544,8 +542,6 @@
         label: "Recommandations Multiples",
         path: "/recommendations/multi?track_id=1&track_id=2&limit=5",
       },
-
-      // Artistes
       { label: "Tous les artistes", path: "/artists?limit=50&offset=0" },
       { label: "Artiste par ID", path: "/artists/1" },
       { label: "Recherche artiste (nom)", path: "/artists?name=Muse" },
@@ -554,8 +550,6 @@
         path: "/artists/1/tracks?limit=50&offset=0",
       },
       { label: "Recommandations Artiste", path: "/artists/1/reco?limit=5" },
-
-      // Albums
       { label: "Tous les albums", path: "/albums?limit=50&offset=0" },
       { label: "Recherche album (titre)", path: "/albums?title=Showbiz" },
       { label: "Album par ID", path: "/albums/1" },
@@ -563,8 +557,6 @@
         label: "Tracks d'un album",
         path: "/albums/1/tracks?limit=50&offset=0",
       },
-
-      // Genres
       { label: "Tous les genres", path: "/genres?limit=500" },
       {
         label: "Tracks d'un genre",
@@ -572,7 +564,6 @@
       },
     ];
 
-    // Initialisation de la liste déroulante
     const select = document.getElementById("endpointSelect");
     const input = document.getElementById("urlInput");
     const statusSpan = document.getElementById("status");
@@ -586,19 +577,44 @@
       select.appendChild(option);
     });
 
-    // Mettre à jour l'input quand on change le select
     function updateUrl() {
       input.value = BASE_URL + select.value;
     }
 
-    // Fonction d'envoi
+    // --- FONCTION MAGIQUE POUR LA COULEUR ---
+    function syntaxHighlight(json) {
+      if (typeof json != "string") {
+        json = JSON.stringify(json, undefined, 4);
+      }
+      json = json
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function (match) {
+          var cls = "number";
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              cls = "key";
+            } else {
+              cls = "string";
+            }
+          } else if (/true|false/.test(match)) {
+            cls = "boolean";
+          } else if (/null/.test(match)) {
+            cls = "null";
+          }
+          return '<span class="' + cls + '">' + match + "</span>";
+        },
+      );
+    }
+
     async function sendRequest() {
       const url = input.value;
       statusSpan.textContent = "Chargement...";
       resultPre.textContent = "Chargement...";
-
-      // Style de chargement
-      statusSpan.style.color = "#e67e22";
+      statusSpan.style.color = "var(--orange)";
 
       try {
         const response = await fetch(url);
@@ -611,8 +627,9 @@
         }
 
         const data = await response.json();
-        // Affichage formaté (indentation de 4 espaces)
-        resultPre.textContent = JSON.stringify(data, null, 4);
+
+        // On utilise innerHTML ici pour que les <span> de couleur fonctionnent
+        resultPre.innerHTML = syntaxHighlight(data);
       } catch (error) {
         statusSpan.textContent = "Erreur";
         statusSpan.style.color = "#c0392b";
