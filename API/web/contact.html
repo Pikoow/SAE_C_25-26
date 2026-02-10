@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nous contacter</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  
+  <body class="contact-page">
+    <header>
+      <a href="accueil.html"><h2>MuSE</h2></a>
+      <nav>
+        <a href="accueil.html">Accueil</a>
+        <a href="playlists.html">Playlists</a>
+        <a href="preferences.html">Préférences</a>
+        <a href="api.html">API</a>
+      </nav>
+      <button>
+        <a href="contact.html">Contact</a>
+      </button>
+    </header>
+
+    <main>
+      <h1 class="contact-title">Contactez-nous</h1>
+      
+      <p class="contact-text">
+        Une question sur l'API, un bug à signaler ou une suggestion pour améliorer MuSE ? 
+        Remplissez ce formulaire et nous vous répondrons rapidement.
+      </p>
+      
+      <form action="mailto:contact.service-client@muse.fr" method="post" enctype="text/plain" class="contact-form">
+          
+          <label for="name">Nom complet* :</label>
+          <input type="text" id="name" name="Nom" placeholder="Votre nom" required />
+  
+          <label for="email">Email* :</label>
+          <input type="email" id="email" name="Email" placeholder="votre@email.com" required />
+
+          <label for="subject">Sujet de la demande* :</label>
+          <select id="subject" name="Sujet" required>
+              <option value="" disabled selected>-- Choisissez un sujet --</option>
+              <option value="Support Technique">Support Technique / Bug API</option>
+              <option value="Suggestion">Suggestion d'amélioration</option>
+              <option value="Partenariat">Partenariat / Commercial</option>
+              <option value="Autre">Autre demande</option>
+          </select>
+  
+          <label for="message">Message* :</label>
+          <textarea id="message" name="Message" placeholder="Dites-nous tout..." required></textarea>
+  
+          <button type="submit">Envoyer le message</button>
+          <p>Champs obligatoires marqués d'un *</p>
+      </form>
+
+    </main>
+    
+    <footer>
+      <div class="titre-footer">
+        <h2>MuSE</h2>
+      </div>
+      <div class="navigation-footer">
+        <div>
+          <p>Société</p>
+          <div>
+            <a href="#">À propos de nous</a>
+            <a href="#">Offre d'emploi</a>
+          </div>
+        </div>
+        <div>
+          <p>Liens utiles</p>
+          <div>
+            <a href="#">Nous contacter</a>
+          </div>
+        </div>
+        <div>
+          <p>Communauté</p>
+          <div>
+            <a href="#">Développeurs</a>
+          </div>
+        </div>
+        <div>
+          <p>Légal</p>
+          <div>
+            <a href="#">Mentions légales</a>
+          </div>
+        </div>
+      </div>
+      <div class="barre-separation-footer"></div>
+      <div class="fin-footer">
+        <div class="reseaux-sociaux-footer">
+          <a href="#"
+            ><img src="../images/icones/instagram.avif" alt="Instagram"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/linkedin.avif" alt="LinkedIn"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/github.avif" alt="GitHub"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/facebook.avif" alt="Facebook"
+          /></a>
+        </div>
+        <p>© 2026 MuSE Français</p>
+      </div>
+    </footer>
+  </body>
+</html>

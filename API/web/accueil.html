@@ -2,12 +2,13 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Préférences</title>
+    <title>Accueil</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script src="script.js"></script>
+    <script src="audio-player.js"></script>
 </head>
 <body class="accueil">
     <header>
@@ -19,21 +20,21 @@
             <a href="api.html">API</a>
         </nav>
         <button>
-            <a href="#contact">Contact</a>
+            <a href="contact.html">Contact</a>
         </button>
     </header>
 
     <main>
-        <section>
-            <h2>Explorez de nouvelles choses</h2>
+        <section class="albums">
+            <h2>Découvrez de nouveaux albums</h2>
             <div id="albums-container"></div>
         </section>
-        <section>
-            <h2>Recommandations de tracks</h2>
+        <section class="tracks">
+            <h2>Musiques que vous pourriez aimer</h2>
             <div id="tracks-container"></div>
         </section>
-        <section>
-            <h2>Recommandations d'artistes</h2>
+        <section class="artists">
+            <h2>Artistes qui pourraient vous plaire</h2>
             <div id="artists-container"></div>
         </section>
     </main>
@@ -82,8 +83,9 @@
     </footer>
 
     <script>
+        // Affichage des albums
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/albums?limit=9")
+            fetch("http://127.0.0.1:8000/albums?limit=12")
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById("albums-container");
@@ -100,7 +102,6 @@
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
-
                         albumCard.innerHTML = `
                             <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='../images/no_image_music.png'">
                             <div class="album-info">
@@ -116,6 +117,7 @@
                 });
         });
 
+        // Affichage des recommandations de tracks
         document.addEventListener("DOMContentLoaded", function () {
             fetch("http://127.0.0.1:8000/tracks/81466/reco")
                 .then(response => response.json())
@@ -124,11 +126,15 @@
                     data.results.forEach(track => {
                         const trackCard = document.createElement("div");
                         trackCard.classList.add("track-card");
-                        
                         trackCard.innerHTML = `
-                            <h3>${track.track_title}</h3>
-                            <p>${track.artist_name || "Artiste inconnu"}</p>
+                            <img src="../images/no_image_music.png" alt="${track.track_title}" class="track-cover">
+                            <div class="track-info">
+                                <h3>${track.track_title}</h3>
+                                <p>${track.artist_name || "Artiste inconnu"}</p>
+                            </div>
                         `;
+                        trackCard.dataset.trackId = track.track_id;
+
                         container.appendChild(trackCard);
                     });
                 })
@@ -137,7 +143,7 @@
                 });
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
+        /*document.addEventListener("DOMContentLoaded", function () {
             fetch("http://127.0.0.1:8000/artists/1/reco")
                 .then(response => response.json())
                 .then(data => {
@@ -145,7 +151,6 @@
                     data.results.forEach(artist => {
                         const artistCard = document.createElement("div");
                         artistCard.classList.add("artist-card");
-                        
                         artistCard.innerHTML = `
                             <h3>${artist.artist_name}</h3>
                         `;
@@ -155,7 +160,7 @@
                 .catch(error => {
                     console.error("Erreur lors du chargement des recommandations d'artistes :", error);
                 });
-        });
+        });*/
     </script>
 
 </body>

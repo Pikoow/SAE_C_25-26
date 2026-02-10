@@ -1,629 +1,640 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-    <head>
-        <meta charset="UTF-8">
-        <title>API MuSE</title>
-        <link rel="stylesheet" href="style.css"/>
-    </head>
-    <style>
-        /* Style des accordéons de documentation */
-details {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    overflow: hidden; /* Pour garder les coins arrondis */
-}
+  <head>
+    <meta charset="UTF-8" />
+    <title>API MuSE</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-summary {
-    background-color: #f1f2f6;
-    padding: 15px;
-    cursor: pointer;
-    font-weight: bold;
-    font-family: 'Consolas', 'Monaco', monospace; /* Style "code" pour l'URL */
-    color: #2c3e50;
-    list-style: none; /* Optionnel : masque la flèche par défaut sur certains navigateurs */
-    transition: background-color 0.2s;
-    display: flex;     /* Pour aligner une flèche personnalisée si besoin */
-    align-items: center;
-}
+  <body class="test-api">
+    <header>
+      <a href="accueil.html"><h2>MuSE</h2></a>
+      <nav>
+        <a href="accueil.html">Accueil</a>
+        <a href="playlists.html">Playlists</a>
+        <a href="preferences.html">Préférences</a>
+        <a href="api.html">API</a>
+      </nav>
+      <button>
+        <a href="contact.html">Contact</a>
+      </button>
+    </header>
 
-summary:hover {
-    background-color: #e2e6ea;
-}
+    <main>
+      <h1>Testez l'API !</h1>
+      <p>
+        Utilisez cette page pour tester les différents endpoints de l'API MuSE.
+      </p>
+      <br />
 
-/* Petit indicateur visuel (flèche) */
-summary::after {
-    content: '+'; 
-    margin-left: auto;
-    font-weight: bold;
-    font-size: 1.2em;
-}
+      <div>
+        <label>Endpoint : </label>
+        <select id="endpointSelect" onchange="updateUrl()"></select>
+      </div>
+      <br />
+      <div>
+        <label>URL : </label>
+        <input
+          type="text"
+          id="urlInput"
+          value="http://127.0.0.1:8000/"
+          size="100"
+        />
+        <br /><br />
+        <button onclick="sendRequest()">Envoyer la requête</button>
+      </div>
 
-details[open] summary::after {
-    content: '-';
-}
+      <hr />
 
-details[open] summary {
-    border-bottom: 1px solid #ddd;
-}
+      <div><strong>Status :</strong> <span id="status">En attente</span></div>
+      <pre id="result">Les résultats s'afficheront ici...</pre>
+    </main>
 
-/* Le contenu caché qui apparaît */
-.endpoint-details {
-    padding: 20px;
-    background-color: #fff;
-    line-height: 1.6;
-}
-    </style>
-    <body class="test-api">
-        <header>
-            <a href="accueil.html"><h2>MuSE</h2></a> 
-            <!--<img src="../images/logos/muse.png" alt="MuSE">-->
-            <nav>
-                <a href="accueil.html">Accueil</a>
-                <a href="playlists.html">Playlists</a>
-                <a href="preferences.html">Préférences</a>
-                <a href="api.html">API</a>
-            </nav>
-            <button>
-                <a href="#contact">Contact</a>
-            </button>
-        </header>
-        <main>
-            <h1>Testez l'API !</h1>
-            <p>Utilisez cette page pour tester les différents endpoints de l'API MuSE.</p>
-            <br>
+    <section>
+      <h1>Documentation de l'API</h1>
+      <p>Cliquez sur un endpoint pour voir les détails complets.</p>
+      <br />
 
-            <div>
-                <label>Endpoint : </label>
-                <select id="endpointSelect" onchange="updateUrl()"></select>
-            </div>
-            <br>
-            <div>
-                <label>URL : </label>
-                <input type="text" id="urlInput" value="http://127.0.0.1:8000/" size="100">
-                <br>
-                <button onclick="sendRequest()">Envoyer la requête</button>
-            </div>
+      <h2>Tracks (Musiques)</h2>
 
-            <hr>
-
-            <div>
-                <strong>Status :</strong> <span id="status">En attente</span>
-            </div>
-            <pre id="result">Les résultats s'afficheront ici...</pre>
-        </main>
-<section>
-    <h1>Documentation de l'API</h1>
-    <p>Cliquez sur un endpoint pour voir les détails complets.</p>
-    <br>
-
-    <h2>Tracks (Musiques)</h2>
-    
-    <details>
-        <summary>GET /tracks <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Liste de toutes les musiques</span></summary>
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/tracks</span>
+          <span class="desc-short">Liste de toutes les musiques</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong></p>
-            <ul>
-                <li><code>limit</code> (int, optionnel) : Nombre max de résultats (défaut: 50)</li>
-                <li><code>offset</code> (int, optionnel) : Décalage pour pagination (défaut: 0)</li>
-            </ul>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>total</code> : Nombre total de musiques en base</li>
-                <li><code>count</code> : Nombre de résultats dans cette page</li>
-                <li><code>results</code> : Liste des musiques
-                    <ul>
-                        <li><code>track_id</code>, <code>track_title</code>, <code>track_duration</code></li>
-                        <li><code>track_genre_top</code>, <code>track_listens</code></li>
-                        <li><code>album_titles</code> (Nom de l'album)</li>
-                        <li><code>artist_names</code> (Nom de l'artiste)</li>
-                    </ul>
-                </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/tracks?limit=10</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "total": 12500,
-    "count": 1,
-    "results": [
-        {
-            "track_id": 1,
-            "track_title": "Uprising",
-            "track_duration": 210,
-            "track_genre_top": "Rock",
-            "track_listens": 543252,
-            "album_titles": "The Resistance",
-            "artist_names": "Muse"
-        }
-    ]
-}
-            </pre>
-        </div>
-    </details>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-500">500 Error</span> Erreur
+              interne.
+            </li>
+          </ul>
 
-    <details>
-        <summary>GET /tracks/{id} <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Détails complets d'une musique</span></summary>
-        <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> Aucun (ID dans l'URL)</p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>track_id</code>, <code>track_title</code>, <code>track_duration</code></li>
-                <li><code>track_genre_top</code>, <code>track_genre</code> (liste brute)</li>
-                <li><code>track_listens</code>, <code>track_favorite</code>, <code>track_interest</code></li>
-                <li><code>track_date_recorded</code>, <code>track_date_created</code></li>
-                <li><code>track_composer</code>, <code>track_lyricist</code></li>
-                <li><code>track_tags</code>, <code>track_bit_rate</code></li>
-                <li><code>album_ids</code>, <code>album_titles</code></li>
-                <li><code>artist_ids</code>, <code>artist_names</code></li>
-                <li><code>audio_features_*</code> : accousticness, danceability, energy, instrumentalness, liveness, speechiness, tempo, valence</li>
-                <li><code>avg_song_currency</code>, <code>avg_song_hottness</code> (Popularité)</li>
-                <li><code>genres</code> : Liste des noms de genres</li>
-                <li><code>album_info</code> (Objet) :
-                    <ul>
-                         <li><code>album_id</code>, <code>album_title</code>, <code>album_type</code></li>
-                         <li><code>album_tracks</code>, <code>album_image_file</code>, <code>album_date_released</code></li>
-                    </ul>
+          <h4>Paramètres</h4>
+          <ul>
+            <li>
+              <code>limit</code> (int, optionnel) : Nombre max de résultats
+              (défaut: 50)
+            </li>
+            <li>
+              <code>offset</code> (int, optionnel) : Décalage pour pagination
+              (défaut: 0)
+            </li>
+          </ul>
+
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>total</code> : Nombre total de musiques en base</li>
+            <li><code>count</code> : Nombre de résultats retournés</li>
+            <li>
+              <code>results</code> : Liste des musiques
+              <ul>
+                <li>
+                  <code>track_id</code>, <code>track_title</code>,
+                  <code>track_duration</code>
                 </li>
-                <li><code>artist_info</code> (Objet) :
-                    <ul>
-                         <li><code>artist_id</code>, <code>artist_name</code>, <code>artist_bio</code></li>
-                         <li><code>artist_location</code>, <code>artist_favorites</code>, <code>artist_website</code></li>
-                    </ul>
+                <li>
+                  <code>track_genre_top</code>, <code>track_listens</code>
                 </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/tracks/1</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "track_id": 1,
-    "track_title": "Supermassive Black Hole",
-    "track_duration": 209,
-    "track_genre_top": "Alternative",
-    "audio_features_tempo": 120.0,
-    "album_info": {
-        "album_id": 5,
-        "album_title": "Black Holes and Revelations",
-        "album_date_released": "2006-07-03"
-    },
-    "artist_info": {
-        "artist_id": 3,
-        "artist_name": "Muse",
-        "artist_location": "Teignmouth, UK"
+                <li><code>album_titles</code> (Nom de l'album)</li>
+                <li><code>artist_names</code> (Nom de l'artiste)</li>
+              </ul>
+            </li>
+          </ul>
+
+          <h4>Exemple</h4>
+          <p><code>/tracks?limit=1</code></p>
+          <pre>{
+  <span class="key">"total"</span>: <span class="number">12500</span>,
+  <span class="key">"count"</span>: <span class="number">1</span>,
+  <span class="key">"results"</span>: [
+    {
+      <span class="key">"track_id"</span>: <span class="number">1</span>,
+      <span class="key">"track_title"</span>: <span class="string">"Uprising"</span>,
+      <span class="key">"artist_names"</span>: <span class="string">"Muse"</span>
     }
-}
-            </pre>
+  ]
+}</pre>
         </div>
-    </details>
+      </details>
 
-    <details>
-        <summary>GET /tracks/{id}/reco <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Recommandations similaires</span></summary>
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/tracks/{id}</span>
+          <span class="desc-short">Détails complets d'une musique</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong></p>
-            <ul>
-                <li><code>limit</code> (int, optionnel) : Nombre de recommandations (défaut: 5)</li>
-            </ul>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>target_track_id</code> : ID de la musique source</li>
-                <li><code>count</code> : Nombre de recommandations trouvées</li>
-                <li><code>results</code> : Liste d'objets tracks (similaire à /tracks)</li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/tracks/1/reco?limit=3</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "target_track_id": 1,
-    "count": 3,
-    "results": [
-        { "track_id": 55, "track_title": "Similar Song A", ... },
-        { "track_id": 89, "track_title": "Similar Song B", ... }
-    ]
-}
-            </pre>
-        </div>
-    </details>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-404">404 Not Found</span> Track
+              non trouvée.
+            </li>
+            <li>
+              <span class="status-badge status-500">500 Error</span> Erreur
+              serveur.
+            </li>
+          </ul>
 
-    <details>
-        <summary>GET /recommendations/multi <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Recommandations multiples</span></summary>
-        <div class="endpoint-details">
-            <p><strong>Paramètres :</strong></p>
-            <ul>
-                <li><code>track_id</code> (list[int]) : IDs des musiques sources (ex: ?track_id=1&track_id=2)</li>
-                <li><code>limit</code> (int, optionnel) : Nombre de résultats</li>
-            </ul>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>target_ids</code> : Liste des IDs sources</li>
-                <li><code>count</code> : Nombre de résultats</li>
-                <li><code>results</code> : Liste d'objets tracks recommandés</li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/recommendations/multi?track_id=1&track_id=150&limit=5</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "target_ids": [1, 150],
-    "count": 5,
-    "results": [ ... ]
-}
-            </pre>
-        </div>
-    </details>
+          <h4>Paramètres</h4>
+          <p>Aucun paramètre de requête. L'ID est dans l'URL.</p>
 
-    <br>
-    <h2>Artistes</h2>
-
-    <details>
-        <summary>GET /artists <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Liste et recherche d'artistes</span></summary>
-        <div class="endpoint-details">
-            <p><strong>Paramètres :</strong></p>
-            <ul>
-                <li><code>limit</code>, <code>offset</code> : Pagination</li>
-                <li><code>name</code> (str, optionnel) : Filtre par nom d'artiste</li>
-            </ul>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>total</code>, <code>count</code></li>
-                <li><code>results</code> : Liste d'artistes
-                    <ul>
-                        <li><code>artist_id</code>, <code>artist_name</code></li>
-                        <li><code>artist_location</code>, <code>artist_favorites</code></li>
-                        <li><code>artist_active_year_begin</code>, <code>artist_active_year_end</code></li>
-                        <li><code>artist_tags</code>, <code>artist_image_file</code></li>
-                    </ul>
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li>
+              <code>track_id</code>, <code>track_title</code>,
+              <code>track_duration</code>
+            </li>
+            <li>
+              <code>track_genre_top</code>, <code>track_listens</code>,
+              <code>track_favorite</code>
+            </li>
+            <li>
+              <code>audio_features_*</code> (Objets : tempo, energy,
+              danceability...)
+            </li>
+            <li>
+              <code>album_info</code> (Objet) :
+              <ul>
+                <li><code>album_id</code>, <code>album_title</code></li>
+                <li>
+                  <code>album_image_file</code>,
+                  <code>album_date_released</code>
                 </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/artists?name=Muse</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "total": 1,
-    "results": [
-        {
-            "artist_id": 3,
-            "artist_name": "Muse",
-            "artist_location": "Teignmouth, Devon, UK",
-            "artist_favorites": 15000
-        }
-    ]
-}
-            </pre>
-        </div>
-    </details>
-
-    <details>
-        <summary>GET /artists/{id} <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Infos détaillées d'un artiste</span></summary>
-        <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> Aucun (ID dans l'URL)</p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
+              </ul>
+            </li>
+            <li>
+              <code>artist_info</code> (Objet) :
+              <ul>
                 <li><code>artist_id</code>, <code>artist_name</code></li>
-                <li><code>artist_bio</code> (Biographie complète)</li>
-                <li><code>artist_location</code>, <code>artist_favorites</code></li>
-                <li><code>artist_active_year_begin</code>, <code>artist_active_year_end</code></li>
-                <li><code>artist_tags</code>, <code>artist_image_file</code></li>
-                <li><code>artist_website</code>, <code>artist_associated_label</code></li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/artists/3</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "artist_id": 3,
-    "artist_name": "Muse",
-    "artist_bio": "Muse are an English rock band...",
-    "artist_website": "http://muse.mu",
-    "artist_active_year_begin": "1994"
-}
-            </pre>
-        </div>
-    </details>
+                <li><code>artist_bio</code>, <code>artist_location</code></li>
+              </ul>
+            </li>
+          </ul>
 
-    <details>
-        <summary>GET /artists/{id}/tracks <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Musiques d'un artiste</span></summary>
+          <h4>Exemple</h4>
+          <pre>{
+  <span class="key">"track_id"</span>: <span class="number">1</span>,
+  <span class="key">"track_title"</span>: <span class="string">"Supermassive Black Hole"</span>,
+  <span class="key">"album_info"</span>: {
+      <span class="key">"album_title"</span>: <span class="string">"Black Holes and Revelations"</span>
+  }
+}</pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/tracks/{id}/reco</span>
+          <span class="desc-short">Recommandations similaires</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> <code>limit</code>, <code>offset</code></p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>artist</code> : Nom de l'artiste</li>
-                <li><code>total</code> : Nombre total de titres</li>
-                <li><code>tracks</code> : Liste des titres
-                    <ul>
-                        <li><code>track_id</code>, <code>track_title</code>, <code>track_duration</code></li>
-                        <li><code>track_genre_top</code>, <code>track_listens</code>, <code>track_favorite</code></li>
-                        <li><code>album_title</code>, <code>album_image_file</code></li>
-                    </ul>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-404">404 Not Found</span> Aucune
+              recommandation.
+            </li>
+          </ul>
+
+          <h4>Paramètres</h4>
+          <ul>
+            <li>
+              <code>limit</code> (int, optionnel) : Nombre de recommandations
+              (défaut: 5)
+            </li>
+          </ul>
+
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>target_track_id</code> : ID source</li>
+            <li>
+              <code>results</code> : Liste de tracks
+              <ul>
+                <li><code>track_id</code>, <code>track_title</code></li>
+                <li><code>artist_name</code>, <code>album_title</code></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/recommendations/multi</span>
+          <span class="desc-short">Recommandations multiples</span>
+        </summary>
+        <div class="endpoint-details">
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-400">400 Bad Request</span> Aucun
+              ID fourni.
+            </li>
+            <li>
+              <span class="status-badge status-404">404 Not Found</span> Tracks
+              inexistantes.
+            </li>
+          </ul>
+
+          <h4>Paramètres</h4>
+          <ul>
+            <li>
+              <code>track_id</code> (list[int]) : Répéter pour plusieurs IDs
+              (ex: ?track_id=1&track_id=2)
+            </li>
+            <li><code>limit</code> (int) : Nombre de résultats</li>
+          </ul>
+
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>target_ids</code> : Liste des IDs sources</li>
+            <li><code>results</code> : Liste des recommandations</li>
+          </ul>
+        </div>
+      </details>
+
+      <br />
+      <h2>Artistes</h2>
+
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/artists</span>
+          <span class="desc-short">Liste des artistes</span>
+        </summary>
+        <div class="endpoint-details">
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-500">500 Error</span> Erreur
+              serveur.
+            </li>
+          </ul>
+
+          <h4>Paramètres</h4>
+          <ul>
+            <li><code>limit</code>, <code>offset</code> : Pagination</li>
+            <li><code>name</code> (str) : Filtre par nom</li>
+          </ul>
+
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>total</code>, <code>count</code></li>
+            <li>
+              <code>results</code> : Liste d'artistes
+              <ul>
+                <li><code>artist_id</code>, <code>artist_name</code></li>
+                <li>
+                  <code>artist_location</code>, <code>artist_favorites</code>
                 </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/artists/3/tracks</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "artist": "Muse",
-    "total": 150,
-    "tracks": [
-        {
-            "track_title": "Knights of Cydonia",
-            "album_title": "Black Holes and Revelations",
-            "track_listens": 98000
-        }
-    ]
-}
-            </pre>
+              </ul>
+            </li>
+          </ul>
         </div>
-    </details>
+      </details>
 
-    <details>
-        <summary>GET /artists/{id}/reco <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Artistes similaires</span></summary>
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/artists/{id}</span>
+          <span class="desc-short">Détail artiste</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> <code>limit</code></p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>target_artist_id</code></li>
-                <li><code>count</code></li>
-                <li><code>results</code> : Liste d'artistes similaires</li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/artists/3/reco</code></p>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-404">404 Not Found</span> Artiste
+              non trouvé.
+            </li>
+          </ul>
+
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>artist_id</code>, <code>artist_name</code></li>
+            <li><code>artist_bio</code> (Texte complet)</li>
+            <li>
+              <code>artist_website</code>, <code>artist_active_year_begin</code>
+            </li>
+          </ul>
         </div>
-    </details>
+      </details>
 
-    <br>
-    <h2>Albums</h2>
-
-    <details>
-        <summary>GET /albums <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Liste et recherche d'albums</span></summary>
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/artists/{id}/tracks</span>
+          <span class="desc-short">Musiques d'un artiste</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> <code>limit</code>, <code>offset</code>, <code>title</code> (filtre titre)</p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>total</code>, <code>count</code></li>
-                <li><code>results</code> : Liste des albums
-                    <ul>
-                        <li><code>album_id</code>, <code>album_title</code>, <code>album_type</code></li>
-                        <li><code>album_tracks</code> (nb pistes), <code>album_listens</code></li>
-                        <li><code>album_image_file</code>, <code>album_date_released</code></li>
-                        <li><code>album_favorites</code></li>
-                    </ul>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-404">404 Not Found</span> Artiste
+              non trouvé.
+            </li>
+          </ul>
+
+          <h4>Paramètres</h4>
+          <ul>
+            <li><code>limit</code>, <code>offset</code></li>
+          </ul>
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>artist</code> : Nom de l'artiste</li>
+            <li>
+              <code>tracks</code> : Liste des titres
+              <ul>
+                <li>
+                  <code>track_title</code>, <code>album_title</code>,
+                  <code>track_listens</code>
                 </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/albums?title=Showbiz</code></p>
+              </ul>
+            </li>
+          </ul>
         </div>
-    </details>
+      </details>
 
-    <details>
-        <summary>GET /albums/{id} <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Détails d'un album</span></summary>
+      <br />
+      <h2>Albums & Genres</h2>
+
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/albums</span>
+          <span class="desc-short">Liste des albums</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> Aucun</p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>album_id</code>, <code>album_title</code>, <code>album_type</code></li>
-                <li><code>album_tracks</code>, <code>album_listens</code>, <code>album_favorites</code></li>
-                <li><code>album_image_file</code>, <code>album_date_released</code></li>
-                <li><code>album_tags</code></li>
-                <li><code>artists</code> : Liste des noms d'artistes sur l'album</li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/albums/5</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "album_title": "Showbiz",
-    "album_type": "Album",
-    "album_date_released": "1999-09-07",
-    "artists": "Muse"
-}
-            </pre>
-        </div>
-    </details>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-500">500 Error</span> Erreur
+              serveur.
+            </li>
+          </ul>
 
-    <details>
-        <summary>GET /albums/{id}/tracks <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Pistes d'un album</span></summary>
+          <h4>Paramètres</h4>
+          <ul>
+            <li><code>title</code> (str) : Filtre par titre</li>
+          </ul>
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li>
+              <code>results</code> : Liste d'albums (id, title, date,
+              tracks_count)
+            </li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/albums/{id}</span>
+          <span class="desc-short">Détail album</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> <code>limit</code>, <code>offset</code></p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>album</code> (Objet infos album)</li>
-                <li><code>artists</code> (Liste des artistes de l'album)</li>
-                <li><code>tracks</code> : Liste des pistes
-                    <ul>
-                        <li><code>track_id</code>, <code>track_title</code>, <code>track_duration</code></li>
-                        <li><code>track_genre_top</code>, <code>track_listens</code>, <code>track_favorite</code></li>
-                        <li><code>artist_name</code></li>
-                    </ul>
-                </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/albums/5/tracks</code></p>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-404">404 Not Found</span> Album
+              non trouvé.
+            </li>
+          </ul>
+
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>album_id</code>, <code>album_title</code></li>
+            <li><code>artists</code> (Liste des artistes)</li>
+            <li><code>album_tags</code>, <code>album_listens</code></li>
+          </ul>
         </div>
-    </details>
+      </details>
 
-    <br>
-    <h2>Genres</h2>
-
-    <details>
-        <summary>GET /genres <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Liste des genres</span></summary>
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/genres</span>
+          <span class="desc-short">Liste des genres</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> <code>limit</code>, <code>offset</code></p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>total</code>, <code>count</code></li>
-                <li><code>results</code> : Liste des genres
-                    <ul>
-                        <li><code>genre_id</code>, <code>genre_title</code></li>
-                        <li><code>genre_color</code></li>
-                        <li><code>tracks</code> : Nombre de titres associés</li>
-                    </ul>
-                </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/genres</code></p>
-        </div>
-    </details>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-500">500 Error</span> Erreur
+              serveur.
+            </li>
+          </ul>
 
-    <details>
-        <summary>GET /genres/{id}/tracks <span style="font-weight:normal; color:#666; font-size:0.9em; margin-left:10px;">- Musiques par genre</span></summary>
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li>
+              <code>results</code> : Liste (id, title, color, tracks_count)
+            </li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span class="method-badge">GET</span>
+          <span class="url-path">/genres/{id}/tracks</span>
+          <span class="desc-short">Musiques par genre</span>
+        </summary>
         <div class="endpoint-details">
-            <p><strong>Paramètres :</strong> <code>limit</code>, <code>offset</code></p>
-            <br>
-            <p><strong>Attributs retournés :</strong></p>
-            <ul>
-                <li><code>genre</code> : Nom du genre</li>
-                <li><code>total</code> : Nombre total de titres</li>
-                <li><code>tracks</code> : Liste des pistes
-                    <ul>
-                        <li><code>track_id</code>, <code>track_title</code>, <code>track_duration</code></li>
-                        <li><code>track_listens</code>, <code>track_favorite</code></li>
-                        <li><code>artist_name</code>, <code>album_title</code></li>
-                    </ul>
-                </li>
-            </ul>
-            <br>
-            <p><strong>Exemple d'utilisation :</strong> <code>/genres/25/tracks</code></p>
-            <p><strong>Exemple de résultat :</strong></p>
-            <pre>
-{
-    "genre": "Punk",
-    "total": 500,
-    "tracks": [
-        { "track_title": "Holiday", "artist_name": "Green Day" }
-    ]
-}
-            </pre>
+          <h4>Codes de réponse</h4>
+          <ul>
+            <li><span class="status-badge status-200">200 OK</span> Succès.</li>
+            <li>
+              <span class="status-badge status-404">404 Not Found</span> Genre
+              non trouvé.
+            </li>
+          </ul>
+
+          <h4>Structure de la réponse</h4>
+          <ul>
+            <li><code>genre</code> : Nom du genre</li>
+            <li>
+              <code>tracks</code> : Liste des pistes (titre, artiste, album)
+            </li>
+          </ul>
         </div>
-    </details>
-</section>
-        <footer>
-            <div class="titre-footer">
-                <h2>MuSE</h2>
-            </div>
-            <div class="navigation-footer">
-                <div>
-                    <p>Société</p>
-                    <div>
-                        <a href="#">À propos de nous</a>
-                        <a href="#">Offre d'emploi</a>
-                    </div>
-                </div>
-                <div>
-                    <p>Liens utiles</p>
-                    <div>
-                        <a href="#">Nous contacter</a>
-                    </div>
-                </div>
-                <div>
-                    <p>Communauté</p>
-                    <div>
-                        <a href="#">Développeurs</a>
-                    </div>
-                </div>
-                <div>
-                    <p>Légal</p>
-                    <div>
-                        <a href="#">Mentions légales</a>
-                    </div>
-                </div>
-            </div>
-            <div class="barre-separation-footer"></div>
-            <div class="fin-footer">
-                <div class="reseaux-sociaux-footer">
-                    <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"/></a>
-                    <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"/></a>
-                    <a href="#"><img src="../images/icones/github.avif" alt="GitHub"/></a>
-                    <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"/></a>
-                </div>
-                <p>© 2026 MuSE Français</p>
-            </div>
-        </footer>    
-    </body>
-    
-<script>
-        const BASE_URL = "http://127.0.0.1:8000";
+      </details>
+    </section>
 
-        // Liste des endpoints mise à jour depuis main.py
-        const endpoints = [
-            { label: "Accueil", path: "/" },
-            
-            // Tracks
-            { label: "Toutes les tracks", path: "/tracks?limit=50&offset=0" },
-            { label: "Track par ID", path: "/tracks/1" },
-            { label: "Recommandations Track", path: "/tracks/1/reco?limit=5" },
-            { label: "Recommandations Multiples", path: "/recommendations/multi?track_id=1&track_id=2&limit=5" },
-            
-            // Artistes
-            { label: "Tous les artistes", path: "/artists?limit=50&offset=0" },
-            { label: "Artiste par ID", path: "/artists/1" },
-            { label: "Recherche artiste (nom)", path: "/artists?name=Muse" },
-            { label: "Tracks d'un artiste", path: "/artists/1/tracks?limit=50&offset=0" },
-            { label: "Recommandations Artiste", path: "/artists/1/reco?limit=5" },
-            
-            // Albums
-            { label: "Tous les albums", path: "/albums?limit=50&offset=0" },
-            { label: "Recherche album (titre)", path: "/albums?title=Showbiz" },
-            { label: "Album par ID", path: "/albums/1" },
-            { label: "Tracks d'un album", path: "/albums/1/tracks?limit=50&offset=0" },
-            
-            // Genres
-            { label: "Tous les genres", path: "/genres?limit=500" },
-            { label: "Tracks d'un genre", path: "/genres/1/tracks?limit=50&offset=0" }
-        ];
+    <footer>
+      <div class="titre-footer">
+        <h2>MuSE</h2>
+      </div>
+      <div class="navigation-footer">
+        <div>
+          <p>Société</p>
+          <div>
+            <a href="#">À propos de nous</a>
+            <a href="#">Offre d'emploi</a>
+          </div>
+        </div>
+        <div>
+          <p>Liens utiles</p>
+          <div>
+            <a href="#">Nous contacter</a>
+          </div>
+        </div>
+        <div>
+          <p>Communauté</p>
+          <div>
+            <a href="#">Développeurs</a>
+          </div>
+        </div>
+        <div>
+          <p>Légal</p>
+          <div>
+            <a href="#">Mentions légales</a>
+          </div>
+        </div>
+      </div>
+      <div class="barre-separation-footer"></div>
+      <div class="fin-footer">
+        <div class="reseaux-sociaux-footer">
+          <a href="#"
+            ><img src="../images/icones/instagram.avif" alt="Instagram"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/linkedin.avif" alt="LinkedIn"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/github.avif" alt="GitHub"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/facebook.avif" alt="Facebook"
+          /></a>
+        </div>
+        <p>© 2026 MuSE Français</p>
+      </div>
+    </footer>
+  </body>
 
-        // Initialisation de la liste déroulante
-        const select = document.getElementById('endpointSelect');
-        const input = document.getElementById('urlInput');
-        const statusSpan = document.getElementById('status');
-        const resultPre = document.getElementById('result');
+  <script>
+    const BASE_URL = "http://127.0.0.1:8000";
 
-        // Remplir le select
-        endpoints.forEach(ep => {
-            const option = document.createElement('option');
-            option.value = ep.path;
-            option.text = ep.label;
-            select.appendChild(option);
-        });
+    // Liste des endpoints
+    const endpoints = [
+      { label: "Accueil", path: "/" },
+      { label: "Toutes les tracks", path: "/tracks?limit=50&offset=0" },
+      { label: "Track par ID", path: "/tracks/1" },
+      { label: "Recommandations Track", path: "/tracks/1/reco?limit=5" },
+      {
+        label: "Recommandations Multiples",
+        path: "/recommendations/multi?track_id=1&track_id=2&limit=5",
+      },
+      { label: "Tous les artistes", path: "/artists?limit=50&offset=0" },
+      { label: "Artiste par ID", path: "/artists/1" },
+      { label: "Recherche artiste (nom)", path: "/artists?name=Muse" },
+      {
+        label: "Tracks d'un artiste",
+        path: "/artists/1/tracks?limit=50&offset=0",
+      },
+      { label: "Recommandations Artiste", path: "/artists/1/reco?limit=5" },
+      { label: "Tous les albums", path: "/albums?limit=50&offset=0" },
+      { label: "Recherche album (titre)", path: "/albums?title=Showbiz" },
+      { label: "Album par ID", path: "/albums/1" },
+      {
+        label: "Tracks d'un album",
+        path: "/albums/1/tracks?limit=50&offset=0",
+      },
+      { label: "Tous les genres", path: "/genres?limit=500" },
+      {
+        label: "Tracks d'un genre",
+        path: "/genres/1/tracks?limit=50&offset=0",
+      },
+    ];
 
-        // Mettre à jour l'input quand on change le select
-        function updateUrl() {
-            input.value = BASE_URL + select.value;
-        }
+    const select = document.getElementById("endpointSelect");
+    const input = document.getElementById("urlInput");
+    const statusSpan = document.getElementById("status");
+    const resultPre = document.getElementById("result");
 
-        // Fonction d'envoi
-        async function sendRequest() {
-            const url = input.value;
-            statusSpan.textContent = "Chargement...";
-            resultPre.textContent = "";
+    // Remplir le select
+    endpoints.forEach((ep) => {
+      const option = document.createElement("option");
+      option.value = ep.path;
+      option.text = ep.label;
+      select.appendChild(option);
+    });
 
-            try {
-                const response = await fetch(url);
-                statusSpan.textContent = response.status + " " + response.statusText;
-                
-                const data = await response.json();
-                // Affichage formaté (indentation de 4 espaces)
-                resultPre.textContent = JSON.stringify(data, null, 4);
-            } catch (error) {
-                statusSpan.textContent = "Erreur";
-                resultPre.textContent = "Impossible de contacter l'API : " + error;
+    function updateUrl() {
+      input.value = BASE_URL + select.value;
+    }
+
+    // --- FONCTION MAGIQUE POUR LA COULEUR ---
+    function syntaxHighlight(json) {
+      if (typeof json != "string") {
+        json = JSON.stringify(json, undefined, 4);
+      }
+      json = json
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function (match) {
+          var cls = "number";
+          if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+              cls = "key";
+            } else {
+              cls = "string";
             }
+          } else if (/true|false/.test(match)) {
+            cls = "boolean";
+          } else if (/null/.test(match)) {
+            cls = "null";
+          }
+          return '<span class="' + cls + '">' + match + "</span>";
+        },
+      );
+    }
+
+    async function sendRequest() {
+      const url = input.value;
+      statusSpan.textContent = "Chargement...";
+      resultPre.textContent = "Chargement...";
+      statusSpan.style.color = "var(--orange)";
+
+      try {
+        const response = await fetch(url);
+        statusSpan.textContent = response.status + " " + response.statusText;
+
+        if (response.ok) {
+          statusSpan.style.color = "#27ae60"; // Vert
+        } else {
+          statusSpan.style.color = "#c0392b"; // Rouge
         }
-    </script>
+
+        const data = await response.json();
+
+        // On utilise innerHTML ici pour que les <span> de couleur fonctionnent
+        resultPre.innerHTML = syntaxHighlight(data);
+      } catch (error) {
+        statusSpan.textContent = "Erreur";
+        statusSpan.style.color = "#c0392b";
+        resultPre.textContent = "Impossible de contacter l'API : " + error;
+      }
+    }
+  </script>
 </html>
