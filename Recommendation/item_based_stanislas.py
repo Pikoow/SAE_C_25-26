@@ -94,32 +94,65 @@ def compute_missing_embeddings(df, model):
 
     return df
 
+def initialize_artist_system():
+    """
+    Checks database schema and populates missing embeddings.
+    """
+    print("Création des embeddings d'artistes...")
+    ensure_embedding_column()
+    df = fetch_artists()
+
+    compute_missing_embeddings(df, MODEL)
+    print("Recommendation d'artistes prête.")
+
 # ==================================================
-# PUBLIC API FUNCTION
+# PUBLIC API FUNCTION (UPDATED)
 # ==================================================
-def recommend_artists(artist_id: int, top_k: int = 5):
+def recommend_artists(artist_ids, top_k: int = 5):
+    """
+    Unified recommendation: Accepts a single artist_id (int) or a list of artist_ids.
+    """
+    ensure_embedding_column()
+
     conn = db_connect()
     try:
+        # Load all artists with embeddings
         df = pd.read_sql("SELECT artist_id, artist_name, artist_embedding FROM sae.artist WHERE artist_embedding IS NOT NULL;", conn)
         
-        if df.empty or artist_id not in df["artist_id"].values:
+        if df.empty:
             return []
 
-        target_row = df.loc[df.artist_id == artist_id]
-        target_emb = np.array(target_row["artist_embedding"].values[0]).reshape(1, -1)
+        # Convert single ID to list for uniform processing
+        if isinstance(artist_ids, int):
+            artist_ids = [artist_ids]
+            
+        # Extract embeddings for the input artists
+        input_artists_df = df[df['artist_id'].isin(artist_ids)]
         
+        if input_artists_df.empty:
+            return []
+
+        # Calculate the target profile (mean of all input embeddings)
+        input_embeddings = np.array(input_artists_df["artist_embedding"].tolist())
+        target_emb = np.mean(input_embeddings, axis=0).reshape(1, -1)
+        
+        # Prepare the matrix for comparison
         all_ids = df["artist_id"].values
         all_names = df["artist_name"].values
         matrix = np.array(df["artist_embedding"].tolist())
 
+        # Calculate similarities
         similarities = cosine_similarity(target_emb, matrix)[0]
-        
         indices = np.argsort(similarities)[::-1]
         
         results = []
+        input_ids_set = set(artist_ids)
+        
         for idx in indices:
-            if all_ids[idx] == artist_id:
+            # Exclude the artists already in the input list
+            if all_ids[idx] in input_ids_set:
                 continue
+                
             results.append({
                 "artist_id": int(all_ids[idx]),
                 "artist_name": str(all_names[idx]),

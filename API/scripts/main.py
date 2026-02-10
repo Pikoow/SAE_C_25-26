@@ -1,21 +1,26 @@
 from fastapi import FastAPI, HTTPException, Query
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from typing import Optional
+from typing import Optional, List
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Recommendation'))
 
 from item_based_pierre import recommend_similar_tracks
-from item_based_preferences import recommend_similar_tracks_multi
-from item_based_stanislas import recommend_artists
+from item_based_stanislas import recommend_artists, initialize_artist_system
 
 load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="API Muse")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_artist_system()
+    yield
+
+app = FastAPI(title="API Muse", lifespan=lifespan)
 
 # Erreur page web Cors
 app.add_middleware(
@@ -590,111 +595,53 @@ def get_album_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/tracks/{track_id}/reco")
-def get_track_recommendations(
-    track_id: int,
-    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
+@app.get("/reco/tracks")
+def recommend_tracks(
+    track_ids: List[int] = Query(..., description="One or more track IDs to base recommendations on"),
+    limit: int = Query(10, ge=1, le=50)
 ):
+    """
+    Exemple: /reco/tracks?track_ids=69170&track_ids=95976
+    """
     try:
-        # Vérifier si la track existe
-        conn = get_db_connection()
-        if not conn:
-            raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+        recommendations = recommend_similar_tracks(track_ids, top_n=limit)
         
-        cur = conn.cursor()
-        check_query = "SELECT track_id FROM sae.tracks WHERE track_id = %s"
-        cur.execute(check_query, (track_id,))
-        if not cur.fetchone():
-            cur.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="Track non trouvée")
-        
-        cur.close()
-        conn.close()
-        
-        # Appeler la fonction de recommandation
-        recommendations = recommend_similar_tracks(target_track_id=track_id, top_n=limit)
-
         if not recommendations:
-            raise HTTPException(status_code=404, detail="Aucune recommandation possible")
-        
+            raise HTTPException(status_code=404, detail="No recommendations found for the given IDs")
+            
         return {
-            "target_track_id": track_id,
-            "count": len(recommendations),
-            "results": recommendations
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la recommandation : {str(e)}")
-
-@app.get("/recommendations/multi")
-def get_track_recommendations_multi(
-    track_id: list[int] = Query([], description="Liste des IDs de musiques"),
-    limit: int = Query(5, ge=1, le=50)
-):
-    try:
-        if not track_id:
-            raise HTTPException(status_code=400, detail="Aucun ID fourni")
-
-        conn = get_db_connection()
-        if not conn:
-            raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
-        
-        cur = conn.cursor()
-        check_query = "SELECT track_id FROM sae.tracks WHERE track_id IN %s"
-        cur.execute(check_query, (tuple(track_id),))
-        
-        found_tracks = cur.fetchall()
-        cur.close()
-        conn.close()
-
-        if not found_tracks:
-            raise HTTPException(status_code=404, detail="Aucune des musiques n'existe")
-        
-        recommendations = recommend_similar_tracks_multi(track_id, top_n=limit)
-
-        return {
-            "target_ids": track_id,
+            "input_ids": track_ids,
             "count": len(recommendations),
             "results": recommendations
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/artists/{artist_id}/reco")
+@app.get("/reco/artists")
 def get_artist_recommendations(
-    artist_id: int,
-    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
+    artist_ids: List[int] = Query(..., description="One or more artist IDs to base recommendations on"),
+    limit: int = Query(5, ge=1, le=50)
 ):
-    """Recommandation d'artistes optimisée"""
+    """
+    Exemple: /reco/artists?artist_ids=123&artist_ids=456
+    """
     try:
-        recommendations = recommend_artists(artist_id=artist_id, top_k=limit)
+        recommendations = recommend_artists(artist_ids=artist_ids, top_k=limit)
         
         if not recommendations:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("SELECT artist_name FROM sae.artist WHERE artist_id = %s", (artist_id,))
-            artist_exists = cur.fetchone()
-            cur.close()
-            conn.close()
-            
-            if not artist_exists:
-                raise HTTPException(status_code=404, detail="Artiste non trouvé")
+            # Logic to check if the input IDs exist at all if no recommendations are found
             return {
-                "target_artist_id": artist_id,
+                "input_artist_ids": artist_ids,
                 "count": 0,
                 "results": [],
-                "message": "Embeddings manquants pour cet artiste"
+                "message": "No embeddings found for the provided artist IDs."
             }
         
         return {
-            "target_artist_id": artist_id,
+            "input_artist_ids": artist_ids,
             "count": len(recommendations),
             "results": recommendations
         }
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur reco: {str(e)}")
 
