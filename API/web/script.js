@@ -191,31 +191,102 @@ $(document).ready(function() {
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
+function moveCarousel(card,index) {
+    const gap = parseFloat(getComputedStyle(card).gap);
+
+    const slideWidth = card.offsetWidth;
+
+    // const styles = getComputedStyle(card);
+    // const gap = parseFloat(styles.gap);
+
+    const offset = -(index * (slideWidth + gap));
+
+    card.style.transform = `translateX(${offset}px)`;
+    console.log("slide width",slideWidth)
+}
+
+// const carrousel_buttons = document.querySelectorAll(".carrousel-button");
+// const carrousel_slides = document.querySelectorAll(".carrousel-slide");
+// // console.log(carrousel_buttons,carrousel_slides)
+// let currentIndex = 3
+// carrousel_buttons.forEach((carrBut) => {
+//     carrBut.addEventListener('click', (e) => {
+        
+//         const direction = e.target.id === 'next' ? 1 : -1;
+//         const total = carrousel_slides.length;
+
+//         currentIndex = (currentIndex + direction + total) % total;
+
+//         const new_left  = (currentIndex - 1 + total) % total;
+//         const new_right = (currentIndex + 1) % total;
+
+//         console.log(new_left, currentIndex, new_right);
+
+//         carrousel_slides.forEach(slide =>
+//             slide.classList.remove("active")
+//         );
+
+//         carrousel_slides[currentIndex].classList.add("active");
+//         carrousel_slides[new_left].classList.add("active");
+//         carrousel_slides[new_right].classList.add("active");
+//     })
+// })
 
 
-const carrousel_buttons = document.querySelectorAll(".carrousel-button");
-const carrousel_slides = document.querySelectorAll(".carrousel-slide");
+
+
+
+
+
+const carrousel_buttons_artist = document.querySelectorAll(".carrousel-button-artist");
+const carrousel_slides_artist = document.querySelectorAll(".artist-card");
 // console.log(carrousel_buttons,carrousel_slides)
-let currentIndex = 3
-
-carrousel_buttons.forEach((carrBut) => {
+let artist_index = 0
+carrousel_buttons_artist.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
-        const direction = e.target.id === 'next' ? 1 : -1;
+        const direction = e.target.id === 'next-artist' ? 1 : -1;
         const total = carrousel_slides.length;
 
-        currentIndex = (currentIndex + direction + total) % total;
+        artist_index = (artist_index + direction + total) % total;
 
-        const new_left  = (currentIndex - 1 + total) % total;
-        const new_right = (currentIndex + 1) % total;
+        const new_left  = (artist_index - 1 + total) % total;
+        const new_right = (artist_index + 1) % total;
 
-        console.log(new_left, currentIndex, new_right); // 🔥 5 6 0 ici
+        console.log(new_left, artist_index, new_right);
 
         carrousel_slides.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carrousel_slides[currentIndex].classList.add("active");
+        carrousel_slides[artist_index].classList.add("active");
+        carrousel_slides[new_left].classList.add("active");
+        carrousel_slides[new_right].classList.add("active");
+    })
+})
+
+const carrousel_buttons_track = document.querySelectorAll(".carrousel-button-track");
+const carrousel_slides_track = document.querySelectorAll(".track-card");
+// console.log(carrousel_buttons,carrousel_slides)
+let track_index = 0
+carrousel_buttons_track.forEach((carrBut) => {
+    carrBut.addEventListener('click', (e) => {
+        
+        const direction = e.target.id === 'next-track' ? 1 : -1;
+        const total = carrousel_slides.length;
+
+        track_index = (track_index + direction + total) % total;
+
+        const new_left  = (track_index - 1 + total) % total;
+        const new_right = (track_index + 1) % total;
+
+        console.log(new_left, track_index, new_right);
+
+        carrousel_slides.forEach(slide =>
+            slide.classList.remove("active")
+        );
+
+        carrousel_slides[track_index].classList.add("active");
         carrousel_slides[new_left].classList.add("active");
         carrousel_slides[new_right].classList.add("active");
     })
