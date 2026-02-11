@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion / Création de compte</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; background: #f0f0f0; text-align: center; }
+    form { background: white; padding: 20px; border-radius: 8px; display: inline-block; text-align: left; }
+    input { display: block; width: 300px; padding: 10px; margin-bottom: 10px; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; background: #007BFF; color: white; }
+    button:hover { background: #0056b3; }
+    #message { margin-top: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Connexion / Création de compte</h1>
+
+  <form id="authForm">
+    <input type="text" id="user_firstName" placeholder="Prénom (pour création)">
+    <input type="text" id="user_lastName" placeholder="Nom (pour création)">
+    <input type="email" id="user_mail" placeholder="Email" required>
+    <input type="password" id="user_password" placeholder="Mot de passe" required>
+    <input type="number" id="user_age" placeholder="Âge">
+    <input type="text" id="user_gender" placeholder="Genre">
+    <input type="text" id="user_location" placeholder="Localisation">
+    <div style="text-align:center;">
+      <button type="button" id="loginBtn">Se connecter</button>
+      <button type="button" id="registerBtn">Créer un compte</button>
+    </div>
+  </form>
+
+  <p id="message"></p>
+
+  <script>
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+    const message = document.getElementById("message");
+
+    function getFormData() {
+      return {
+        firstName: document.getElementById("user_firstName").value.trim(),
+        lastName: document.getElementById("user_lastName").value.trim(),
+        email: document.getElementById("user_mail").value.trim(),
+        password: document.getElementById("user_password").value,
+        age: parseInt(document.getElementById("user_age").value) || null,
+        gender: document.getElementById("user_gender").value.trim() || null,
+        location: document.getElementById("user_location").value.trim() || null
+      };
+    }
+
+    async function sendAuth(isRegister) {
+      const data = getFormData();
+
+      try {
+        const res = await fetch("http://localhost:3000/login", { // backend gère auto création
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          message.style.color = "green";
+          message.textContent = `Connecté : ${result.user.firstName}`;
+          setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
+        } else {
+          message.style.color = "red";
+          message.textContent = result.error;
+        }
+
+      } catch (err) {
+        console.error(err);
+        message.style.color = "red";
+        message.textContent = "Erreur serveur ou réseau";
+      }
+    }
+
+    loginBtn.addEventListener("click", () => sendAuth(false));
+    registerBtn.addEventListener("click", () => sendAuth(true));
+
+  </script>
+</body>
+</html>

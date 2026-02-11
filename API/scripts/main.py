@@ -811,6 +811,62 @@ def get_all_id_ternaire(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+'''
+@app.get("/playlist/{user_id}")
+def get_playlist_for_user(
+    user_id: int,
+    limit: Optional[int] = Query(20, ge=1, le=100, description="Nombre maximum de résultats"),
+    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
+):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        # Vérifier si l'utilisateur existe
+        user_query = "SELECT user_name FROM sae.users WHERE user_id = %s"
+        cur.execute(user_query, (user_id,))
+        user = cur.fetchone()
+        
+        if not user:
+            cur.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Récupérer les recommandations de playlist pour l'utilisateur
+        playlist_query = """
+            QUERY
+        """
+        
+        cur.execute(playlist_query, (user_id, limit, offset))
+        playlist_tracks = cur.fetchall()
+        
+        # Compter le total
+        count_query = "SELECT COUNT(*) as total FROM sae.user_playlist WHERE user_id = %s"
+        cur.execute(count_query, (user_id,))
+        total = cur.fetchone()['total']
+        
+        cur.close()
+        conn.close()
+        
+        return {
+            "user": user['user_name'],
+            "total": total,
+            "count": len(playlist_tracks),
+            "limit": limit,
+            "offset": offset,
+            "playlist": playlist_tracks
+        }
+    except HTTPException:
+        raise
+    except Exception
+
+'''
+'''
+@app.get("/playlist/{user_id}/{playlist_id}")
+'''
 if __name__ == "__main__":
     import uvicorn
     # Lance le serveur sur le port 8000
