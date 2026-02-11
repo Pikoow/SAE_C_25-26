@@ -3,21 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <title>Connexion / Création de compte</title>
+  <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
+    <script src="script.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 30px; background: #f0f0f0; text-align: center; }
-    form { background: white; padding: 20px; border-radius: 8px; display: inline-block; text-align: left; }
+    section { font-family: Arial, sans-serif; padding: 30px; background: #f0f0f0 !important; text-align: center; color: var(--noir); font-size: 0.875rem; }
+    form { background: white; padding: 20px; margin: 20px; border-radius: 8px; display: inline-block; text-align: left; }
     input { display: block; width: 300px; padding: 10px; margin-bottom: 10px; }
     button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; background: #007BFF; color: white; }
     button:hover { background: #0056b3; }
     #message { margin-top: 10px; text-align: center; }
   </style>
-</head>
-<body>
-  <h1>Connexion / Création de compte</h1>
 
+</head>
+
+<body class="accueil">
+  <header>
+            <a href="accueil.html"><h2>MuSE</h2></a> 
+            <nav>
+                <a href="accueil.html">Accueil</a>
+                <a href="playlists.html">Playlists</a>
+                <a href="preferences.html">Préférences</a>
+                
+                <div class="dropdown">
+                    <a href="#">API ▾</a>
+                    <div class="dropdown-content">
+                        <a href="api-installation.html">Installation</a>
+                        <a href="api-documentation.html">Documentation</a>
+                        <a href="api-test.html">Testez l'API</a>
+                    </div>
+                </div>
+            </nav>
+            <button>
+                <a href="contact.html">Contact</a>
+            </button>
+        </header>
+        
+  <section>
+    
+  <h1>Connexion / Création de compte</h1>
   <form id="authForm">
-    <input type="text" id="user_firstName" placeholder="Prénom (pour création)">
-    <input type="text" id="user_lastName" placeholder="Nom (pour création)">
+    <input type="text" id="user_firstname" placeholder="Prénom (pour création)">
+    <input type="text" id="user_lastname" placeholder="Nom (pour création)">
     <input type="email" id="user_mail" placeholder="Email" required>
     <input type="password" id="user_password" placeholder="Mot de passe" required>
     <input type="number" id="user_age" placeholder="Âge">
@@ -26,10 +56,14 @@
     <div style="text-align:center;">
       <button type="button" id="loginBtn">Se connecter</button>
       <button type="button" id="registerBtn">Créer un compte</button>
+      <button id="logoutBtn">Se déconnecter</button>
+
+      <script src="node-auth/js/app.js"></script>
     </div>
   </form>
 
   <p id="message"></p>
+  </section>
 
   <script>
     const loginBtn = document.getElementById("loginBtn");
@@ -38,8 +72,8 @@
 
     function getFormData() {
       return {
-        firstName: document.getElementById("user_firstName").value.trim(),
-        lastName: document.getElementById("user_lastName").value.trim(),
+        firstName: document.getElementById("user_firstname").value.trim(),
+        lastName: document.getElementById("user_lastname").value.trim(),
         email: document.getElementById("user_mail").value.trim(),
         password: document.getElementById("user_password").value,
         age: parseInt(document.getElementById("user_age").value) || null,
@@ -62,13 +96,14 @@
         const result = await res.json();
 
         if (result.success) {
-          message.style.color = "green";
-          message.textContent = `Connecté : ${result.user.firstName}`;
-          setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
+            message.style.color = "green";
+            message.textContent = `Connecté : ${result.user.user_firstname}`;
+            setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
         } else {
-          message.style.color = "red";
-          message.textContent = result.error;
+            message.style.color = "red";
+            message.textContent = result.error;
         }
+
 
       } catch (err) {
         console.error(err);

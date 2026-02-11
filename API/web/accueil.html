@@ -28,13 +28,17 @@
                 </div>
             </nav>
             <button>
-                <a href="contact.html">Contact</a>
+                <a href="connexion.html">Connexion</a>
             </button>
         </header>
 
     <h1>Bienvenue</h1>
   <p id="welcome"></p>
   <button id="goConnexion">Aller sur la page Connexion / Register</button>
+  <button id="logoutBtn">Se déconnecter</button>
+      
+    <script src="node-auth/js/app.js"></script>
+
 
   <script>
     const goConnexion = document.getElementById("goConnexion");
@@ -100,7 +104,7 @@
             <div>
                 <p>Liens utiles</p>
                 <div>
-                    <a href="#">Nous contacter</a>
+                    <a href="contact.html">Nous contacter</a>
                 </div>
             </div>
             <div>
@@ -119,10 +123,10 @@
         <div class="barre-separation-footer"></div>
         <div class="fin-footer">
             <div class="reseaux-sociaux-footer">
-                <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"/></a>
-                <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"/></a>
-                <a href="#"><img src="../images/icones/github.avif" alt="GitHub"/></a>
-                <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"/></a>
+                <a href="#"><img src="/images/icones/instagram.avif" alt="Instagram"/></a>
+                <a href="#"><img src="/images/icones/linkedin.avif" alt="LinkedIn"/></a>
+                <a href="#"><img src="/images/icones/github.avif" alt="GitHub"/></a>
+                <a href="#"><img src="/images/icones/facebook.avif" alt="Facebook"/></a>
             </div>
             <p>© 2026 MuSE Français</p>
         </div>
@@ -131,7 +135,7 @@
     <script>
         // Affichage des albums
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/albums?limit=12")
+            fetch("http://127.0.0.1:8000/albums?limit=8")
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById("albums-container");
@@ -149,7 +153,7 @@
                         }
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
                         albumCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='../images/no_image_music.png'">
+                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_music.png'">
                             <div class="album-info">
                                 <h3>${album.album_title}</h3>
                                 <p>${artistName}</p>
@@ -167,27 +171,36 @@
         document.addEventListener("DOMContentLoaded", function () {
             fetch("http://127.0.0.1:8000/reco/tracks?track_ids=81466")
                 .then(response => response.json())
-                .then(data => {
+                .then(async data => {
                     const container = document.getElementById("tracks-container");
-                    data.results.forEach(track => {
-                        const trackCard = document.createElement("div");
-                        trackCard.classList.add("track-card");
+                    container.innerHTML = "";
+                    const trackIds = data.results.map(t => t.track_id);
+                    const trackRequests = trackIds.map(id =>
+                        fetch(`http://127.0.0.1:8000/tracks/${id}`)
+                            .then(res => res.json())
+                    );
+                    const tracksFullData = await Promise.all(trackRequests);
+                    tracksFullData.forEach(track => {
+
+                        
+
                         let filename = null;
                         if (track.track_image_file) {
                             const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                             filename = match ? match[1] : track.track_image_file;
                         }
                         console.log("Track ID:", track.track_id, "Image Filename:", filename);
-                        let imageUrl = "../images/no_image_music.png";
+                        let imageUrl = "images/no_image_music.png";
                         if (filename) {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
-
+                        const trackCard = document.createElement("div");
+                        trackCard.classList.add("track-card");
                         trackCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='../images/no_image_music.png'">
+                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
                             <div class="track-info">
                                 <h3>${track.track_title}</h3>
-                                <p>${track.artist_name || "Artiste inconnu"}</p>
+                                <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
                             </div>
                         `;
                         trackCard.dataset.trackId = track.track_id;
@@ -199,65 +212,46 @@
                 });
         });
 
+        // Affichage des recommandations d'artistes
         document.addEventListener("DOMContentLoaded", function () {
-
-    fetch("http://127.0.0.1:8000/reco/artists?artist_ids=1")
-        .then(response => response.json())
-        .then(async data => {
-
-            const container = document.getElementById("artists-container");
-            container.innerHTML = "";
-
-            // Récupérer les IDs recommandés
-            const artistIds = data.results.map(a => a.artist_id);
-
-            // Faire toutes les requêtes en parallèle
-            const artistRequests = artistIds.map(id =>
-                fetch(`http://127.0.0.1:8000/artists/${id}`)
-                    .then(res => res.json())
-            );
-
-            const artistsFullData = await Promise.all(artistRequests);
-            console.log("Données complètes des artistes recommandés :", artistsFullData);
-
-            artistsFullData.forEach(artist => {
-
-    let filename = null;
-
-    if (artist.artist_image_file) {
-        const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-        filename = match ? match[1] : artist.artist_image_file;
-    }
-
-    let imageUrl = "../images/no_image_artist.png";
-
-    if (filename) {
-        imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" 
-            + filename 
-            + "&width=290&height=290&type=artist";
-    }
-
-    const artistCard = document.createElement("div");
-    artistCard.classList.add("artist-card");
-
-    artistCard.innerHTML = `
-        <img src="${imageUrl}" 
-             alt="${artist.artist_name}" 
-             class="artist-cover"
-             onerror="this.src='../images/no_image_artist.png'">
-        <h3>${artist.artist_name}</h3>
-        <p>Artiste</p>
-    `;
-
-    container.appendChild(artistCard);
-});
-
-        })
-        .catch(error => {
-            console.error("Erreur :", error);
+            fetch("http://127.0.0.1:8000/reco/artists?artist_ids=1")
+                .then(response => response.json())
+                .then(async data => {
+                    const container = document.getElementById("artists-container");
+                    container.innerHTML = "";
+                    const artistIds = data.results.map(a => a.artist_id);
+                    const artistRequests = artistIds.map(id =>
+                        fetch(`http://127.0.0.1:8000/artists/${id}`)
+                            .then(res => res.json())
+                    );
+                    const artistsFullData = await Promise.all(artistRequests);
+                    artistsFullData.forEach(artist => {
+                        let filename = null;
+                        if (artist.artist_image_file) {
+                            const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                            filename = match ? match[1] : artist.artist_image_file;
+                        }
+                        let imageUrl = "..images/no_image_artist.png";
+                        if (filename) {
+                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
+                        }
+                        const artistCard = document.createElement("div");
+                        artistCard.classList.add("artist-card");
+                        artistCard.innerHTML = `
+                            <img src="${imageUrl}" 
+                                alt="${artist.artist_name}" 
+                                class="artist-cover"
+                                onerror="this.src='..images/no_image_artist.png'">
+                            <h3>${artist.artist_name}</h3>
+                            <p>Artiste</p>
+                        `;
+                        container.appendChild(artistCard);
+                    });
+                })
+            .catch(error => {
+                console.error("Erreur :", error);
+            });
         });
-});
-
     </script>
 
 </body>
