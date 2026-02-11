@@ -377,6 +377,7 @@ def import_tracks():
     # Charger raw_tracks.csv pour récupérer track_file
     df_raw_tracks = pd.read_csv(RAW_TRACKS_CSV)
     track_file_map = dict(zip(df_raw_tracks["track_id"], df_raw_tracks["track_file"]))
+    track_image_file_map = dict(zip(df_raw_tracks["track_id"], df_raw_tracks["track_image_file"]))
 
     df_sql = pd.DataFrame({
         "track_id": df["track_id"],
@@ -396,6 +397,7 @@ def import_tracks():
         "track_rank_id": None,
         "track_feature_id": None,
         "track_file": df["track_id"].map(track_file_map),
+        "track_image_file": df["track_id"].map(track_image_file_map),
         "track_disk_number": df["track_number"],
         "track_bit_rate": df["track_bit_rate"]
     })
