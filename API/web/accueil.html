@@ -34,6 +34,15 @@
 
     <h1>Bienvenue</h1>
   <p id="welcome"></p>
+  <button id="goConnexion">Aller sur la page Connexion / Register</button>
+
+  <script>
+    const goConnexion = document.getElementById("goConnexion");
+
+    goConnexion.addEventListener("click", () => {
+      window.location.href = "connexion.html"; // redirige vers la page unique login/register
+    });
+  </script>
 
   <script>
     async function getDashboard() {
