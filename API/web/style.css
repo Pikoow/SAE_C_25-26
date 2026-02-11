@@ -409,13 +409,64 @@ footer {
 
 .accueil .track-info p {
     font-size: 0.9rem;
-    color: var(--gris-fonce);
+    color: var(--gris-clair);
 }
 
 /* SECTION ARTISTS */
 .accueil .artists {
     background-color: var(--blanc);
     padding: 0 3.125em 3.125em 3.125em;
+}
+
+.accueil .artists h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.25rem;
+    color: var(--noir);
+    display: flex;
+    margin-bottom: 1.25em;
+}
+
+.accueil .artists #artists-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+
+.accueil .artists img {
+    width: 125px;
+    height: 125px;
+    border-radius: 0.5em;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.accueil .artist-card {
+    gap: 1.2em;
+    background-color: var(--blanc);
+    border: 1px solid var(--gris-clair);
+    padding: 1em 1.5em;
+    border-radius: 0.75em;
+    color: var(--noir);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.accueil .artist-card:hover {
+    transform: scale(1.02);
+}
+
+.accueil .artists h3 {
+    color: var(--noir);
+    font-size: 1.1rem;
+    margin-top: 0.3em;
+    text-align: center;
+    max-width: 125px;
+}
+
+.accueil .artist-card p {
+    font-size: 0.9rem;
+    color: var(--gris-clair);
+    text-align: center;
 }
 
 

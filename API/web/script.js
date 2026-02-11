@@ -25,23 +25,6 @@ function ajouterElementSelectionne(nom, containerId, idElement) {
         this.style.transform = "scale(0)";
         this.style.opacity = "0";
         
-        setTimeout(() => {
-            this.remove();
-            if (containerId === "selected-artists-list") {
-                const resteDesArtistes = container.querySelectorAll('.badge-item').length;
-                if (resteDesArtistes === 0) {
-                    $('#selected-tracks-list').empty();
-                    // On détruit l'autocomplete si plus d'artistes
-                    if ($("#musique").data("ui-autocomplete")) $("#musique").autocomplete("destroy");
-                } else {
-                    chargerMusiques();
-                }
-            }
-            // Si on supprime un genre, on recharge les artistes possibles
-            if (containerId === "selected-genres-list") {
-                chargerArtists();
-            }
-        }, 200);
     });
 
     container.appendChild(badge);
@@ -81,7 +64,7 @@ async function chargerGenres() {
                 }
             });
             
-            console.log("Autocomplete Genres configuré avec succès !");
+            console.log("Autocomplete Genres prêt !");
         }
     } catch (error) {
         console.error("Erreur lors du chargement des genres :", error);
@@ -93,15 +76,7 @@ async function chargerArtists() {
     const inputElement = document.getElementById("artistes");
     const elements = document.querySelectorAll('.badge-item');
 
-    if (!inputElement) return;
-    const genresNames = Array.from(elements)
-        .map(el => el.textContent.trim())
-        .filter(name => name);
-
-    const genre1 = genresNames[0] || "None"; 
-    const genre2 = genresNames[1] || genre1;
-    const url = `http://127.0.0.1:8000/ternaire/${genre1}/${genre2}`;
-    console.log("URL construite :", url);
+    const url = `http://127.0.0.1:8000/artists`;
     
     try {
         const response = await fetch(url);
@@ -138,36 +113,19 @@ async function chargerArtists() {
 // Fonction pour l'Autocomplete des Musiques
 async function chargerMusiques() {
     const inputElement = document.getElementById("musique");
-    const artistContainer = document.getElementById("selected-artists-list"); 
-    if (!inputElement || !artistContainer) return;
 
-    const elements = artistContainer.querySelectorAll('.badge-item');
-    if (elements.length === 0) return;
-
-    const queryParams = new URLSearchParams();
-    
-    elements.forEach(el => {
-        const id = el.getAttribute('data-id');
-        if (id && id !== "undefined") {
-            queryParams.append('artist_id', id);
-        }
-    });
-
-    const url = `http://127.0.0.1:8000/tracks/artists/appartient?${queryParams.toString()}`;
-    console.log("Appel API Musiques :", url);
+    const url = `http://127.0.0.1:8000/tracks`;
 
     try {
         const response = await fetch(url);
         const data = await response.json();
-        const tracks = data.tracks || [];
+        const tracks = data.results || [];
 
         const listeMusiques = tracks.map(t => ({
             label: `${t.track_title} (${t.album_title || 'Single'})`,
             value: t.track_title,
             id: t.track_id
         }));
-
-        if ($(inputElement).data("ui-autocomplete")) $(inputElement).autocomplete("destroy");
 
         $(inputElement).autocomplete({
             source: function(request, response) {
@@ -182,12 +140,13 @@ async function chargerMusiques() {
                 return false;
             }
         });
+        console.log("Autocomplete Musique prêt !");
     } catch (error) {
         console.error("Erreur Fetch Musiques :", error);
     }
 }
 
-/* Bouton pour faire des recommendations*/
+/* Bouton pour faire des recommendations
 async function Sauvegarde() {
     const container = document.getElementById("selected-tracks-list");
     const displayElement = document.getElementById("tracks-container"); 
@@ -195,11 +154,6 @@ async function Sauvegarde() {
     if (!container || !displayElement) return;
 
     const elements = container.querySelectorAll('.badge-item');
-    
-    if (elements.length === 0) {
-        displayElement.innerHTML = "<p style='color: gray;'>Sélectionnez des musiques pour obtenir des recommandations.</p>";
-        return;
-    }
 
     const queryParams = new URLSearchParams();
     elements.forEach(el => {
@@ -217,41 +171,11 @@ async function Sauvegarde() {
         const data = await response.json();
         const reco = data.results || data;
 
-        displayElement.innerHTML = ""; 
-
-        if (!Array.isArray(reco) || reco.length === 0) {
-            displayElement.innerHTML = "<p>Aucune recommandation trouvée.</p>";
-        } else {
-            reco.forEach(track => {
-                const trackCard = document.createElement("div");
-                trackCard.classList.add("track-card");
-                trackCard.dataset.trackId = track.track_id;
-
-                trackCard.innerHTML = `
-                    <img src="../images/no_image_music.png" alt="${track.track_title}" class="track-cover">
-                    <div class="track-info">
-                        <h3>${track.track_title}</h3>
-                        <p>${track.artist_name || "Artiste inconnu"}</p>
-                    </div>
-                `;
-
-                trackCard.addEventListener('click', () => {
-                    if (typeof lireMusique === "function") {
-                        lireMusique(track.track_id);
-                    }
-                    
-                    document.querySelectorAll('.track-card').forEach(c => c.classList.remove('playing'));
-                    trackCard.classList.add('playing');
-                });
-
-                displayElement.appendChild(trackCard);
-            });
-        }
     } catch (error) {
         console.error("Erreur lors de la récupération des recommandations :", error);
         displayElement.innerHTML = "<p>Erreur lors du chargement des recommandations.</p>";
     }
-}
+}*/
 
 /* Bouton Reset: Vide les listes */
 function Reset() {
@@ -265,7 +189,9 @@ function Reset() {
 /* Activation des fonctions */
 $(document).ready(function() {
     chargerGenres();
-    Sauvegarde();
+    chargerArtists();
+    chargerMusiques();
+    //Sauvegarde();
 });
 
 
