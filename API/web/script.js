@@ -198,18 +198,20 @@ $(document).ready(function() {
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
-function moveCarousel(container) {
+function moveCarousel(container, album_index, slideWidth) {
     const gap = parseFloat(getComputedStyle(container).gap);
-    console.log(gap)
-    const slideWidth = container.offsetWidth;
+    console.log("gap",gap)
+    const centerOffset = Math.floor(3 / 2);
 
     // const styles = getComputedStyle(container);
-    // const gap = parseFloat(styles.gap);
+    // const gap = parseFloat(styles.gap); offsetWidth
 
-    var offset = -(album_index * (slideWidth + gap));
+    // var offset = -(album_index * (slideWidth + gap));
+    var offset = album_index * (slideWidth + gap);
+    // -(album_index - centerOffset) * (slideWidth + gap);
     container.style.transform = `translateX(${offset}px)`;
 
-    console.log("slide width",slideWidth)
+    // console.log("slide width",slideWidth)
     console.log("transform:", `translateX(-${offset}px)`);
 }
 
@@ -247,7 +249,7 @@ function moveCarousel(container) {
 
 
 const carrousel_buttons_artist = document.querySelectorAll(".carrousel-button-artist");
-const carrousel_slides_artist = document.querySelectorAll(".artist-card");
+const carrousel_slides_artist = document.querySelectorAll(".artist-card-carrousel");
 // console.log(carrousel_buttons,carrousel_slides)
 let artist_index = 0
 carrousel_buttons_artist.forEach((carrBut) => {

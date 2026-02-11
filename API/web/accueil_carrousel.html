@@ -29,7 +29,7 @@
             <div class="carrousel">
                 <button class="carrousel-button-albums" id="prev"></button>
                 <button class="carrousel-button-albums" id="next-album"></button>
-                <ul id="albums-container"></ul>
+                <ul id="albums-container-carrousel"></ul>
                 </div>
         </section>
         <section>
@@ -98,11 +98,11 @@
             fetch("http://127.0.0.1:8000/albums?limit=9")
                 .then(response => response.json())
                 .then(data => {
-                    const container = document.getElementById("albums-container");
+                    const container = document.getElementById("albums-container-carrousel");
                     console.log(container)
                     data.results.forEach(album => {
                         const albumCard = document.createElement("li");
-                        albumCard.classList.add("album-card");
+                        albumCard.classList.add("album-card-carrousel");
                         let filename = null;
                         if (album.album_image_file) {
                             const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
@@ -123,11 +123,14 @@
                         `;
                         container.appendChild(albumCard);
                     });
+                    
+                    // Partie Carrousel
 
                     const carrousel_buttons_album = document.querySelectorAll(".carrousel-button-albums");
-                    const carrousel_slides_album = document.querySelectorAll(".album-card");
-                    console.log("carrousel slide",carrousel_slides_album)
-                    let album_index = 4
+                    const carrousel_slides_album = document.querySelectorAll(".album-card-carrousel");
+                    console.log("carrousel slide",carrousel_slides_album);
+                    const visible_cards = 3;
+                    let album_index = 4;
                     carrousel_slides_album[3].classList.add("active");
                     carrousel_slides_album[4].classList.add("active");
                     carrousel_slides_album[5].classList.add("active");
@@ -138,35 +141,40 @@
 
                             album_index = (album_index + direction + total) % total;
                             console.log("actual index",album_index)
-                            var activeCards = document.querySelectorAll(".album-card.active");
+                            
+                            var activeCards = document.querySelectorAll(".albums-card-carrousel.active");
                             console.log("active cards : ",activeCards, "direction ",direction,"container",container)
-                            moveCarousel(container);
-
+                            
+                            var slideWidth = carrousel_slides_album[0].offsetWidth;
+                            console.log("slide width",slideWidth);
+                            
+                            moveCarousel(container,album_index, slideWidth);
+                            
                             const new_left  = (album_index - 1 + total) % total;
                             const new_right = (album_index + 1) % total;
-
+                            
                             console.log(new_left, album_index, new_right);
-
+                            
                             carrousel_slides_album.forEach(slide =>
-                                slide.classList.remove("active")
-                            );
-
+                            slide.classList.remove("active")
+                        );
+                        
                             carrousel_slides_album[album_index].classList.add("active");
                             carrousel_slides_album[new_left].classList.add("active");
                             carrousel_slides_album[new_right].classList.add("active");
                             // console.log("test",{
-                            //     index: album_index,
-                            //     slideWidth,
-                            //     gap,
-                            //     offset
-                            // });
+                                //     index: album_index,
+                                //     slideWidth,
+                                //     gap,
+                                //     offset
+                                // });
                         })
                     })
                 })
                 .catch(error => {
                     console.error("Erreur lors du chargement des albums :", error);
                 });
-                const carrousel_slides_album = document.querySelectorAll(".album-card");
+                const carrousel_slides_album = document.querySelectorAll(".albums-card-carrousel");
                 console.log(carrousel_slides_album)
         });
 
