@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion / Création compte</title>
+</head>
+<body>
+  <h1>Bienvenue</h1>
+  <p id="welcome"></p>
+
+  <script>
+    async function getDashboard() {
+      try {
+        const res = await fetch("http://localhost:3000/dashboard", {
+          method: "GET",
+          credentials: "include" // important pour récupérer la session
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          document.getElementById("welcome").textContent = "Non connecté, merci de revenir à la page login";
+        } else {
+          document.getElementById("welcome").textContent = `Bienvenue ${data.user.user_firstname} !`;
+        }
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById("welcome").textContent = "Erreur serveur";
+      }
+    }
+
+    getDashboard();
+  </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from typing import Optional, List
+from typing import Optional, List, Annotated, Union
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 import os
@@ -777,7 +777,6 @@ def get_all_id_ternaire(
     
     try:
         cur = conn.cursor()
-        # On récupère tous les genres
         query = """
             SELECT DISTINCT
                 e.artist_id,
@@ -794,7 +793,6 @@ def get_all_id_ternaire(
         cur.execute(query, (genre,genre_secondaire,limit, offset))
         id = cur.fetchall()
         
-        # Compter le total
         count_query = "SELECT COUNT(*) as total FROM sae.artist_album_track"
         cur.execute(count_query)
         total = cur.fetchone()['total']
