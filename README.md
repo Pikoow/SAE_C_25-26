@@ -13,16 +13,18 @@ Copiez la template et remplacez les "votre ..." par vos informations.
 Pas besoin de mettre de guillemets.
 
 Template :  
-POSTGRES_DBNAME=votre nom de db  
+`POSTGRES_DBNAME=votre nom de db  
 POSTGRES_USER=votre nom de user  
 POSTGRES_PASSWORD=votre password  
-POSTGRES_PORT=votre port  
+POSTGRES_PORT=votre port`  
 
 ## 3. Création de la base
 
 Lancez le script `setup_db.py`.
 
-/!\ Attention : Vous devez avoir dans le dossier `script_peuplement` :
+Téléchargez les fichiers csv depuis ce Google Drive : `https://drive.google.com/drive/folders/1DtQ8-IXiZsam_DDopiSt9yS9ogjt6_sH?usp=drive_link`.  
+Et déposez les dans `/script_peuplement`.  
+Vous devez bien avoir :  
 - raw_albums_cleaned.csv
 - raw_artists_cleaned.csv
 - tracks_clean.csv
@@ -32,10 +34,12 @@ Lancez le script `setup_db.py`.
 - questionnaire.csv
 - clean_echonest.csv  
 - aatracks_clean_test.csv  
-(Utilisez le script `cleanFinale.py` et les csv des professeurs)
-
-/!\ Nouveau ! Vous devez avoir le csv `aatracks_clean_test.csv` à l'aide du cleaner `cleantesttracks.py`.
 
 ## 4. Lancement de l'API
 
-Lancez le script : `API/scripts/main.py`
+Lancez le script : `python API/scripts/main.py`.
+
+## 5. Lancement du server node
+
+Dans une console séparée lancez le script du server `node API/web/node-auth/server.js`.
+Vous pouvez accéder au site à l'adresse `localhost:3000/accueil.html`.
