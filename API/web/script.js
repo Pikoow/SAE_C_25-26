@@ -272,18 +272,19 @@ $(document).ready(function() {
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
-function moveCarousel(card,index) {
-    const gap = parseFloat(getComputedStyle(card).gap);
+function moveCarousel(container) {
+    const gap = parseFloat(getComputedStyle(container).gap);
+    console.log(gap)
+    const slideWidth = container.offsetWidth;
 
-    const slideWidth = card.offsetWidth;
-
-    // const styles = getComputedStyle(card);
+    // const styles = getComputedStyle(container);
     // const gap = parseFloat(styles.gap);
 
-    const offset = -(index * (slideWidth + gap));
+    var offset = -(album_index * (slideWidth + gap));
+    container.style.transform = `translateX(${offset}px)`;
 
-    card.style.transform = `translateX(${offset}px)`;
     console.log("slide width",slideWidth)
+    console.log("transform:", `translateX(-${offset}px)`);
 }
 
 // const carrousel_buttons = document.querySelectorAll(".carrousel-button");

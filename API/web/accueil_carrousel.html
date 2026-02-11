@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Préférences</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="style-carrousel.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
@@ -99,6 +99,7 @@
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById("albums-container");
+                    console.log(container)
                     data.results.forEach(album => {
                         const albumCard = document.createElement("li");
                         albumCard.classList.add("album-card");
@@ -137,7 +138,9 @@
 
                             album_index = (album_index + direction + total) % total;
                             console.log("actual index",album_index)
-                            moveCarousel(carrousel_slides_album[album_index],album_index);
+                            var activeCards = document.querySelectorAll(".album-card.active");
+                            console.log("active cards : ",activeCards, "direction ",direction,"container",container)
+                            moveCarousel(container);
 
                             const new_left  = (album_index - 1 + total) % total;
                             const new_right = (album_index + 1) % total;
