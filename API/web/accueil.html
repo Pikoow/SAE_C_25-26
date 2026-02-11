@@ -98,7 +98,7 @@
                             filename = match ? match[1] : album.album_image_file;
                         }
                         let imageUrl = "https://freemusicarchive.org/img/default/album.jpg";
-                        if (filename != "album.jpg") {
+                        if (filename) {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
@@ -126,15 +126,25 @@
                     data.results.forEach(track => {
                         const trackCard = document.createElement("div");
                         trackCard.classList.add("track-card");
+                        let filename = null;
+                        if (track.track_image_file) {
+                            const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                            filename = match ? match[1] : track.track_image_file;
+                        }
+                        console.log("Track ID:", track.track_id, "Image Filename:", filename);
+                        let imageUrl = "../images/no_image_music.png";
+                        if (filename) {
+                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
+                        }
+
                         trackCard.innerHTML = `
-                            <img src="../images/no_image_music.png" alt="${track.track_title}" class="track-cover">
+                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='../images/no_image_music.png'">
                             <div class="track-info">
                                 <h3>${track.track_title}</h3>
                                 <p>${track.artist_name || "Artiste inconnu"}</p>
                             </div>
                         `;
                         trackCard.dataset.trackId = track.track_id;
-
                         container.appendChild(trackCard);
                     });
                 })
@@ -143,7 +153,8 @@
                 });
         });
 
-        /*document.addEventListener("DOMContentLoaded", function () {
+        // Affichage des recommandations d'artistes
+        document.addEventListener("DOMContentLoaded", function () {
             fetch("http://127.0.0.1:8000/artists/1/reco")
                 .then(response => response.json())
                 .then(data => {
@@ -160,7 +171,7 @@
                 .catch(error => {
                     console.error("Erreur lors du chargement des recommandations d'artistes :", error);
                 });
-        });*/
+        });
     </script>
 
 </body>

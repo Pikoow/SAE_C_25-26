@@ -46,10 +46,9 @@ class AudioPlayer {
                 bottom: 0;
                 left: 0;
                 right: 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background-color: rgb(237, 122, 38);
                 color: white;
                 padding: 15px 20px;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
                 z-index: 1000;
                 display: flex;
                 justify-content: space-between;
@@ -177,7 +176,7 @@ class AudioPlayer {
             
             .track-card.playing {
                 background: rgba(102, 126, 234, 0.1);
-                border-left: 3px solid #667eea;
+                border-left: 3px solid rgb(237, 122, 38);
             }
         `;
         

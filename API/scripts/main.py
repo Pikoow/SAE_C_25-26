@@ -124,6 +124,7 @@ def get_track_by_id(track_id: int):
                 track_lyricist,
                 track_tags,
                 track_file,
+                track_image_file,
                 track_bit_rate,
                 album_ids,
                 album_titles,
@@ -595,8 +596,9 @@ def get_track_recommendations(
     track_id: int,
     limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
 ):
+    """Recommandation de tracks avec images enrichies"""
+    conn = None
     try:
-        # Vérifier si la track existe
         conn = get_db_connection()
         if not conn:
             raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -608,24 +610,65 @@ def get_track_recommendations(
             cur.close()
             conn.close()
             raise HTTPException(status_code=404, detail="Track non trouvée")
+        recommendations = recommend_similar_tracks(target_track_id=track_id, top_n=limit)
+
+        if not recommendations:
+            cur.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="Aucune recommandation possible")
+        
+        enriched_recommendations = []
+        for rec in recommendations:
+            rec_track_id = rec.get('track_id') or rec.get('id')
+            detail_query = """
+                SELECT 
+                    t.track_id,
+                    t.track_title,
+                    t.track_image_file,
+                    t.track_duration,
+                    t.track_listens,
+                    STRING_AGG(DISTINCT a.album_image_file, ', ') as album_images,
+                    STRING_AGG(DISTINCT ar.artist_name, ', ') as artist_names
+                FROM sae.tracks t
+                LEFT JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
+                LEFT JOIN sae.album a ON aat.album_id = a.album_id
+                LEFT JOIN sae.artist ar ON aat.artist_id = ar.artist_id
+                WHERE t.track_id = %s
+                GROUP BY t.track_id
+            """
+            cur.execute(detail_query, (rec_track_id,))
+            track_details = cur.fetchone()
+            
+            if track_details:
+                album_image = None
+                if track_details.get('album_images'):
+                    album_image = track_details['album_images'].split(',')[0].strip()
+                
+                enriched_rec = {
+                    'track_id': track_details['track_id'],
+                    'track_title': track_details['track_title'],
+                    'track_image_file': track_details.get('track_image_file'),
+                    'album_image_file': album_image,
+                    'artist_name': track_details.get('artist_names', '').split(',')[0].strip() if track_details.get('artist_names') else 'Artiste inconnu',
+                    'track_duration': track_details.get('track_duration'),
+                    'track_listens': track_details.get('track_listens'),
+                    'similarity': rec.get('similarity') or rec.get('score')  # Garder le score de similarité
+                }
+                enriched_recommendations.append(enriched_rec)
         
         cur.close()
         conn.close()
         
-        # Appeler la fonction de recommandation
-        recommendations = recommend_similar_tracks(target_track_id=track_id, top_n=limit)
-
-        if not recommendations:
-            raise HTTPException(status_code=404, detail="Aucune recommandation possible")
-        
         return {
             "target_track_id": track_id,
-            "count": len(recommendations),
-            "results": recommendations
+            "count": len(enriched_recommendations),
+            "results": enriched_recommendations
         }
     except HTTPException:
         raise
     except Exception as e:
+        if conn:
+            conn.close()
         raise HTTPException(status_code=500, detail=f"Erreur lors de la recommandation : {str(e)}")
 
 @app.get("/recommendations/multi")

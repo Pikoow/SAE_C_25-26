@@ -133,6 +133,7 @@ CREATE TABLE tracks (
     track_rank_id       INT,
     track_feature_id    INT,
     track_file          VARCHAR(65000),
+    track_image_file    VARCHAR(65000),
     track_disk_number   INT,
     track_bit_rate      INT
 );
@@ -553,6 +554,7 @@ CREATE OR REPLACE VIEW tracks_features AS
         MAX(t.track_composer)           AS track_composer,
         MAX(t.track_lyricist)           AS track_lyricist,
         MAX(t.track_file)               AS track_file,
+        MAX(t.track_image_file)         AS track_image_file,
         MAX(t.track_bit_rate)           AS track_bit_rate,
         MAX(t.track_disk_number)        AS track_disk_number,
         STRING_AGG(DISTINCT alb.album_id::text, ',') AS album_ids,
