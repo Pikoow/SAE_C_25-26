@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Installation - API MuSE</title>
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+    <body class="test-api"> <header>
+            <a href="accueil.html"><h2>MuSE</h2></a> 
+            <nav>
+                <a href="accueil.html">Accueil</a>
+                <a href="playlists.html">Playlists</a>
+                <a href="preferences.html">Préférences</a>
+                
+                <div class="dropdown">
+                    <a href="#">API ▾</a>
+                    <div class="dropdown-content">
+                        <a href="api-installation.html">Installation</a>
+                        <a href="api-documentation.html">Documentation</a>
+                        <a href="api-test.html">Testez l'API</a>
+                    </div>
+                </div>
+            </nav>
+            <button>
+                <a href="connexion.html">Connexion</a>
+            </button>
+        </header>
+
+        <section>
+            <h1>Installation de l'API</h1>
+            <p>Suivez ces étapes pour installer et lancer le serveur API MuSE localement.</p>
+            <br>
+
+            <div class="endpoint-details">
+                <h4>1. Pré-requis</h4>
+                <p>Assurez-vous d'avoir <a href="https://www.python.org/downloads/"><strong>Python 3.8+</strong></a>et <a href="https://www.postgresql.org/download/" target="_blank"><strong>PostgreSQL</strong></a> installés.</p>
+
+                <h4>2. Récupérer le projet Git</h4>
+                <p>Clonez le projet depuis GitHub :</p>
+                <pre style="text-align: left;">git clone https://github.com/Pikoow/SAE_C_25-26.git</pre>
+                <p>Sinon, téléchargez le projet depuis <a href="https://github.com/Pikoow/SAE_C_25-26" target="_blank">GitHub</a>.</p>
+                
+                <h4>3. Installation des dépendances</h4>
+                <p>Dans votre terminal, installez les librairies nécessaires :</p>
+                <pre style="text-align: left;">pip install fastapi uvicorn psycopg2-binary python-dotenv</pre>
+                
+                <h4>4. Configuration</h4>
+                <p>Créez un fichier <code>.env</code> à la racine du projet avec vos accès BDD :</p>
+                <pre style="text-align: left;">
+POSTGRES_DBNAME=muse_db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=votre_mot_de_passe
+POSTGRES_PORT=5432</pre>
+
+                <h4>5. Mise en place de la base de données</h4>
+                <p>Récuperez les CSV nettoyés via ce lien <a href="https://drive.google.com/drive/folders/1X2Y3Z4W5X6Y7Z8W9X0Y1Z2W3X4Y5Z6W?usp=sharing" target="_blank">Google Drive</a> et placez-les dans le dossier <code>Python/script_peuplement</code> du projet.</p>
+                <p>Exécutez le script de peuplement à la racine du projet pour créer les tables et insérer les données :</p>
+                <pre style="text-align: left;">python setup_db.py</pre>
+            </div>
+        </section>
+
+        <footer>
+            <div class="titre-footer"><h2>MuSE</h2></div>
+            <div class="navigation-footer">
+                <div><p>Société</p><div><a href="#">À propos de nous</a><a href="#">Offre d'emploi</a></div></div>
+                <div><p>Liens utiles</p><div><a href="contact.html">Nous contacter</a></div></div>
+                <div><p>Communauté</p><div><a href="#">Développeurs</a></div></div>
+                <div><p>Légal</p><div><a href="#">Mentions légales</a></div></div>
+            </div>
+            <div class="barre-separation-footer"></div>
+            <div class="fin-footer">
+                <div class="reseaux-sociaux-footer">
+                    <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"/></a>
+                    <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"/></a>
+                    <a href="#"><img src="../images/icones/github.avif" alt="GitHub"/></a>
+                    <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"/></a>
+                </div>
+                <p>© 2026 MuSE Français</p>
+            </div>
+        </footer>    
+    </body>
+</html>
