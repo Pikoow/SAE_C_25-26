@@ -811,69 +811,6 @@ def get_all_id_ternaire(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/tracks/artists/appartient")
-def get_artist_tracks(
-    artist_id: Annotated[List[int], Query()] = [],
-    limit: int = Query(50, ge=1, le=500),
-    offset: int = Query(0, ge=0)
-):
-    print(f"IDs reçus : {artist_id}")
-    if not artist_id:
-        raise HTTPException(status_code=400, detail="Veuillez fournir au moins un artist_id")
-    conn = get_db_connection()
-    
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT artist_name FROM sae.artist WHERE artist_id = ANY(%s)", (artist_id,))
-            artists = cur.fetchall()
-            
-            if not artists:
-                raise HTTPException(status_code=404, detail="Artiste(s) non trouvé(s)")
-            
-            query = """
-                SELECT DISTINCT
-                    t.track_id, t.track_title, t.track_duration,
-                    t.track_genre_top, t.track_listens, t.track_favorite,
-                    t.track_file, a.album_title, a.album_image_file
-                FROM sae.tracks t
-                JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
-                LEFT JOIN sae.album a ON aat.album_id = a.album_id
-                WHERE aat.artist_id = ANY(%s)
-                ORDER BY t.track_listens DESC
-                LIMIT %s OFFSET %s
-            """
-            cur.execute(query, (artist_id, limit, offset))
-            tracks = cur.fetchall()
-            
-            count_query = """
-                SELECT COUNT(DISTINCT t.track_id) as total
-                FROM sae.tracks t
-                JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
-                WHERE aat.artist_id = ANY(%s)
-            """
-            cur.execute(count_query, (artist_id,))
-            total_res = cur.fetchone()
-            total = total_res['total'] if total_res else 0
-        
-        artist_names = [a['artist_name'] for a in artists]
-        
-        return {
-            "artists": artist_names,
-            "total": total,
-            "count": len(tracks),
-            "limit": limit,
-            "offset": offset,
-            "tracks": tracks
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Erreur DB: {e}")
-        raise HTTPException(status_code=500, detail="Erreur interne du serveur")
-    finally:
-        conn.close()
-
 if __name__ == "__main__":
     import uvicorn
     # Lance le serveur sur le port 8000
