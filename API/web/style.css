@@ -39,11 +39,15 @@ body {
 
 header {
     background-color: var(--blanc);
+    border-bottom: 5px solid var(--orange);
     color: var(--noir);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 1.5em 3em;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 header > a {
@@ -282,6 +286,10 @@ footer {
     margin-right: 0.625em;
 }
 
+.accueil footer {
+    margin-bottom: 80px;
+}
+
 
 /* PAGE ACCUEIL
 ***************************/
@@ -409,7 +417,7 @@ footer {
 
 .accueil .track-info p {
     font-size: 0.9rem;
-    color: var(--gris-clair);
+    color: var(--gris-fonce);
 }
 
 /* SECTION ARTISTS */
@@ -433,22 +441,24 @@ footer {
 }
 
 .accueil .artists img {
-    width: 125px;
-    height: 125px;
-    border-radius: 0.5em;
-    object-fit: cover;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;       
+    object-fit: cover;        
     flex-shrink: 0;
+    transition: transform 0.3s ease;
 }
 
 .accueil .artist-card {
-    gap: 1.2em;
+    display: flex;
+    flex-direction: column;      
+    align-items: center;         
     background-color: var(--blanc);
-    border: 1px solid var(--gris-clair);
-    padding: 1em 1.5em;
-    border-radius: 0.75em;
+    padding: 1.5em 1em;
+    border-radius: 1em;
     color: var(--noir);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: transform 0.25s ease;
+    cursor: pointer;
 }
 
 .accueil .artist-card:hover {
@@ -465,7 +475,7 @@ footer {
 
 .accueil .artist-card p {
     font-size: 0.9rem;
-    color: var(--gris-clair);
+    color: var(--gris-fonce);
     text-align: center;
 }
 

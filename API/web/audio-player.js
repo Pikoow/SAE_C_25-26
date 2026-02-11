@@ -3,7 +3,7 @@ class AudioPlayer {
         this.audio = new Audio();
         this.currentTrack = null;
         this.isPlaying = false;
-        this.volume = 0.5;
+        this.volume = 0.7;
         this.audio.volume = this.volume;
         
         this.createPlayerUI();
@@ -11,34 +11,44 @@ class AudioPlayer {
     }
     
     createPlayerUI() {
-        // Create player container
         this.playerContainer = document.createElement('div');
         this.playerContainer.id = 'audio-player-container';
         this.playerContainer.innerHTML = `
-            <div class="player-info">
-                <div class="track-title" id="current-track-title">Aucune musique sélectionnée</div>
-                <div class="artist-name" id="current-artist-name"></div>
+            <div class="player-left">
+                <div class="track-title" id="current-track-title">Aucune musique</div>
+                <div class="artist-name" id="current-artist-name">Sélectionnez une piste</div>
             </div>
-            <div class="player-controls">
-                <button id="play-pause-btn" class="control-btn" disabled>
-                    <span class="play-icon">▶</span>
-                    <span class="pause-icon" style="display: none;">⏸</span>
+            
+            <div class="player-center">
+                <button id="stop-btn" class="stop-btn" disabled>
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="6" width="12" height="12"/>
+                    </svg>
                 </button>
-                <button id="stop-btn" class="control-btn" disabled>⏹</button>
-                <div class="volume-control">
-                    <button id="mute-btn" class="control-btn">🔊</button>
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.5">
+                <button id="play-pause-btn" class="play-btn" disabled>
+                    <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="player-right">
+                <span class="time-current">0:00</span>
+                <span class="time-separator">/</span>
+                <span class="time-total">0:00</span>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
                 </div>
-                <div class="progress-container">
-                    <input type="range" id="progress-bar" min="0" max="100" value="0" class="progress-bar" disabled>
-                    <div class="time-display">
-                        <span id="current-time">0:00</span> / <span id="total-time">0:00</span>
-                    </div>
-                </div>
+                <input type="range" id="progress-input" min="0" max="100" value="0" disabled>
             </div>
         `;
         
-        // Add styles
         const style = document.createElement('style');
         style.textContent = `
             #audio-player-container {
@@ -46,157 +56,224 @@ class AudioPlayer {
                 bottom: 0;
                 left: 0;
                 right: 0;
-                background-color: rgb(237, 122, 38);
+                height: 80px;
+                background: rgb(0, 0, 0);
                 color: white;
-                padding: 15px 20px;
+                padding: 0 40px;
                 z-index: 1000;
-                display: flex;
-                justify-content: space-between;
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
                 align-items: center;
-                font-family: Arial, sans-serif;
+                gap: 30px;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+                font-family: 'Outfit', sans-serif;
             }
-            
-            .player-info {
-                flex: 1;
-                min-width: 200px;
+
+            .player-left {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                justify-self: start;
             }
-            
+
             .track-title {
-                font-weight: bold;
+                font-weight: 600;
                 font-size: 16px;
-                margin-bottom: 5px;
+                color: white;
             }
-            
+
             .artist-name {
                 font-size: 14px;
-                opacity: 0.9;
+                color: rgba(255, 255, 255, 0.6);
             }
-            
-            .player-controls {
-                flex: 2;
+
+            .player-center {
                 display: flex;
+                justify-content: center;
                 align-items: center;
                 gap: 15px;
-                max-width: 600px;
             }
-            
-            .control-btn {
-                background: rgba(255,255,255,0.2);
-                border: none;
-                border-radius: 50%;
+
+            .stop-btn {
                 width: 40px;
                 height: 40px;
-                color: white;
-                font-size: 16px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: background 0.3s;
+                transition: all 0.2s ease;
             }
-            
-            .control-btn:hover:not(:disabled) {
-                background: rgba(255,255,255,0.3);
+
+            .stop-btn:hover:not(:disabled) {
+                background: rgba(255, 255, 255, 0.2);
             }
-            
-            .control-btn:disabled {
+
+            .stop-btn:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+
+            .stop-btn svg {
+                width: 18px;
+                height: 18px;
+                color: white;
+            }
+
+            .play-btn {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: rgb(237, 122, 38);
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .play-btn:hover:not(:disabled) {
+                background: rgb(253, 114, 8);
+                transform: scale(1.05);
+            }
+
+            .play-btn:disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
-            
-            .volume-control {
+
+            .play-btn svg {
+                width: 24px;
+                height: 24px;
+                color: white;
+            }
+
+            .player-right {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 6px;
+                justify-self: end;
+                font-size: 13px;
+                color: rgba(255, 255, 255, 0.7);
+                font-variant-numeric: tabular-nums;
             }
-            
-            #volume-slider {
-                width: 80px;
-                height: 5px;
-                -webkit-appearance: none;
-                background: rgba(255,255,255,0.3);
-                border-radius: 5px;
-                outline: none;
+
+            .time-separator {
+                color: rgba(255, 255, 255, 0.4);
             }
-            
-            #volume-slider::-webkit-slider-thumb {
-                -webkit-appearance: none;
-                width: 15px;
-                height: 15px;
-                border-radius: 50%;
-                background: white;
-                cursor: pointer;
-            }
-            
+
             .progress-container {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
             }
-            
+
             .progress-bar {
                 width: 100%;
-                height: 5px;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.1);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: rgb(237, 122, 38);
+                width: 0%;
+                transition: width 0.1s linear;
+            }
+
+            #progress-input {
+                position: absolute;
+                top: -6px;
+                left: 0;
+                width: 100%;
+                height: 16px;
                 -webkit-appearance: none;
-                background: rgba(255,255,255,0.3);
-                border-radius: 5px;
+                background: transparent;
+                cursor: pointer;
                 outline: none;
             }
-            
-            .progress-bar::-webkit-slider-thumb {
+
+            #progress-input::-webkit-slider-thumb {
                 -webkit-appearance: none;
-                width: 15px;
-                height: 15px;
+                width: 0;
+                height: 0;
+                transition: all 0.2s ease;
+            }
+
+            #progress-input:hover::-webkit-slider-thumb {
+                width: 14px;
+                height: 14px;
                 border-radius: 50%;
                 background: white;
                 cursor: pointer;
             }
-            
-            .progress-bar:disabled::-webkit-slider-thumb {
-                background: rgba(255,255,255,0.5);
-                cursor: not-allowed;
+
+            #progress-input:disabled {
+                cursor: default;
             }
-            
-            .time-display {
-                font-size: 12px;
-                opacity: 0.8;
-                display: flex;
-                justify-content: space-between;
-            }
-            
-            .track-card {
-                cursor: pointer;
-                transition: transform 0.2s;
-            }
-            
-            .track-card:hover {
-                transform: translateY(-2px);
-            }
-            
+
             .track-card.playing {
-                background: rgba(102, 126, 234, 0.1);
-                border-left: 3px solid rgb(237, 122, 38);
+                border-left: 4px solid rgb(237, 122, 38);
+                background: rgba(237, 122, 38, 0.1) !important;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                #audio-player-container {
+                    padding: 0 20px;
+                    grid-template-columns: 1fr auto auto;
+                    gap: 15px;
+                }
+                
+                .player-left {
+                    min-width: 0;
+                }
+                
+                .track-title {
+                    font-size: 14px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    max-width: 180px;
+                }
+                
+                .artist-name {
+                    font-size: 12px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    max-width: 180px;
+                }
+                
+                .player-right {
+                    font-size: 12px;
+                }
             }
         `;
         
         document.head.appendChild(style);
         document.body.appendChild(this.playerContainer);
         
-        // Store DOM elements
         this.playPauseBtn = document.getElementById('play-pause-btn');
         this.stopBtn = document.getElementById('stop-btn');
-        this.volumeSlider = document.getElementById('volume-slider');
-        this.muteBtn = document.getElementById('mute-btn');
-        this.progressBar = document.getElementById('progress-bar');
-        this.currentTimeEl = document.getElementById('current-time');
-        this.totalTimeEl = document.getElementById('total-time');
+        this.progressInput = document.getElementById('progress-input');
+        this.progressFill = document.getElementById('progress-fill');
+        this.timeCurrent = document.querySelector('.time-current');
+        this.timeTotal = document.querySelector('.time-total');
         this.trackTitleEl = document.getElementById('current-track-title');
         this.artistNameEl = document.getElementById('current-artist-name');
+        this.playIcon = this.playPauseBtn.querySelector('.play-icon');
+        this.pauseIcon = this.playPauseBtn.querySelector('.pause-icon');
     }
     
     setupEventListeners() {
-        // Play/Pause button
         this.playPauseBtn.addEventListener('click', () => {
             if (this.isPlaying) {
                 this.pause();
@@ -205,35 +282,23 @@ class AudioPlayer {
             }
         });
         
-        // Stop button
         this.stopBtn.addEventListener('click', () => {
             this.stop();
         });
         
-        // Volume slider
-        this.volumeSlider.addEventListener('input', (e) => {
-            this.setVolume(parseFloat(e.target.value));
-        });
-        
-        // Mute button
-        this.muteBtn.addEventListener('click', () => {
-            this.toggleMute();
-        });
-        
-        // Progress bar
-        this.progressBar.addEventListener('input', (e) => {
+        this.progressInput.addEventListener('input', (e) => {
             const time = (e.target.value / 100) * this.audio.duration;
             this.audio.currentTime = time;
+            this.updateProgress();
         });
         
-        // Audio events
         this.audio.addEventListener('timeupdate', () => {
             this.updateProgress();
         });
         
         this.audio.addEventListener('loadedmetadata', () => {
             this.updateTimeDisplay();
-            this.progressBar.disabled = false;
+            this.progressInput.disabled = false;
         });
         
         this.audio.addEventListener('ended', () => {
@@ -253,9 +318,7 @@ class AudioPlayer {
     
     convertTrackUrl(dbUrl) {
         if (!dbUrl) return '';
-        
         let path = dbUrl.startsWith('music/') ? dbUrl.substring(6) : dbUrl;
-        
         return `https://files.freemusicarchive.org/storage-freemusicarchive-org/music/${path}`;
     }
     
@@ -267,7 +330,6 @@ class AudioPlayer {
             return;
         }
         
-        // Convert the database URL to the full URL
         const fullUrl = this.convertTrackUrl(url);
         
         this.currentTrack = {
@@ -298,42 +360,18 @@ class AudioPlayer {
     stop() {
         this.audio.pause();
         this.audio.currentTime = 0;
-        this.progressBar.value = 0;
-        this.currentTimeEl.textContent = '0:00';
+        this.progressInput.value = 0;
+        this.progressFill.style.width = '0%';
+        this.timeCurrent.textContent = '0:00';
         this.isPlaying = false;
         this.updatePlayPauseButton();
-    }
-    
-    setVolume(volume) {
-        this.volume = volume;
-        this.audio.volume = volume;
-        
-        // Update mute button icon
-        if (volume === 0) {
-            this.muteBtn.textContent = '🔇';
-        } else if (volume < 0.5) {
-            this.muteBtn.textContent = '🔈';
-        } else {
-            this.muteBtn.textContent = '🔊';
-        }
-    }
-    
-    toggleMute() {
-        if (this.audio.volume > 0) {
-            this.audio.volume = 0;
-            this.volumeSlider.value = 0;
-            this.muteBtn.textContent = '🔇';
-        } else {
-            this.audio.volume = this.volume || 0.5;
-            this.volumeSlider.value = this.volume || 0.5;
-            this.muteBtn.textContent = '🔊';
-        }
     }
     
     updateProgress() {
         if (this.audio.duration) {
             const progress = (this.audio.currentTime / this.audio.duration) * 100;
-            this.progressBar.value = progress;
+            this.progressInput.value = progress;
+            this.progressFill.style.width = progress + '%';
             this.updateTimeDisplay();
         }
     }
@@ -345,52 +383,38 @@ class AudioPlayer {
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         };
         
-        this.currentTimeEl.textContent = formatTime(this.audio.currentTime || 0);
+        this.timeCurrent.textContent = formatTime(this.audio.currentTime || 0);
         
         if (this.audio.duration && !isNaN(this.audio.duration)) {
-            this.totalTimeEl.textContent = formatTime(this.audio.duration);
+            this.timeTotal.textContent = formatTime(this.audio.duration);
         }
     }
-    
+
     updatePlayPauseButton() {
-        const playIcon = this.playPauseBtn.querySelector('.play-icon');
-        const pauseIcon = this.playPauseBtn.querySelector('.pause-icon');
-        
         if (this.isPlaying) {
-            playIcon.style.display = 'none';
-            pauseIcon.style.display = 'inline';
+            this.playIcon.style.display = 'none';
+            this.pauseIcon.style.display = 'block';
         } else {
-            playIcon.style.display = 'inline';
-            pauseIcon.style.display = 'none';
+            this.playIcon.style.display = 'block';
+            this.pauseIcon.style.display = 'none';
         }
     }
 }
 
-// Initialize player globally
 let audioPlayer;
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     audioPlayer = new AudioPlayer();
-    
-    // Add click handlers to track cards (modify existing ones)
     document.addEventListener('click', (e) => {
         const trackCard = e.target.closest('.track-card');
         if (trackCard) {
-            // Extract track info from card
             const title = trackCard.querySelector('h3')?.textContent || '';
             const artist = trackCard.querySelector('p')?.textContent || '';
             const trackId = trackCard.dataset.trackId;
-            
-            // Remove playing class from all cards
             document.querySelectorAll('.track-card').forEach(card => {
                 card.classList.remove('playing');
             });
-            
-            // Add playing class to current card
             trackCard.classList.add('playing');
-            
-            // If we have track ID, fetch the full track info
             if (trackId) {
                 fetch(`http://127.0.0.1:8000/tracks/${trackId}`)
                     .then(response => response.json())
