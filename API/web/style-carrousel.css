@@ -2,7 +2,9 @@
     /* left: 10rem; */
     height: 100%;
     width: 100%;
-    position: relative
+    position: relative;
+    overflow: hidden;
+    outline: red solid 2px;
 }
 
 .carrousel-slide {
@@ -10,8 +12,7 @@
     height: 25%;
     width: 25%; 
     opacity: 0.3;
-    transition: transform 0.3s cubic-bezier(.4,.79,.61,.96);
-    transform: translate3d(0, 0, 0);
+    transition: transform 0.4s ease;
 }
 
 .carrousel-slide.active {
@@ -19,7 +20,7 @@
 }
 
 .carrousel-slide img {
-    display: block;
+    /* display: block; */
     height: 100%;
     width: 100%;
     /* object-fit: cover; */
@@ -42,6 +43,8 @@
     width: 100%;
     position: relative;
     padding: 20px;
+    flex: 0 0 calc(100% / 4);
+    flex-wrap: nowrap;
 }
 
 .carrousel li {
@@ -52,6 +55,60 @@
     left: 5px;
 }
 
-#next {
+#next, #next-artist, #next-album, #next-track {
     right:5px;
+}
+
+.album-card {
+    overflow: hidden;
+    position: relative;
+    opacity: 0.6;
+    transform: scale(0.95);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.album-card.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* PAGE ACCUEIL
+***************************/
+.accueil main section > h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.875rem;
+    color: var(--noir);
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.accueil .album-card {
+    background-color: var(--blanc);
+    padding: 15px;
+    border-radius: 10px;
+    color: var(--noir);
+    text-align: center;
+    position: relative
+}
+.accueil .album-card img {
+    margin-top: 10px;
+    border-radius: 8px;
+}
+.accueil .album-card {
+    background-color: var(--blanc);
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    color: var(--noir);
+    transition: transform 0.2s ease;
+}
+.accueil .album-card:hover {
+    transform: scale(1.05);
+}
+.accueil .album-cover {
+    width: 100%;
+    max-width: 200px;
+    border-radius: 10px;
+    margin-bottom: 10px;
 }

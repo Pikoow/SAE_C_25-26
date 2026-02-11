@@ -185,36 +185,35 @@ async function chargerMusiques() {
 }
 
 async function Sauvegarde() {
-    const elements = document.querySelectorAll('.badge-item');
-    
-    if (elements.length === 0) {
-        return [];
-    }
+    const container = document.getElementById("selected-tracks-list");
+    if (!container) return [];
+
+    const elements = container.querySelectorAll('.badge-item');
+    if (elements.length === 0) return [];
 
     const queryParams = new URLSearchParams();
+    
     elements.forEach(el => {
-        if (el.id) queryParams.append('track_id', el.id);
+        const id = el.getAttribute('data-id') || el.id;
+        if (id) {
+            queryParams.append('track_id', id);
+        }
     });
+
     queryParams.append('limit', 5);
 
     const url = `http://127.0.0.1:8000/recommendations/multi?${queryParams.toString()}`;
+    console.log("Appel reco multi :", url);
 
     try {
         const response = await fetch(url);
-        
-        if (!response.ok) {
-            const errorDetail = await response.json();
-            throw new Error(`Erreur ${response.status}: ${errorDetail.detail}`);
-        }
+        if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
 
         const data = await response.json();
-        const reco = data.results || [];
-        console.log(reco)
-        return reco; 
-
+        return data.results || data; 
     } catch (error) {
-        console.error("Erreur lors de la récupération :", error);
-        throw error;
+        console.error("Erreur Sauvegarde :", error);
+        return [];
     }
 }
 
@@ -237,31 +236,102 @@ $(document).ready(function() {
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
+function moveCarousel(card,index) {
+    const gap = parseFloat(getComputedStyle(card).gap);
+
+    const slideWidth = card.offsetWidth;
+
+    // const styles = getComputedStyle(card);
+    // const gap = parseFloat(styles.gap);
+
+    const offset = -(index * (slideWidth + gap));
+
+    card.style.transform = `translateX(${offset}px)`;
+    console.log("slide width",slideWidth)
+}
+
+// const carrousel_buttons = document.querySelectorAll(".carrousel-button");
+// const carrousel_slides = document.querySelectorAll(".carrousel-slide");
+// // console.log(carrousel_buttons,carrousel_slides)
+// let currentIndex = 3
+// carrousel_buttons.forEach((carrBut) => {
+//     carrBut.addEventListener('click', (e) => {
+        
+//         const direction = e.target.id === 'next' ? 1 : -1;
+//         const total = carrousel_slides.length;
+
+//         currentIndex = (currentIndex + direction + total) % total;
+
+//         const new_left  = (currentIndex - 1 + total) % total;
+//         const new_right = (currentIndex + 1) % total;
+
+//         console.log(new_left, currentIndex, new_right);
+
+//         carrousel_slides.forEach(slide =>
+//             slide.classList.remove("active")
+//         );
+
+//         carrousel_slides[currentIndex].classList.add("active");
+//         carrousel_slides[new_left].classList.add("active");
+//         carrousel_slides[new_right].classList.add("active");
+//     })
+// })
 
 
-const carrousel_buttons = document.querySelectorAll(".carrousel-button");
-const carrousel_slides = document.querySelectorAll(".carrousel-slide");
+
+
+
+
+
+const carrousel_buttons_artist = document.querySelectorAll(".carrousel-button-artist");
+const carrousel_slides_artist = document.querySelectorAll(".artist-card");
 // console.log(carrousel_buttons,carrousel_slides)
-let currentIndex = 3
-
-carrousel_buttons.forEach((carrBut) => {
+let artist_index = 0
+carrousel_buttons_artist.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
-        const direction = e.target.id === 'next' ? 1 : -1;
+        const direction = e.target.id === 'next-artist' ? 1 : -1;
         const total = carrousel_slides.length;
 
-        currentIndex = (currentIndex + direction + total) % total;
+        artist_index = (artist_index + direction + total) % total;
 
-        const new_left  = (currentIndex - 1 + total) % total;
-        const new_right = (currentIndex + 1) % total;
+        const new_left  = (artist_index - 1 + total) % total;
+        const new_right = (artist_index + 1) % total;
 
-        console.log(new_left, currentIndex, new_right); // 🔥 5 6 0 ici
+        console.log(new_left, artist_index, new_right);
 
         carrousel_slides.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carrousel_slides[currentIndex].classList.add("active");
+        carrousel_slides[artist_index].classList.add("active");
+        carrousel_slides[new_left].classList.add("active");
+        carrousel_slides[new_right].classList.add("active");
+    })
+})
+
+const carrousel_buttons_track = document.querySelectorAll(".carrousel-button-track");
+const carrousel_slides_track = document.querySelectorAll(".track-card");
+// console.log(carrousel_buttons,carrousel_slides)
+let track_index = 0
+carrousel_buttons_track.forEach((carrBut) => {
+    carrBut.addEventListener('click', (e) => {
+        
+        const direction = e.target.id === 'next-track' ? 1 : -1;
+        const total = carrousel_slides.length;
+
+        track_index = (track_index + direction + total) % total;
+
+        const new_left  = (track_index - 1 + total) % total;
+        const new_right = (track_index + 1) % total;
+
+        console.log(new_left, track_index, new_right);
+
+        carrousel_slides.forEach(slide =>
+            slide.classList.remove("active")
+        );
+
+        carrousel_slides[track_index].classList.add("active");
         carrousel_slides[new_left].classList.add("active");
         carrousel_slides[new_right].classList.add("active");
     })

@@ -1,21 +1,26 @@
 from fastapi import FastAPI, HTTPException, Query
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from typing import Optional
+from typing import Optional, List
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Recommendation'))
 
 from item_based_pierre import recommend_similar_tracks
-from item_based_preferences import recommend_similar_tracks_multi
-from item_based_stanislas import recommend_artists
+from item_based_stanislas import recommend_artists, initialize_artist_system
 
 load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="API Muse")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_artist_system()
+    yield
+
+app = FastAPI(title="API Muse", lifespan=lifespan)
 
 # Erreur page web Cors
 app.add_middleware(
@@ -591,153 +596,53 @@ def get_album_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/tracks/{track_id}/reco")
-def get_track_recommendations(
-    track_id: int,
-    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
+@app.get("/reco/tracks")
+def recommend_tracks(
+    track_ids: List[int] = Query(..., description="One or more track IDs to base recommendations on"),
+    limit: int = Query(10, ge=1, le=50)
 ):
-    """Recommandation de tracks avec images enrichies"""
-    conn = None
+    """
+    Exemple: /reco/tracks?track_ids=69170&track_ids=95976
+    """
     try:
-        conn = get_db_connection()
-        if not conn:
-            raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+        recommendations = recommend_similar_tracks(track_ids, top_n=limit)
         
-        cur = conn.cursor()
-        check_query = "SELECT track_id FROM sae.tracks WHERE track_id = %s"
-        cur.execute(check_query, (track_id,))
-        if not cur.fetchone():
-            cur.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="Track non trouvée")
-        recommendations = recommend_similar_tracks(target_track_id=track_id, top_n=limit)
-
         if not recommendations:
-            cur.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="Aucune recommandation possible")
-        
-        enriched_recommendations = []
-        for rec in recommendations:
-            rec_track_id = rec.get('track_id') or rec.get('id')
-            detail_query = """
-                SELECT 
-                    t.track_id,
-                    t.track_title,
-                    t.track_image_file,
-                    t.track_duration,
-                    t.track_listens,
-                    STRING_AGG(DISTINCT a.album_image_file, ', ') as album_images,
-                    STRING_AGG(DISTINCT ar.artist_name, ', ') as artist_names
-                FROM sae.tracks t
-                LEFT JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
-                LEFT JOIN sae.album a ON aat.album_id = a.album_id
-                LEFT JOIN sae.artist ar ON aat.artist_id = ar.artist_id
-                WHERE t.track_id = %s
-                GROUP BY t.track_id
-            """
-            cur.execute(detail_query, (rec_track_id,))
-            track_details = cur.fetchone()
+            raise HTTPException(status_code=404, detail="No recommendations found for the given IDs")
             
-            if track_details:
-                album_image = None
-                if track_details.get('album_images'):
-                    album_image = track_details['album_images'].split(',')[0].strip()
-                
-                enriched_rec = {
-                    'track_id': track_details['track_id'],
-                    'track_title': track_details['track_title'],
-                    'track_image_file': track_details.get('track_image_file'),
-                    'album_image_file': album_image,
-                    'artist_name': track_details.get('artist_names', '').split(',')[0].strip() if track_details.get('artist_names') else 'Artiste inconnu',
-                    'track_duration': track_details.get('track_duration'),
-                    'track_listens': track_details.get('track_listens'),
-                    'similarity': rec.get('similarity') or rec.get('score')  # Garder le score de similarité
-                }
-                enriched_recommendations.append(enriched_rec)
-        
-        cur.close()
-        conn.close()
-        
         return {
-            "target_track_id": track_id,
-            "count": len(enriched_recommendations),
-            "results": enriched_recommendations
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        if conn:
-            conn.close()
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la recommandation : {str(e)}")
-
-@app.get("/recommendations/multi")
-def get_track_recommendations_multi(
-    track_id: list[int] = Query([], description="Liste des IDs de musiques"),
-    limit: int = Query(5, ge=1, le=50)
-):
-    try:
-        if not track_id:
-            raise HTTPException(status_code=400, detail="Aucun ID fourni")
-
-        conn = get_db_connection()
-        if not conn:
-            raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
-        
-        cur = conn.cursor()
-        check_query = "SELECT track_id FROM sae.tracks WHERE track_id IN %s"
-        cur.execute(check_query, (tuple(track_id),))
-        
-        found_tracks = cur.fetchall()
-        cur.close()
-        conn.close()
-
-        if not found_tracks:
-            raise HTTPException(status_code=404, detail="Aucune des musiques n'existe")
-        
-        recommendations = recommend_similar_tracks_multi(track_id, top_n=limit)
-
-        return {
-            "target_ids": track_id,
+            "input_ids": track_ids,
             "count": len(recommendations),
             "results": recommendations
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/artists/{artist_id}/reco")
+@app.get("/reco/artists")
 def get_artist_recommendations(
-    artist_id: int,
-    limit: Optional[int] = Query(5, ge=1, le=50, description="Nombre de recommandations")
+    artist_ids: List[int] = Query(..., description="One or more artist IDs to base recommendations on"),
+    limit: int = Query(5, ge=1, le=50)
 ):
-    """Recommandation d'artistes optimisée"""
+    """
+    Exemple: /reco/artists?artist_ids=123&artist_ids=456
+    """
     try:
-        recommendations = recommend_artists(artist_id=artist_id, top_k=limit)
+        recommendations = recommend_artists(artist_ids=artist_ids, top_k=limit)
         
         if not recommendations:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute("SELECT artist_name FROM sae.artist WHERE artist_id = %s", (artist_id,))
-            artist_exists = cur.fetchone()
-            cur.close()
-            conn.close()
-            
-            if not artist_exists:
-                raise HTTPException(status_code=404, detail="Artiste non trouvé")
+            # Logic to check if the input IDs exist at all if no recommendations are found
             return {
-                "target_artist_id": artist_id,
+                "input_artist_ids": artist_ids,
                 "count": 0,
                 "results": [],
-                "message": "Embeddings manquants pour cet artiste"
+                "message": "No embeddings found for the provided artist IDs."
             }
         
         return {
-            "target_artist_id": artist_id,
+            "input_artist_ids": artist_ids,
             "count": len(recommendations),
             "results": recommendations
         }
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur reco: {str(e)}")
 

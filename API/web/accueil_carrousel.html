@@ -2,48 +2,51 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Accueil</title>
+    <title>Préférences</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-carrousel.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
-    <script src="script.js"></script>
-    <script src="audio-player.js"></script>
 </head>
 <body class="accueil">
     <header>
-            <a href="accueil.html"><h2>MuSE</h2></a> 
-            <nav>
-                <a href="accueil.html">Accueil</a>
-                <a href="playlists.html">Playlists</a>
-                <a href="preferences.html">Préférences</a>
-                
-                <div class="dropdown">
-                    <a href="#">API ▾</a>
-                    <div class="dropdown-content">
-                        <a href="api-installation.html">Installation</a>
-                        <a href="api-documentation.html">Documentation</a>
-                        <a href="api-test.html">Testez l'API</a>
-                    </div>
-                </div>
-            </nav>
-            <button>
-                <a href="contact.html">Contact</a>
-            </button>
-        </header>
+        <a href="accueil.html"><h2>MuSE</h2></a>
+        <nav>
+            <a href="accueil.html">Accueil</a>
+            <a href="playlists.html">Playlists</a>
+            <a href="preferences.html">Préférences</a>
+            <a href="api.html">API</a>
+        </nav>
+        <button>
+            <a href="#contact">Contact</a>
+        </button>
+    </header>
 
     <main>
-        <section class="albums">
-            <h2>Découvrez de nouveaux albums</h2>
-            <div id="albums-container"></div>
+        <section>
+            <h2>Explorez de nouvelles choses</h2>
+            <div class="carrousel">
+                <button class="carrousel-button-albums" id="prev"></button>
+                <button class="carrousel-button-albums" id="next-album"></button>
+                <ul id="albums-container"></ul>
+                </div>
         </section>
-        <section class="tracks">
-            <h2>Musiques que vous pourriez aimer</h2>
-            <div id="tracks-container"></div>
+        <section>
+            <h2>Recommandations de tracks</h2>
+            <div class="carrousel">
+                <button class="carrousel-button-tracks" id="prev"></button>
+                <button class="carrousel-button-tracks" id="next-track"></button>
+                <ul id="tracks-container"></ul>
+                </div>
         </section>
-        <section class="artists">
-            <h2>Artistes qui pourraient vous plaire</h2>
-            <div id="artists-container"></div>
+        <section>
+            <h2>Recommandations d'artistes</h2>
+            <div class="carrousel">
+                <button class="carrousel-button-artists" id="prev"></button>
+                <button class="carrousel-button-artists" id="next-artist"></button>
+                <ul id="artists-container"></ul>
+                </div>
         </section>
     </main>
 
@@ -91,14 +94,13 @@
     </footer>
 
     <script>
-        // Affichage des albums
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/albums?limit=12")
+            fetch("http://127.0.0.1:8000/albums?limit=9")
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById("albums-container");
                     data.results.forEach(album => {
-                        const albumCard = document.createElement("div");
+                        const albumCard = document.createElement("li");
                         albumCard.classList.add("album-card");
                         let filename = null;
                         if (album.album_image_file) {
@@ -106,10 +108,11 @@
                             filename = match ? match[1] : album.album_image_file;
                         }
                         let imageUrl = "https://freemusicarchive.org/img/default/album.jpg";
-                        if (filename) {
+                        if (filename != "album.jpg") {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
+
                         albumCard.innerHTML = `
                             <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='../images/no_image_music.png'">
                             <div class="album-info">
@@ -119,13 +122,51 @@
                         `;
                         container.appendChild(albumCard);
                     });
+
+                    const carrousel_buttons_album = document.querySelectorAll(".carrousel-button-albums");
+                    const carrousel_slides_album = document.querySelectorAll(".album-card");
+                    console.log("carrousel slide",carrousel_slides_album)
+                    let album_index = 4
+                    carrousel_slides_album[3].classList.add("active");
+                    carrousel_slides_album[4].classList.add("active");
+                    carrousel_slides_album[5].classList.add("active");
+                    carrousel_buttons_album.forEach((carrBut) => {
+                        carrBut.addEventListener('click', (e) => {
+                            const direction = e.target.id === 'next-album' ? 1 : -1;
+                            const total = carrousel_slides_album.length;
+
+                            album_index = (album_index + direction + total) % total;
+                            console.log("actual index",album_index)
+                            moveCarousel(carrousel_slides_album[album_index],album_index);
+
+                            const new_left  = (album_index - 1 + total) % total;
+                            const new_right = (album_index + 1) % total;
+
+                            console.log(new_left, album_index, new_right);
+
+                            carrousel_slides_album.forEach(slide =>
+                                slide.classList.remove("active")
+                            );
+
+                            carrousel_slides_album[album_index].classList.add("active");
+                            carrousel_slides_album[new_left].classList.add("active");
+                            carrousel_slides_album[new_right].classList.add("active");
+                            // console.log("test",{
+                            //     index: album_index,
+                            //     slideWidth,
+                            //     gap,
+                            //     offset
+                            // });
+                        })
+                    })
                 })
                 .catch(error => {
                     console.error("Erreur lors du chargement des albums :", error);
                 });
+                const carrousel_slides_album = document.querySelectorAll(".album-card");
+                console.log(carrousel_slides_album)
         });
 
-        // Affichage des recommandations de tracks
         document.addEventListener("DOMContentLoaded", function () {
             fetch("http://127.0.0.1:8000/tracks/81466/reco")
                 .then(response => response.json())
@@ -134,25 +175,10 @@
                     data.results.forEach(track => {
                         const trackCard = document.createElement("div");
                         trackCard.classList.add("track-card");
-                        let filename = null;
-                        if (track.track_image_file) {
-                            const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                            filename = match ? match[1] : track.track_image_file;
-                        }
-                        console.log("Track ID:", track.track_id, "Image Filename:", filename);
-                        let imageUrl = "../images/no_image_music.png";
-                        if (filename) {
-                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
-                        }
-
                         trackCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='../images/no_image_music.png'">
-                            <div class="track-info">
-                                <h3>${track.track_title}</h3>
-                                <p>${track.artist_name || "Artiste inconnu"}</p>
-                            </div>
+                            <h3>${track.track_title}</h3>
+                            <p>${track.artist_name || "Artiste inconnu"}</p>
                         `;
-                        trackCard.dataset.trackId = track.track_id;
                         container.appendChild(trackCard);
                     });
                 })
@@ -161,7 +187,6 @@
                 });
         });
 
-        // Affichage des recommandations d'artistes
         document.addEventListener("DOMContentLoaded", function () {
             fetch("http://127.0.0.1:8000/artists/1/reco")
                 .then(response => response.json())
@@ -179,8 +204,9 @@
                 .catch(error => {
                     console.error("Erreur lors du chargement des recommandations d'artistes :", error);
                 });
+                
         });
     </script>
-
+    <script src="script.js"></script>
 </body>
 </html>

@@ -1,57 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <title>API MuSE</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
+    <head>
+        <meta charset="UTF-8">
+        <title>Documentation - API MuSE</title>
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+    <body class="test-api">
+        
+        <header>
+            <a href="accueil.html"><h2>MuSE</h2></a> 
+            <nav>
+                <a href="accueil.html">Accueil</a>
+                <a href="playlists.html">Playlists</a>
+                <a href="preferences.html">Préférences</a>
+                
+                <div class="dropdown">
+                    <a href="#">API ▾</a>
+                    <div class="dropdown-content">
+                        <a href="api-installation.html">Installation</a>
+                        <a href="api-documentation.html">Documentation</a>
+                        <a href="api-test.html">Testez l'API</a>
+                    </div>
+                </div>
+            </nav>
+            <button>
+                <a href="contact.html">Contact</a>
+            </button>
+        </header>
 
-  <body class="test-api">
-    <header>
-      <a href="accueil.html"><h2>MuSE</h2></a>
-      <nav>
-        <a href="accueil.html">Accueil</a>
-        <a href="playlists.html">Playlists</a>
-        <a href="preferences.html">Préférences</a>
-        <a href="api.html">API</a>
-      </nav>
-      <button>
-        <a href="contact.html">Contact</a>
-      </button>
-    </header>
-
-    <main>
-      <h1>Testez l'API !</h1>
-      <p>
-        Utilisez cette page pour tester les différents endpoints de l'API MuSE.
-      </p>
-      <br />
-
-      <div>
-        <label>Endpoint : </label>
-        <select id="endpointSelect" onchange="updateUrl()"></select>
-      </div>
-      <br />
-      <div>
-        <label>URL : </label>
-        <input
-          type="text"
-          id="urlInput"
-          value="http://127.0.0.1:8000/"
-          size="100"
-        />
-        <br /><br />
-        <button onclick="sendRequest()">Envoyer la requête</button>
-      </div>
-
-      <hr />
-
-      <div><strong>Status :</strong> <span id="status">En attente</span></div>
-      <pre id="result">Les résultats s'afficheront ici...</pre>
-    </main>
-
-    <section>
-      <h1>Documentation de l'API</h1>
+        <section>
+            <h1>Documentation de l'API</h1>
       <p>Cliquez sur un endpoint pour voir les détails complets.</p>
       <br />
 
@@ -475,166 +453,27 @@
           </ul>
         </div>
       </details>
-    </section>
 
-    <footer>
-      <div class="titre-footer">
-        <h2>MuSE</h2>
-      </div>
-      <div class="navigation-footer">
-        <div>
-          <p>Société</p>
-          <div>
-            <a href="#">À propos de nous</a>
-            <a href="#">Offre d'emploi</a>
-          </div>
-        </div>
-        <div>
-          <p>Liens utiles</p>
-          <div>
-            <a href="#">Nous contacter</a>
-          </div>
-        </div>
-        <div>
-          <p>Communauté</p>
-          <div>
-            <a href="#">Développeurs</a>
-          </div>
-        </div>
-        <div>
-          <p>Légal</p>
-          <div>
-            <a href="#">Mentions légales</a>
-          </div>
-        </div>
-      </div>
-      <div class="barre-separation-footer"></div>
-      <div class="fin-footer">
-        <div class="reseaux-sociaux-footer">
-          <a href="#"
-            ><img src="../images/icones/instagram.avif" alt="Instagram"
-          /></a>
-          <a href="#"
-            ><img src="../images/icones/linkedin.avif" alt="LinkedIn"
-          /></a>
-          <a href="#"
-            ><img src="../images/icones/github.avif" alt="GitHub"
-          /></a>
-          <a href="#"
-            ><img src="../images/icones/facebook.avif" alt="Facebook"
-          /></a>
-        </div>
-        <p>© 2026 MuSE Français</p>
-      </div>
-    </footer>
-  </body>
+            </section>
 
-  <script>
-    const BASE_URL = "http://127.0.0.1:8000";
-
-    // Liste des endpoints
-    const endpoints = [
-      { label: "Accueil", path: "/" },
-      { label: "Toutes les tracks", path: "/tracks?limit=50&offset=0" },
-      { label: "Track par ID", path: "/tracks/1" },
-      { label: "Recommandations Track", path: "/tracks/1/reco?limit=5" },
-      {
-        label: "Recommandations Multiples",
-        path: "/recommendations/multi?track_id=1&track_id=2&limit=5",
-      },
-      { label: "Tous les artistes", path: "/artists?limit=50&offset=0" },
-      { label: "Artiste par ID", path: "/artists/1" },
-      { label: "Recherche artiste (nom)", path: "/artists?name=Muse" },
-      {
-        label: "Tracks d'un artiste",
-        path: "/artists/1/tracks?limit=50&offset=0",
-      },
-      { label: "Recommandations Artiste", path: "/artists/1/reco?limit=5" },
-      { label: "Tous les albums", path: "/albums?limit=50&offset=0" },
-      { label: "Recherche album (titre)", path: "/albums?title=Showbiz" },
-      { label: "Album par ID", path: "/albums/1" },
-      {
-        label: "Tracks d'un album",
-        path: "/albums/1/tracks?limit=50&offset=0",
-      },
-      { label: "Tous les genres", path: "/genres?limit=500" },
-      {
-        label: "Tracks d'un genre",
-        path: "/genres/1/tracks?limit=50&offset=0",
-      },
-    ];
-
-    const select = document.getElementById("endpointSelect");
-    const input = document.getElementById("urlInput");
-    const statusSpan = document.getElementById("status");
-    const resultPre = document.getElementById("result");
-
-    // Remplir le select
-    endpoints.forEach((ep) => {
-      const option = document.createElement("option");
-      option.value = ep.path;
-      option.text = ep.label;
-      select.appendChild(option);
-    });
-
-    function updateUrl() {
-      input.value = BASE_URL + select.value;
-    }
-
-    // --- FONCTION MAGIQUE POUR LA COULEUR ---
-    function syntaxHighlight(json) {
-      if (typeof json != "string") {
-        json = JSON.stringify(json, undefined, 4);
-      }
-      json = json
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-      return json.replace(
-        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-        function (match) {
-          var cls = "number";
-          if (/^"/.test(match)) {
-            if (/:$/.test(match)) {
-              cls = "key";
-            } else {
-              cls = "string";
-            }
-          } else if (/true|false/.test(match)) {
-            cls = "boolean";
-          } else if (/null/.test(match)) {
-            cls = "null";
-          }
-          return '<span class="' + cls + '">' + match + "</span>";
-        },
-      );
-    }
-
-    async function sendRequest() {
-      const url = input.value;
-      statusSpan.textContent = "Chargement...";
-      resultPre.textContent = "Chargement...";
-      statusSpan.style.color = "var(--orange)";
-
-      try {
-        const response = await fetch(url);
-        statusSpan.textContent = response.status + " " + response.statusText;
-
-        if (response.ok) {
-          statusSpan.style.color = "#27ae60"; // Vert
-        } else {
-          statusSpan.style.color = "#c0392b"; // Rouge
-        }
-
-        const data = await response.json();
-
-        // On utilise innerHTML ici pour que les <span> de couleur fonctionnent
-        resultPre.innerHTML = syntaxHighlight(data);
-      } catch (error) {
-        statusSpan.textContent = "Erreur";
-        statusSpan.style.color = "#c0392b";
-        resultPre.textContent = "Impossible de contacter l'API : " + error;
-      }
-    }
-  </script>
+        <footer>
+            <div class="titre-footer"><h2>MuSE</h2></div>
+            <div class="navigation-footer">
+                <div><p>Société</p><div><a href="#">À propos de nous</a><a href="#">Offre d'emploi</a></div></div>
+                <div><p>Liens utiles</p><div><a href="contact.html">Nous contacter</a></div></div>
+                <div><p>Communauté</p><div><a href="#">Développeurs</a></div></div>
+                <div><p>Légal</p><div><a href="#">Mentions légales</a></div></div>
+            </div>
+            <div class="barre-separation-footer"></div>
+            <div class="fin-footer">
+                <div class="reseaux-sociaux-footer">
+                    <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"/></a>
+                    <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"/></a>
+                    <a href="#"><img src="../images/icones/github.avif" alt="GitHub"/></a>
+                    <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"/></a>
+                </div>
+                <p>© 2026 MuSE Français</p>
+            </div>
+        </footer>    
+    </body>
 </html>

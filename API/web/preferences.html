@@ -11,17 +11,25 @@
 
 <body class="preferences">
     <header>
-        <a href="accueil.html"><h2>MuSE</h2></a>
-        <nav>
-            <a href="accueil.html">Accueil</a>
-            <a href="playlists.html">Playlists</a>
-            <a href="preferences.html">Préférences</a>
-            <a href="api.html">API</a>
-        </nav>
-        <button>
-            <a href="#contact">Contact</a>
-        </button>
-    </header>
+            <a href="accueil.html"><h2>MuSE</h2></a> 
+            <nav>
+                <a href="accueil.html">Accueil</a>
+                <a href="playlists.html">Playlists</a>
+                <a href="preferences.html">Préférences</a>
+                
+                <div class="dropdown">
+                    <a href="#">API ▾</a>
+                    <div class="dropdown-content">
+                        <a href="api-installation.html">Installation</a>
+                        <a href="api-documentation.html">Documentation</a>
+                        <a href="api-test.html">Testez l'API</a>
+                    </div>
+                </div>
+            </nav>
+            <button>
+                <a href="contact.html">Contact</a>
+            </button>
+        </header>
   <h2>Préférences</h2>
   <main class="preferences-container">
     <section class="search-section">
@@ -59,7 +67,11 @@
       <button id="btn-reset" class="btn-reset" onclick="Reset()">Réinitialiser</button>
       <button id="btn-save" class="btn-save" onclick="Sauvegarde()">Sauvegarder</button>
   </div>
+  <section>
+      <div id="tracks-container"></div>
+  </section>
   <script src="script.js"></script>
+  <script src="audio-player.js"></script>
   <footer>
         <div class="titre-footer">
             <h2>MuSE</h2>
