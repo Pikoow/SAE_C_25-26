@@ -23,6 +23,39 @@
         </button>
     </header>
 
+    <form id="loginForm">
+    <input type="user_mail" id="user_mail" placeholder="Email" required>
+    <input type="password" id="user_password" placeholder="Mot de passe" required>
+    <button type="submit">S'identifier</button>
+    </form>
+
+    <script>
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById("user_mail").value;
+    const password = document.getElementById("user_password").value;
+
+    const response = await fetch("http://localhost:3000/login", {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        alert("Connexion réussie !");
+        window.location.href = "accueil.html";
+    } else {
+        alert(data.error);
+    }
+    });
+    </script>
+
+
     <main>
         <section>
             <h2>Explorez de nouveaux albums</h2>
