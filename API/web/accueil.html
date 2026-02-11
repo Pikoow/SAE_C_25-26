@@ -156,7 +156,7 @@
 
         // Affichage des recommandations de tracks
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/tracks/81466/reco")
+            fetch("http://127.0.0.1:8000/reco/tracks?track_ids=81466")
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById("tracks-container");
@@ -190,25 +190,65 @@
                 });
         });
 
-        // Affichage des recommandations d'artistes
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/artists/1/reco")
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById("artists-container");
-                    data.results.forEach(artist => {
-                        const artistCard = document.createElement("div");
-                        artistCard.classList.add("artist-card");
-                        artistCard.innerHTML = `
-                            <h3>${artist.artist_name}</h3>
-                        `;
-                        container.appendChild(artistCard);
-                    });
-                })
-                .catch(error => {
-                    console.error("Erreur lors du chargement des recommandations d'artistes :", error);
-                });
+
+    fetch("http://127.0.0.1:8000/reco/artists?artist_ids=1")
+        .then(response => response.json())
+        .then(async data => {
+
+            const container = document.getElementById("artists-container");
+            container.innerHTML = "";
+
+            // Récupérer les IDs recommandés
+            const artistIds = data.results.map(a => a.artist_id);
+
+            // Faire toutes les requêtes en parallèle
+            const artistRequests = artistIds.map(id =>
+                fetch(`http://127.0.0.1:8000/artists/${id}`)
+                    .then(res => res.json())
+            );
+
+            const artistsFullData = await Promise.all(artistRequests);
+            console.log("Données complètes des artistes recommandés :", artistsFullData);
+
+            artistsFullData.forEach(artist => {
+
+    let filename = null;
+
+    if (artist.artist_image_file) {
+        const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+        filename = match ? match[1] : artist.artist_image_file;
+    }
+
+    let imageUrl = "../images/no_image_artist.png";
+
+    if (filename) {
+        imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" 
+            + filename 
+            + "&width=290&height=290&type=artist";
+    }
+
+    const artistCard = document.createElement("div");
+    artistCard.classList.add("artist-card");
+
+    artistCard.innerHTML = `
+        <img src="${imageUrl}" 
+             alt="${artist.artist_name}" 
+             class="artist-cover"
+             onerror="this.src='../images/no_image_artist.png'">
+        <h3>${artist.artist_name}</h3>
+        <p>Artiste</p>
+    `;
+
+    container.appendChild(artistCard);
+});
+
+        })
+        .catch(error => {
+            console.error("Erreur :", error);
         });
+});
+
     </script>
 
 </body>
