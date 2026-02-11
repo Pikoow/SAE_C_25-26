@@ -4,49 +4,49 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const { Pool } = require("pg");
 
+const path = require("path");
 const app = express();
 
-// ======== CONFIG MIDDLEWARE ========
 app.use(express.json());
 app.use(cors({
-  origin: "http://127.0.0.1:8080", // ton frontend
+  origin: "http://127.0.0.1:8080",
   credentials: true
 }));
-
 app.use(session({
   secret: "supersecretkey",
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // true si HTTPS
+  cookie: { secure: false }
 }));
 
-// ======== POSTGRES ========
+app.use(express.static(path.join(__dirname, ".."))); 
+
+app.get("/connexion.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../connexion.html"));
+});
+
+app.use("/images", express.static(path.join(__dirname, "../API/images")));
+
 const pool = new Pool({
   user: "postgres",
   host: "localhost",
-  database: "postgres", 
+  database: "postgres",
   password: "6969",
-  port: 5432,
+  port: 5432
 });
 
-// Vérification connexion
 pool.query("SELECT NOW()")
   .then(res => console.log("Postgres connecté :", res.rows[0]))
   .catch(err => console.error("Erreur connexion Postgres :", err));
 
-// ======== ROUTE LOGIN/REGISTER ========
+// ======== LOGIN / REGISTER ========
 app.post("/login", async (req, res) => {
-  console.log("BODY LOGIN/REGISTER :", req.body);
+  const { firstName, lastName, email, password, age, gender, location } = req.body;
 
-  const { email, password, firstName, lastName } = req.body;
-
-  if (!email || !password) {
-    return res.json({ success: false, error: "Email et mot de passe requis" });
-  }
+  if (!email || !password) return res.json({ success: false, error: "Email et mot de passe requis" });
 
   try {
-    // Cherche l'utilisateur
-    const userResult = await pool.query(
+    let userResult = await pool.query(
       "SELECT * FROM sae.users WHERE user_mail = $1",
       [email]
     );
@@ -54,78 +54,71 @@ app.post("/login", async (req, res) => {
     let user;
 
     if (userResult.rows.length === 0) {
-      // Utilisateur n'existe pas → création
-      if (!firstName || !lastName) {
-        return res.json({ success: false, error: "Prénom et nom requis pour créer un compte" });
-      }
+      // Création utilisateur
+      if (!firstName || !lastName) return res.json({ success: false, error: "Prénom et nom requis" });
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const newUser = await pool.query(
         `INSERT INTO sae.users 
-          (user_firstname, user_lastname, user_mail, user_password, user_year_created)
-         VALUES ($1,$2,$3,$4,NOW())
+          (user_firstname, user_lastname, user_mail, user_password, user_age, user_gender, user_location, user_year_created)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,NOW())
          RETURNING user_id, user_firstname, user_mail`,
-        [firstName, lastName, email, hashedPassword]
+        [firstName, lastName, email, hashedPassword, age || null, gender || null, location || null]
       );
 
       user = newUser.rows[0];
-      console.log("NOUVEL UTILISATEUR :", user);
-
     } else {
-      // Utilisateur existe → vérifier mot de passe
+      // Login
       user = userResult.rows[0];
-
       const validPassword = await bcrypt.compare(password, user.user_password);
-      if (!validPassword) {
-        return res.json({ success: false, error: "Mot de passe incorrect" });
-      }
-
-      console.log("UTILISATEUR TROUVE :", user);
+      if (!validPassword) return res.status(401).json({ success: false, error: "Mot de passe incorrect" });
     }
 
-    // Crée session
+    // Session
     req.session.userId = user.user_id;
 
-    res.json({
-      success: true,
-      message: "Connecté",
-      user: {
-        id: user.user_id,
-        firstName: user.user_firstname,
-        email: user.user_mail
-      }
-    });
+    console.log("Session après login :", req.session);
+
+    res.json({ success: true, message: "Connecté", user });
 
   } catch (err) {
     console.error("ERREUR LOGIN/REGISTER :", err);
-    res.status(500).json({ error: "Erreur serveur" });
+    res.status(500).json({ success: false, error: "Erreur serveur" });
   }
 });
 
-// ======== ROUTE DASHBOARD ========
+// ======== DASHBOARD ========
 app.get("/dashboard", async (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: "Non connecté" });
-  }
+  if (!req.session.userId) return res.status(401).json({ error: "Non connecté" });
 
   try {
     const user = await pool.query(
-      "SELECT user_id, user_firstname, user_mail FROM sae.users WHERE user_id = $1",
+      "SELECT user_id, user_firstname, user_mail FROM sae.users WHERE user_id=$1",
       [req.session.userId]
     );
-
-    res.json({
-      message: `Bienvenue ${user.rows[0].user_firstname}`,
-      user: user.rows[0]
-    });
-
+    res.json({ message: `Bienvenue ${user.rows[0].user_firstname}`, user: user.rows[0] });
   } catch (err) {
     console.error("ERREUR DASHBOARD :", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
-// ======== START SERVER ========
+// ======== LOGOUT ========
+app.post("/logout", (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error("ERREUR LOGOUT :", err);
+      return res.status(500).json({ success: false });
+    }
+
+    res.clearCookie("connect.sid");
+    res.json({ success: true });
+  });
+});
+
+
+
+
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
