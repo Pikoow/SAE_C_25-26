@@ -3,8 +3,11 @@ const session = require("express-session");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const { Pool } = require("pg");
-
 const path = require("path");
+
+var dotenv = require('dotenv');
+dotenv.config({ path: path.join(__dirname, "../../../.env") });
+
 const app = express();
 
 app.use(express.json());
@@ -28,11 +31,11 @@ app.get("/connexion.html", (req, res) => {
 app.use("/images", express.static(path.join(__dirname, "../API/images")));
 
 const pool = new Pool({
-  user: "postgres",
+  user: process.env.POSTGRES_USER,
   host: "localhost",
-  database: "postgres",
-  password: "6969",
-  port: 5432
+  database: process.env.POSTGRES_DBNAME,
+  password: process.env.POSTGRES_PASSWORD,
+  port: parseInt(process.env.POSTGRES_PORT || "5432")
 });
 
 pool.query("SELECT NOW()")
