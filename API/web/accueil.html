@@ -35,6 +35,10 @@
     <h1>Bienvenue</h1>
   <p id="welcome"></p>
   <button id="goConnexion">Aller sur la page Connexion / Register</button>
+  <button id="logoutBtn">Se déconnecter</button>
+      
+    <script src="node-auth/js/app.js"></script>
+
 
   <script>
     const goConnexion = document.getElementById("goConnexion");
@@ -119,10 +123,10 @@
         <div class="barre-separation-footer"></div>
         <div class="fin-footer">
             <div class="reseaux-sociaux-footer">
-                <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"/></a>
-                <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"/></a>
-                <a href="#"><img src="../images/icones/github.avif" alt="GitHub"/></a>
-                <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"/></a>
+                <a href="#"><img src="/images/icones/instagram.avif" alt="Instagram"/></a>
+                <a href="#"><img src="/images/icones/linkedin.avif" alt="LinkedIn"/></a>
+                <a href="#"><img src="/images/icones/github.avif" alt="GitHub"/></a>
+                <a href="#"><img src="/images/icones/facebook.avif" alt="Facebook"/></a>
             </div>
             <p>© 2026 MuSE Français</p>
         </div>
@@ -149,7 +153,7 @@
                         }
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
                         albumCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='../images/no_image_music.png'">
+                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_music.png'">
                             <div class="album-info">
                                 <h3>${album.album_title}</h3>
                                 <p>${artistName}</p>
@@ -185,14 +189,15 @@
                             const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                             filename = match ? match[1] : track.track_image_file;
                         }
-                        let imageUrl = "../images/no_image_music.png";
+                        console.log("Track ID:", track.track_id, "Image Filename:", filename);
+                        let imageUrl = "images/no_image_music.png";
                         if (filename) {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
                         const trackCard = document.createElement("div");
                         trackCard.classList.add("track-card");
                         trackCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='../images/no_image_music.png'">
+                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
                             <div class="track-info">
                                 <h3>${track.track_title}</h3>
                                 <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
@@ -226,7 +231,7 @@
                             const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                             filename = match ? match[1] : artist.artist_image_file;
                         }
-                        let imageUrl = "../images/no_image_artist.png";
+                        let imageUrl = "..images/no_image_artist.png";
                         if (filename) {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
                         }
@@ -236,7 +241,7 @@
                             <img src="${imageUrl}" 
                                 alt="${artist.artist_name}" 
                                 class="artist-cover"
-                                onerror="this.src='../images/no_image_artist.png'">
+                                onerror="this.src='..images/no_image_artist.png'">
                             <h3>${artist.artist_name}</h3>
                             <p>Artiste</p>
                         `;
