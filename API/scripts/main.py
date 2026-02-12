@@ -960,7 +960,7 @@ def get_playlist_for_user(
     finally:
         conn.close()
 
-# Ajouter ou supprimer des musiques d'une playlist existante
+# Met à jour les tracks d'une playlist (remplace toutes les tracks actuelles par une nouvelle liste)
 @app.post("/playlists/{playlist_id}/tracks")
 def update_tracks_in_playlist(playlist_id: int, data: PlaylistUpdateTracks):
     conn = get_db_connection()
