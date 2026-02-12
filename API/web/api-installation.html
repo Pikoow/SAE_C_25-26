@@ -33,7 +33,7 @@
 
             <div class="endpoint-details">
                 <h4>1. Pré-requis</h4>
-                <p>Assurez-vous d'avoir <a href="https://www.python.org/downloads/"><strong>Python 3.8+</strong></a>et <a href="https://www.postgresql.org/download/" target="_blank"><strong>PostgreSQL</strong></a> installés.</p>
+                <p>Assurez-vous d'avoir <a href="https://www.python.org/downloads/"><strong>Python 3.8+</strong></a> et <a href="https://www.postgresql.org/download/" target="_blank"><strong>PostgreSQL</strong></a> installés.</p>
 
                 <h4>2. Récupérer le projet Git</h4>
                 <p>Clonez le projet depuis GitHub :</p>
@@ -42,20 +42,29 @@
                 
                 <h4>3. Installation des dépendances</h4>
                 <p>Dans votre terminal, installez les librairies nécessaires :</p>
-                <pre style="text-align: left;">pip install fastapi uvicorn psycopg2-binary python-dotenv</pre>
+                <pre style="text-align: left;">pip install -r requirements.txt</pre>
                 
                 <h4>4. Configuration</h4>
                 <p>Créez un fichier <code>.env</code> à la racine du projet avec vos accès BDD :</p>
                 <pre style="text-align: left;">
-POSTGRES_DBNAME=muse_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=votre_mot_de_passe
-POSTGRES_PORT=5432</pre>
+POSTGRES_DBNAME=votre nom de db  
+POSTGRES_USER=votre nom de user  
+POSTGRES_PASSWORD=votre password  
+POSTGRES_PORT=votre port</pre>
 
                 <h4>5. Mise en place de la base de données</h4>
                 <p>Récuperez les CSV nettoyés via ce lien <a href="https://drive.google.com/drive/folders/1X2Y3Z4W5X6Y7Z8W9X0Y1Z2W3X4Y5Z6W?usp=sharing" target="_blank">Google Drive</a> et placez-les dans le dossier <code>Python/script_peuplement</code> du projet.</p>
                 <p>Exécutez le script de peuplement à la racine du projet pour créer les tables et insérer les données :</p>
                 <pre style="text-align: left;">python setup_db.py</pre>
+
+                <h4>6. Lancer le serveur API</h4>
+                <p>Une fois la base de données configurée, lancez le serveur API avec :</p>
+                <pre style="text-align: left;">python API/scripts/main.py</pre>
+
+                <h4>7. Accéder au site</h4>
+                <p>Dans un terminal différent, lancez le serveur node avec :</p>
+                <pre style="text-align: left;">node API/web/node-auth/server.js</pre>
+                <p>Ouvrez votre navigateur et accédez à <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> pour voir le site en action.</p>
             </div>
         </section>
 
