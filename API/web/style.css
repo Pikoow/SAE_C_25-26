@@ -95,7 +95,7 @@ header nav > a:hover {
     color: var(--orange);    
 }
 
-header button {
+.connexion-inscription button {
     background-color: var(--orange);
     font-family: 'Outfit', sans-serif;
     font-size: 1.25rem;
@@ -108,11 +108,11 @@ header button {
     transition: transform 0.2s, background-color 0.2s;
 }
 
-header button:hover {
+.connexion-inscription button:hover {
     transform: scale(1.05);
 }
 
-header button > a {
+.connexion-inscription button > a {
     color: var(--blanc);
     text-decoration: none;
     transition: ease 0.25s;
@@ -306,36 +306,145 @@ footer {
 
 /* PAGE ACCUEIL
 ***************************/
-.accueil h1 {
-    font-family: 'Rammetto One', sans-serif;
-    font-size: 9rem;
-    color: var(--noir);
+.accueil .hero {
+    background-color: var(--noir);
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 80vh;
+}
+
+.accueil  .equalizer-bg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 10px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.50;
+}
+
+.accueil .eq-bar {
+    flex-shrink: 0;
+    width: 16px;
+    border-radius: 3px 3px 0 0;
+    background-color: var(--orange);
+    animation: eqBounce var(--duration) ease-in-out infinite alternate;
+    transform-origin: bottom;
+}
+
+@keyframes eqBounce {
+    0%   { height: var(--h-min); }
+    100% { height: var(--h-max); }
+}
+
+.accueil .hero > *:not(.equalizer-bg) {
+    position: relative;
+    z-index: 1;
+}
+
+.accueil .hero h1 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 4rem;
+    color: var(--blanc);
+    text-align: center;
+    margin-bottom: 0.5em;
+}
+
+.accueil .hero h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    text-align: center;
+    color: #ccc;
+    margin: 0 auto 2em;
+    max-width: 55%;
+    line-height: 1.5;
+}
+
+.accueil .btns {
+    display: flex;
+    gap: 1em;
+}
+
+.accueil .btns a {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 0.6em 1.6em;
+    border-radius: 6px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.accueil .btns .btn-login  { 
+    color: var(--blanc); 
+}
+
+.accueil .btns .btn-signup { 
+    background: var(--orange); color: var(--blanc); 
+}
+        
+.accueil .btns .btn-login:hover  { 
+    background: rgba(255,255,255,.1);
+}
+        
+.accueil .btns .btn-signup:hover { 
+    background: var(--orange-fonce); 
+}
+
+.accueil section:first-of-type {
+    background-color: var(--noir);
+    display: flex;
+    flex-direction: column;
     align-items: center;
 }
 
+.accueil h1 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 4rem;
+    color: var(--blanc);
+    text-align: center;
+}
+
+.accueil section:first-of-type > h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    text-align: center;
+    color: var(--blanc);
+    margin: 1.5em 0 2em;
+    width: 55%;
+}
+
+.accueil section:first-of-type > .connexion-inscription > a {
+    color: var(--blanc);
+}
+
 /* SECTION ALBUMS */
-.accueil section:first-of-type {
-    background-color: var(--noir);
+.accueil .albums {
+    background-color: var(--blanc);
+    padding: 3.125em 3.125em 0 3.125em;
 }
 
 .accueil .albums h2 {
     font-family: 'Rammetto One', sans-serif;
     font-size: 1.25rem;
-    color: var(--blanc);
+    color: var(--noir);
     display: flex;
-    justify-content: center;
     margin-bottom: 1.25em;
-    padding-top: 1.25em;
 }
 
 .accueil #albums-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 1em;
-    padding: 0 3.125em 3.125em 3.125em;
 }
 
 .accueil .album-card {
@@ -343,10 +452,11 @@ footer {
     align-items: center;
     gap: 1.2em;
     width: 25em;
-    background-color: var(--gris-fonce);
+    background-color: var(--blanc);
+    border: 1px solid var(--gris-clair);
     padding: 1em 1.5em;
     border-radius: 0.75em;
-    color: var(--blanc);
+    color: var(--noir);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
@@ -358,6 +468,7 @@ footer {
 .accueil .album-card img, .accueil .album-cover {
     width: 75px;
     height: 75px;
+    border: 2px solid var(--blanc);
     border-radius: 0.5em;
     object-fit: cover;
     flex-shrink: 0;
@@ -376,7 +487,7 @@ footer {
 
 .accueil .album-info p {
     font-size: 0.9rem;
-    color: var(--gris-clair);
+    color: var(--gris-fonce);
 }
 
 /* SECTION TRACKS */
