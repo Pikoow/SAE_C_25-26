@@ -114,6 +114,44 @@ async function chargerMusiques() {
         console.error("Erreur Musiques :", error);
     }
 }
+//Fonction pour sauvegarder les preferences de user
+async function Sauvegarde() {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return alert("Veuillez vous connecter.");
+
+    const getIds = (containerId) => {
+        const badges = document.querySelectorAll(`#${containerId} .badge-item`);
+        return Array.from(badges).map(badge => String(badge.getAttribute('data-id')));
+    };
+
+    const payload = {
+        user_id: parseInt(userId),
+        genres: getIds("selected-genres-list"),
+        artists: getIds("selected-artists-list"),
+        tracks: getIds("selected-tracks-list")
+    };
+
+    console.log("Données envoyées au main.py :", payload);
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/save-favorites", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert("Vos préférences ont été enregistrées !");
+        }
+        else{
+            alert("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
+        }
+    } catch (err) {
+        console.error("Erreur de connexion à l'API Python :", err);
+    }
+}
+
 
 // Vide toutes les listes
 function Reset() {

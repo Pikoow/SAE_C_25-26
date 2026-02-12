@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import Optional, List
@@ -26,7 +26,7 @@ app = FastAPI(title="API Muse", lifespan=lifespan)
 # Erreur page web Cors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -901,6 +901,104 @@ def get_playlist_by_id(playlist_id: int):
 # Supprimer une playlist et toutes ses associations (playlist_track, playlist_user)
 @app.delete("/playlists/{playlist_id}")
 def delete_playlist(playlist_id: int):
+
+@app.get("/voir_favorite")
+def get_all_favorite(
+    limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
+    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
+):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        # On utilise la vue tracks_features pour simplifier
+        query = """
+            SELECT 
+                favorite_id,
+                user_favorite_tracks,
+                user_favorite_album ,
+                user_favorite_artist,
+                user_favorite_language,
+                user_favorite_genre,
+                user_id   
+            FROM sae.favorite
+            LIMIT %s OFFSET %s
+        """
+        cur.execute(query, (limit, offset))
+        tracks = cur.fetchall()
+        
+        # Compter le total
+        count_query = "SELECT COUNT(*) as total FROM sae.favorite"
+        cur.execute(count_query)
+        total = cur.fetchone()['total']
+        
+        cur.close()
+        conn.close()
+        
+        return {
+            "total": total,
+            "count": len(tracks),
+            "limit": limit,
+            "offset": offset,
+            "results": tracks
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/save-favorites")
+async def saveFavorite(request : Request):
+    conn = get_db_connection()
+
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    data = await request.json()
+    
+    user_id = data.get("user_id")
+    genres_str = ",".join(map(str, data.get("genres", [])))
+    artists_str = ",".join(map(str, data.get("artists", [])))
+    tracks_str = ",".join(map(str, data.get("tracks", [])))
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id manquant")
+
+    try:
+
+        cur = conn.cursor()
+        query = """
+            INSERT INTO sae.favorite
+                (user_favorite_tracks,user_favorite_artist,user_favorite_genre,user_id) 
+            VALUES (%s,%s,%s,%s)
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                user_favorite_genre = EXCLUDED.user_favorite_genre,
+                user_favorite_artist = EXCLUDED.user_favorite_artist,
+                user_favorite_tracks = EXCLUDED.user_favorite_tracks;
+        """
+        cur.execute(query, (tracks_str,artists_str,genres_str,user_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return {"success": True}
+
+    except Exception as e:
+        print(f"Erreur : {e}")
+        return {"success": False, "error": str(e)}
+
+
+
+'''
+@app.get("/playlist/{user_id}")
+def get_playlist_for_user(
+    user_id: int,
+    limit: Optional[int] = Query(20, ge=1, le=100, description="Nombre maximum de résultats"),
+    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
+):
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
