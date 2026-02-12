@@ -10,6 +10,7 @@
     <script src="script.js"></script>
     <script src="audio-player.js"></script>
     <script src="node-auth/js/app.js"></script>
+    <script src="header-ui.js" defer></script>
     <!-- Pop-up Exit Intent - À insérer n'importe où dans votre page -->
 <style>
     .exit-popup-overlay {
@@ -186,23 +187,45 @@
                 </div>
             </div>
         </nav>
-        <div class="connexion-inscription">
-            <a href="connexion.html">Connexion</a>
+
+        <div class="header-right">
+    
+        <div id="auth-buttons" class="connexion-inscription">
+            <a href="connexion.html?mode=login">Connexion</a>
             <button>
-                <a href="connexion.html">Inscription</a>
+                <a href="connexion.html?mode=register">Inscription</a>
             </button>
         </div>
+
+        <div id="user-menu" class="user-dropdown hidden">
+            <a href="#" id="user-name-display">Mon Profil ▾</a>
+            
+            <div class="dropdown-content user-dropdown-content">
+                <a href="profil.html">Mon profil</a>
+                <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+            </div>
+        </div>
+
+    </div>
     </header>
 
-    <h1 id="welcome"></h1>
-    <button id="goConnexion">Aller sur la page Connexion / Register</button>
-    <button id="logoutBtn">Se déconnecter</button>
-      
-    
-
     <main>
+        <section class="hero">
+
+    <!-- Barres equalizer (injectées par JS) -->
+    <div class="equalizer-bg" id="equalizer-bg"></div>
+
+    <!-- Contenu -->
+    <h1>Découvre, Ressens, Partage</h1>
+    <h2>MuSE te connecte aux albums, artistes et playlists qui te correspondent. Explore une nouvelle façon d'écouter la musique.</h2>
+    <div class="btns">
+        <a href="connexion.html" class="btn-login">Connexion</a>
+        <a href="connexion.html" class="btn-signup">Inscription</a>
+    </div>
+
+</section>
         <section class="albums">
-            <h2>Découvrez de nouveaux albums</h2>
+            <h2>Sélection d'albums</h2>
             <div id="albums-container"></div>
         </section>
         <section class="tracks">
@@ -270,6 +293,29 @@
 
     
     <script>
+        (function() {
+            const container = document.getElementById('equalizer-bg');
+            const BAR_COUNT = 60;
+
+            for (let i = 0; i < BAR_COUNT; i++) {
+                const bar = document.createElement('div');
+                bar.classList.add('eq-bar');
+
+                const hMin     = Math.floor(Math.random() * 60)  + 15;   // 15–75 px
+                const hMax     = Math.floor(Math.random() * 220) + 80;   // 80–300 px
+                const duration = (Math.random() * 1.2 + 0.4).toFixed(2); // 0.4–1.6 s
+                const delay    = (Math.random() * 2.0).toFixed(2);       // 0–2 s
+
+                bar.style.setProperty('--h-min', hMin + 'px');
+                bar.style.setProperty('--h-max', hMax + 'px');
+                bar.style.setProperty('--duration', duration + 's');
+                bar.style.animationDelay = `-${delay}s`;
+                bar.style.height = hMin + 'px';
+
+                container.appendChild(bar);
+            }
+        })();
+
         (function() {
             let exitPopupShown = false;
 
@@ -366,13 +412,13 @@
                             const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                             filename = match ? match[1] : album.album_image_file;
                         }
-                        let imageUrl = "https://freemusicarchive.org/img/default/album.jpg";
+                        let imageUrl = "images/no_image_album.png";
                         if (filename) {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
                         albumCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_music.png'">
+                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_album.png'">
                             <div class="album-info">
                                 <h3>${album.album_title}</h3>
                                 <p>${artistName}</p>

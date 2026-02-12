@@ -5,28 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nous contacter</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="header-ui.js" defer></script>
   </head>
 
   <body class="contact-page">
     <header>
-      <a href="accueil.html"><h2>MuSE</h2></a>
-      <nav>
-        <a href="accueil.html">Accueil</a>
-        <a href="playlists.html">Playlists</a>
-        <a href="preferences.html">Préférences</a>
+        <a href="accueil.html"><h2>MuSE</h2></a> 
+        <nav>
+            <a href="accueil.html">Accueil</a>
+            <a href="playlists.html">Playlists</a>
+            <a href="preferences.html">Préférences</a>
+                
+            <div class="dropdown">
+                <a href="#">API ▾</a>
+                <div class="dropdown-content">
+                    <a href="api-installation.html">Installation</a>
+                    <a href="api-documentation.html">Documentation</a>
+                    <a href="api-test.html">Testez l'API</a>
+                </div>
+            </div>
+        </nav>
 
-        <div class="dropdown">
-          <a href="#">API ▾</a>
-          <div class="dropdown-content">
-            <a href="api-installation.html">Installation</a>
-            <a href="api-documentation.html">Documentation</a>
-            <a href="api-test.html">Testez l'API</a>
-          </div>
+        <div class="header-right">
+    
+        <div id="auth-buttons" class="connexion-inscription">
+            <a href="connexion.html?mode=login">Connexion</a>
+            <button>
+                <a href="connexion.html?mode=register">Inscription</a>
+            </button>
         </div>
-      </nav>
-      <button>
-        <a href="connexion.html">Connexion</a>
-      </button>
+
+        <div id="user-menu" class="user-dropdown hidden">
+            <a href="#" id="user-name-display">Mon Profil ▾</a>
+            
+            <div class="dropdown-content user-dropdown-content">
+                <a href="profil.html">Mon profil</a>
+                <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+            </div>
+        </div>
+
+    </div>
     </header>
 
     <main>

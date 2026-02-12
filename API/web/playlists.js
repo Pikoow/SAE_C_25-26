@@ -27,7 +27,7 @@ async function checkAuthenticatedUser() {
         const data = await response.json();
         
         if (!data.error) {
-            currentUserId = data.user.user_id;
+            currentUserId = data.user.user_id || 1;
             loadUserPlaylists(currentUserId);
         }
     } catch (err) {
@@ -350,7 +350,7 @@ function showPlaylistModal(playlist) {
     if (playlist.tracks && playlist.tracks.length > 0) {
         playlist.tracks.forEach(track => {
             const trackItem = $(`
-                <div class="modal-track-item" data-track-id="${track.track_id}">
+                <div class="modal-track-item track-card" data-track-id="${track.track_id}">
                     <img src="${getTrackImageUrl(track)}" alt="" class="track-image">
                     <div class="track-details">
                         <div class="track-title">${escapeHtml(track.track_title)}</div>
