@@ -27,12 +27,7 @@ async function checkAuthenticatedUser() {
         const data = await response.json();
         
         if (!data.error) {
-            currentUserId = data.user.user_id || 1; // Fallback à 1 si non disponible
-            loadUserPlaylists(currentUserId);
-        } else {
-            // Utilisateur non connecté, utiliser un ID par défaut ou afficher message
-            showNotification("Veuillez vous connecter pour gérer vos playlists", "warning");
-            currentUserId = 1; // ID par défaut pour le développement
+            currentUserId = data.user.user_id;
             loadUserPlaylists(currentUserId);
         }
     } catch (err) {
