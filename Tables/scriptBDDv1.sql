@@ -440,7 +440,7 @@ CREATE TABLE playlist (
     /* list_tracks           ****************************************a voir si table lie pour la liste track**********************/
     created_at TIMESTAMP DEFAULT NOW()
 );
-
+ALTER TABLE sae.playlist ADD COLUMN playlist_num_tracks INT DEFAULT 0;
 
 /* ========================== TABLE PLAYLIST TRACK / playlist user ========================== */
 
@@ -690,11 +690,11 @@ CREATE OR REPLACE FUNCTION update_playlist_count()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        UPDATE playlist
+        UPDATE sae.playlist
         SET playlist_num_tracks = COALESCE(playlist_num_tracks, 0) + 1
         WHERE playlist_id = NEW.playlist_id;
     ELSIF TG_OP = 'DELETE' THEN
-        UPDATE playlist
+        UPDATE sae.playlist
         SET playlist_num_tracks = GREATEST(COALESCE(playlist_num_tracks, 0) - 1, 0)
         WHERE playlist_id = OLD.playlist_id;
     END IF;
