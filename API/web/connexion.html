@@ -1,101 +1,371 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Connexion / Création de compte</title>
-  <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
-    <script src="script.js"></script>
-  <style>
-    section { font-family: Arial, sans-serif; padding: 30px; background: #f0f0f0 !important; text-align: center; color: var(--noir); font-size: 0.875rem; }
-    form { background: white; padding: 20px; margin: 20px; border-radius: 8px; display: inline-block; text-align: left; }
-    input { display: block; width: 300px; padding: 10px; margin-bottom: 10px; }
-    button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; background: #007BFF; color: white; }
-    button:hover { background: #0056b3; }
-    #message { margin-top: 10px; text-align: center; }
-  </style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Connexion / Création de compte - MuSE</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      /* --- CSS SPÉCIFIQUE PAGE AUTHENTIFICATION --- */
 
-</head>
+      .auth-section {
+        padding: 50px 20px;
+        background-color: #f4f4f4;
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+      }
 
-<body class="accueil">
-  <header>
-            <a href="accueil.html"><h2>MuSE</h2></a> 
-            <nav>
-                <a href="accueil.html">Accueil</a>
-                <a href="playlists.html">Playlists</a>
-                <a href="preferences.html">Préférences</a>
-                
-                <div class="dropdown">
-                    <a href="#">API ▾</a>
-                    <div class="dropdown-content">
-                        <a href="api-installation.html">Installation</a>
-                        <a href="api-documentation.html">Documentation</a>
-                        <a href="api-test.html">Testez l'API</a>
-                    </div>
-                </div>
-            </nav>
-            <button>
-                <a href="contact.html">Contact</a>
-            </button>
-        </header>
-        
-  <section>
-    
-  <h1>Connexion / Création de compte</h1>
-  <form id="authForm">
-    <input type="text" id="user_firstname" placeholder="Prénom (pour création)">
-    <input type="text" id="user_lastname" placeholder="Nom (pour création)">
-    <input type="email" id="user_mail" placeholder="Email" required>
-    <input type="password" id="user_password" placeholder="Mot de passe" required>
-    <input type="number" id="user_age" placeholder="Âge">
-    <input type="text" id="user_gender" placeholder="Genre">
-    <input type="text" id="user_location" placeholder="Localisation">
-    <div style="text-align:center;">
-      <button type="button" id="loginBtn">Se connecter</button>
-      <button type="button" id="registerBtn">Créer un compte</button>
-      <button id="logoutBtn">Se déconnecter</button>
+      /* Titre principal de la page auth */
+      .auth-title {
+        font-family: "Rammetto One", sans-serif;
+        color: var(--orange-fonce);
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 0;
+      }
 
-      <script src="node-auth/js/app.js"></script>
-    </div>
-  </form>
+      /* Texte introductif */
+      .auth-text {
+        font-family: "Outfit", sans-serif;
+        color: var(--gris-fonce);
+        font-size: 1.1rem;
+        text-align: center;
+        max-width: 800px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
 
-  <p id="message"></p>
-  </section>
+      /* Carte du formulaire */
+      .auth-card {
+        background: var(--blanc);
+        padding: 0;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 450px;
+        overflow: hidden;
+        border-top: 5px solid var(--orange);
+      }
 
-  <script>
-    const loginBtn = document.getElementById("loginBtn");
-    const registerBtn = document.getElementById("registerBtn");
-    const message = document.getElementById("message");
+      /* Les Onglets (Tabs) */
+      .auth-tabs {
+        display: flex;
+        background-color: #f9f9f9;
+        border-bottom: 1px solid var(--gris-clair);
+      }
 
-    function getFormData() {
-      return {
-        firstName: document.getElementById("user_firstname").value.trim(),
-        lastName: document.getElementById("user_lastname").value.trim(),
-        email: document.getElementById("user_mail").value.trim(),
-        password: document.getElementById("user_password").value,
-        age: parseInt(document.getElementById("user_age").value) || null,
-        gender: document.getElementById("user_gender").value.trim() || null,
-        location: document.getElementById("user_location").value.trim() || null
-      };
-    }
+      .tab-btn {
+        flex: 1;
+        padding: 20px;
+        border: none;
+        background: none;
+        font-family: "Rammetto One", sans-serif;
+        font-size: 1rem;
+        cursor: pointer;
+        color: var(--gris-fonce);
+        transition: all 0.3s;
+        text-align: center;
+      }
 
-    async function sendAuth(isRegister) {
-      const data = getFormData();
+      .tab-btn:hover {
+        background-color: #eee;
+      }
 
-      try {
-        const res = await fetch("http://localhost:3000/login", { // backend gère auto création
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(data)
-        });
+      /* Onglet Actif */
+      .tab-btn.active {
+        background-color: var(--blanc);
+        color: var(--orange);
+        border-bottom: 3px solid var(--orange);
+      }
 
-        const result = await res.json();
+      /* Corps du formulaire */
+      .auth-form-body {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
 
-        if (result.success) {
+      /* Champs Inputs */
+      .auth-form-body input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid var(--gris-clair);
+        border-radius: 8px;
+        font-family: "Outfit", sans-serif;
+        font-size: 1rem;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+      }
+
+      .auth-form-body input:focus {
+        outline: none;
+        border-color: var(--orange);
+        background-color: #fffaf5;
+      }
+
+      /* Boutons d'action */
+      .btn-action {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        background-color: var(--orange);
+        color: var(--blanc);
+        font-family: "Outfit", sans-serif;
+        font-weight: bold;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition:
+          background-color 0.3s,
+          transform 0.2s;
+        margin-top: 10px;
+      }
+
+      .btn-action:hover {
+        background-color: var(--orange-fonce);
+        transform: translateY(-2px);
+      }
+
+      /* Message d'erreur/succès */
+      #message {
+        text-align: center;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        font-weight: bold;
+        min-height: 20px;
+        font-family: "Outfit", sans-serif;
+      }
+
+      /* Classes utilitaires pour cacher/montrer */
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body class="">
+    <header>
+      <a href="accueil.html"><h2>MuSE</h2></a>
+      <nav>
+        <a href="accueil.html">Accueil</a>
+        <a href="playlists.html">Playlists</a>
+        <a href="preferences.html">Préférences</a>
+
+        <div class="dropdown">
+          <a href="#">API ▾</a>
+          <div class="dropdown-content">
+            <a href="api-installation.html">Installation</a>
+            <a href="api-documentation.html">Documentation</a>
+            <a href="api-test.html">Testez l'API</a>
+          </div>
+        </div>
+      </nav>
+      <button>
+        <a href="connexion.html">Connexion</a>
+      </button>
+    </header>
+
+    <section class="auth-section">
+      <h1 class="auth-title">Connectez-vous ou inscrivez-vous !</h1>
+      <p class="auth-text">
+        Pour utiliser pleinement les fonctionnalités de MuSE, veuillez vous
+        connecter à votre compte ou en créer un nouveau. En vous inscrivant,
+        vous pourrez personnaliser vos recommandations musicales, créer des
+        playlists et bien plus encore !
+      </p>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button
+            class="tab-btn active"
+            id="tab-login"
+            onclick="switchMode('login')"
+          >
+            Connexion
+          </button>
+          <button
+            class="tab-btn"
+            id="tab-register"
+            onclick="switchMode('register')"
+          >
+            Inscription
+          </button>
+        </div>
+
+        <form id="authForm" class="auth-form-body">
+          <div id="register-fields-top" class="hidden">
+            <input type="text" id="user_firstname" placeholder="Prénom*" />
+            <input
+              type="text"
+              id="user_lastname"
+              placeholder="Nom*"
+              style="margin-top: 15px"
+            />
+          </div>
+
+          <input type="email" id="user_mail" placeholder="Email*" required />
+          <input
+            type="password"
+            id="user_password"
+            placeholder="Mot de passe*"
+            required
+          />
+
+          <div id="register-fields-bottom" class="hidden">
+            <input
+              type="number"
+              id="user_age"
+              placeholder="Âge"
+              style="margin-bottom: 15px"
+            />
+            <input
+              type="text"
+              id="user_gender"
+              placeholder="Genre"
+              style="margin-bottom: 15px"
+            />
+            <input type="text" id="user_location" placeholder="Localisation" />
+          </div>
+
+          <button type="button" id="loginBtn" class="btn-action">
+            Se connecter
+          </button>
+          <button type="button" id="registerBtn" class="btn-action hidden">
+            Créer mon compte
+          </button>
+        </form>
+
+        <p id="message"></p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="titre-footer">
+        <h2>MuSE</h2>
+      </div>
+      <div class="navigation-footer">
+        <div>
+          <p>Société</p>
+          <div>
+            <a href="#">À propos de nous</a>
+            <a href="#">Offre d'emploi</a>
+          </div>
+        </div>
+        <div>
+          <p>Liens utiles</p>
+          <div>
+            <a href="contact.html">Nous contacter</a>
+          </div>
+        </div>
+        <div>
+          <p>Communauté</p>
+          <div>
+            <a href="#">Développeurs</a>
+          </div>
+        </div>
+        <div>
+          <p>Légal</p>
+          <div>
+            <a href="#">Mentions légales</a>
+          </div>
+        </div>
+      </div>
+      <div class="barre-separation-footer"></div>
+      <div class="fin-footer">
+        <div class="reseaux-sociaux-footer">
+          <a href="#"
+            ><img src="../images/icones/instagram.avif" alt="Instagram"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/linkedin.avif" alt="LinkedIn"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/github.avif" alt="GitHub"
+          /></a>
+          <a href="#"
+            ><img src="../images/icones/facebook.avif" alt="Facebook"
+          /></a>
+        </div>
+        <p>© 2026 MuSE Français</p>
+      </div>
+    </footer>
+
+    <script>
+      const loginBtn = document.getElementById("loginBtn");
+      const registerBtn = document.getElementById("registerBtn");
+      const message = document.getElementById("message");
+
+      // Éléments UI pour le switch
+      const tabLogin = document.getElementById("tab-login");
+      const tabRegister = document.getElementById("tab-register");
+      const regFieldsTop = document.getElementById("register-fields-top");
+      const regFieldsBottom = document.getElementById("register-fields-bottom");
+
+      // Fonction pour changer d'onglet
+      function switchMode(mode) {
+        // Reset messages
+        message.textContent = "";
+
+        if (mode === "login") {
+          // Style des onglets
+          tabLogin.classList.add("active");
+          tabRegister.classList.remove("active");
+
+          // Visibilité des champs
+          regFieldsTop.classList.add("hidden");
+          regFieldsBottom.classList.add("hidden");
+
+          // Visibilité des boutons
+          loginBtn.classList.remove("hidden");
+          registerBtn.classList.add("hidden");
+        } else if (mode === "register") {
+          // Style des onglets
+          tabLogin.classList.remove("active");
+          tabRegister.classList.add("active");
+
+          // Visibilité des champs
+          regFieldsTop.classList.remove("hidden");
+          regFieldsBottom.classList.remove("hidden");
+
+          // Visibilité des boutons
+          loginBtn.classList.add("hidden");
+          registerBtn.classList.remove("hidden");
+        }
+      }
+
+      function getFormData() {
+        return {
+          firstName: document.getElementById("user_firstname").value.trim(),
+          lastName: document.getElementById("user_lastname").value.trim(),
+          email: document.getElementById("user_mail").value.trim(),
+          password: document.getElementById("user_password").value,
+          age: parseInt(document.getElementById("user_age").value) || null,
+          gender: document.getElementById("user_gender").value.trim() || null,
+          location:
+            document.getElementById("user_location").value.trim() || null,
+        };
+      }
+
+      async function sendAuth(isRegister) {
+        const data = getFormData();
+        message.textContent = "Traitement en cours...";
+        message.style.color = "var(--orange)";
+
+        try {
+          const res = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(data),
+          });
+
+          const result = await res.json();
+
+          if (result.success) {
             message.style.color = "green";
             message.textContent = `Connecté : ${result.user.user_firstname}`;
             localStorage.setItem("userId", result.user.user_id);
@@ -104,20 +374,17 @@
             setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
         } else {
             message.style.color = "red";
-            message.textContent = result.error;
+            message.textContent = result.error || "Erreur d'authentification";
+          }
+        } catch (err) {
+          console.error(err);
+          message.style.color = "red";
+          message.textContent = "Erreur de connexion au serveur";
         }
-
-
-      } catch (err) {
-        console.error(err);
-        message.style.color = "red";
-        message.textContent = "Erreur serveur ou réseau";
       }
-    }
 
-    loginBtn.addEventListener("click", () => sendAuth(false));
-    registerBtn.addEventListener("click", () => sendAuth(true));
-
-  </script>
-</body>
+      loginBtn.addEventListener("click", () => sendAuth(false));
+      registerBtn.addEventListener("click", () => sendAuth(true));
+    </script>
+  </body>
 </html>

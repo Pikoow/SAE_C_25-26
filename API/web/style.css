@@ -82,6 +82,19 @@ header nav > a:hover {
     color: var(--orange);
 }
 
+.connexion-inscription > a {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--noir);
+    text-decoration: none;
+    padding-right: 1em;
+}
+
+.connexion-inscription > a:hover { 
+    color: var(--orange);    
+}
+
 header button {
     background-color: var(--orange);
     font-family: 'Outfit', sans-serif;
@@ -89,7 +102,7 @@ header button {
     font-weight: bold;
     border-radius: 0.313em;
     border: none;
-    width: 5.5em;
+    width: 7em;
     height: 1.9em;
     flex: 0 0 auto;
     transition: transform 0.2s, background-color 0.2s;
@@ -293,6 +306,15 @@ footer {
 
 /* PAGE ACCUEIL
 ***************************/
+.accueil h1 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 9rem;
+    color: var(--noir);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* SECTION ALBUMS */
 .accueil section:first-of-type {
     background-color: var(--noir);
@@ -936,8 +958,17 @@ footer {
     color: var(--gris-clair); 
 }
 
-/* PAGE CONTACT (Entièrement scopé sous .contact-page)
+/* PAGE CONTACT
 ***************************/
+.contact-page {
+    background-color: #f4f4f4;
+}
+
+.contact-page main { 
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 20px; }
+
 .contact-page .contact-title {
     font-family: 'Rammetto One', sans-serif; /* Police Titre */
     text-align: center;
