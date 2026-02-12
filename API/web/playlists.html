@@ -9,15 +9,27 @@
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script src="script.js"></script>
     <script src="playlists.js"></script>
+    <script>
+        $(document).ready(function() {
+            const userId = localStorage.getItem("userId");
+            const userName = localStorage.getItem("userName");
+            if (userId) {
+                console.log("Utilisateur connecté avec l'ID :", userId);
+                $('#bienvenue-msg').text(`Bonjour ${userName} !`);
+            } else {
+                window.location.href = "connexion.html";
+            }
+        });
+    </script>
 </head>
 <body class="playlists-page">
     <header>
         <a href="accueil.html"><h2>MuSE</h2></a> 
         <nav>
             <a href="accueil.html">Accueil</a>
-            <a href="playlists.html" class="active">Playlists</a>
+            <a href="playlists.html">Playlists</a>
             <a href="preferences.html">Préférences</a>
-            
+                
             <div class="dropdown">
                 <a href="#">API ▾</a>
                 <div class="dropdown-content">
@@ -27,9 +39,12 @@
                 </div>
             </div>
         </nav>
-        <button id="auth-button">
-            <a href="connexion.html">Connexion</a>
-        </button>
+        <div class="connexion-inscription">
+          <a href="connexion.html?mode=login">Connexion</a>
+          <button>
+              <a href="connexion.html?mode=register">Inscription</a>
+          </button>
+      </div>
     </header>
 
     <main>

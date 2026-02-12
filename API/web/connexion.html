@@ -1,123 +1,295 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Connexion / Création de compte</title>
-  <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
-    <script src="script.js"></script>
-  <style>
-    section { font-family: Arial, sans-serif; padding: 30px; background: #f0f0f0 !important; text-align: center; color: var(--noir); font-size: 0.875rem; }
-    form { background: white; padding: 20px; margin: 20px; border-radius: 8px; display: inline-block; text-align: left; }
-    input { display: block; width: 300px; padding: 10px; margin-bottom: 10px; }
-    button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; background: #007BFF; color: white; }
-    button:hover { background: #0056b3; }
-    #message { margin-top: 10px; text-align: center; }
-  </style>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Connexion / Inscription - MuSE</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-</head>
-
-<body class="accueil">
-  <header>
-            <a href="accueil.html"><h2>MuSE</h2></a> 
-            <nav>
-                <a href="accueil.html">Accueil</a>
-                <a href="playlists.html">Playlists</a>
-                <a href="preferences.html">Préférences</a>
-                
-                <div class="dropdown">
-                    <a href="#">API ▾</a>
-                    <div class="dropdown-content">
-                        <a href="api-installation.html">Installation</a>
-                        <a href="api-documentation.html">Documentation</a>
-                        <a href="api-test.html">Testez l'API</a>
-                    </div>
-                </div>
-            </nav>
-            <button>
-                <a href="contact.html">Contact</a>
-            </button>
-        </header>
-        
-  <section>
+  <body class="auth-page"> 
     
-  <h1>Connexion / Création de compte</h1>
-  <form id="authForm">
-    <input type="text" id="user_firstname" placeholder="Prénom (pour création)">
-    <input type="text" id="user_lastname" placeholder="Nom (pour création)">
-    <input type="email" id="user_mail" placeholder="Email" required>
-    <input type="password" id="user_password" placeholder="Mot de passe" required>
-    <input type="number" id="user_age" placeholder="Âge">
-    <input type="text" id="user_gender" placeholder="Genre">
-    <input type="text" id="user_location" placeholder="Localisation">
-    <div style="text-align:center;">
-      <button type="button" id="loginBtn">Se connecter</button>
-      <button type="button" id="registerBtn">Créer un compte</button>
-      <button id="logoutBtn">Se déconnecter</button>
+    <header>
+        <a href="accueil.html"><h2>MuSE</h2></a> 
+        <nav>
+            <a href="accueil.html">Accueil</a>
+            <a href="playlists.html">Playlists</a>
+            <a href="preferences.html">Préférences</a>
+                
+            <div class="dropdown">
+                <a href="#">API ▾</a>
+                <div class="dropdown-content">
+                    <a href="api-installation.html">Installation</a>
+                    <a href="api-documentation.html">Documentation</a>
+                    <a href="api-test.html">Testez l'API</a>
+                </div>
+            </div>
+        </nav>
+        <div class="connexion-inscription">
+          <a href="connexion.html?mode=login">Connexion</a>
+          <button>
+              <a href="connexion.html?mode=register">Inscription</a>
+          </button>
+      </div>
+    </header>
 
-      <script src="node-auth/js/app.js"></script>
-    </div>
-  </form>
-
-  <p id="message"></p>
-  </section>
-
-  <script>
-    const loginBtn = document.getElementById("loginBtn");
-    const registerBtn = document.getElementById("registerBtn");
-    const message = document.getElementById("message");
-
-    function getFormData() {
-      return {
-        firstName: document.getElementById("user_firstname").value.trim(),
-        lastName: document.getElementById("user_lastname").value.trim(),
-        email: document.getElementById("user_mail").value.trim(),
-        password: document.getElementById("user_password").value,
-        age: parseInt(document.getElementById("user_age").value) || null,
-        gender: document.getElementById("user_gender").value.trim() || null,
-        location: document.getElementById("user_location").value.trim() || null
-      };
-    }
-
-    async function sendAuth(isRegister) {
-      const data = getFormData();
-
-      try {
-        const res = await fetch("http://localhost:3000/login", { // backend gère auto création
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-
-        if (result.success) {
-            message.style.color = "green";
-            message.textContent = `Connecté : ${result.user.user_firstname}`;
-            localStorage.setItem("userId", result.user.user_id);
-            localStorage.setItem("userName", result.user.user_firstname);
+    <section class="auth-section">
         
-            setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
+      <h1 class="auth-title">Connectez-vous ou inscrivez-vous !</h1>
+      <p class="auth-text">
+        Pour utiliser pleinement les fonctionnalités de MuSE, veuillez vous
+        connecter à votre compte ou en créer un nouveau. En vous inscrivant,
+        vous pourrez personnaliser vos recommandations musicales, créer des
+        playlists et bien plus encore !
+      </p>
+
+      <div class="auth-card">
+        
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="tab-login" onclick="switchMode('login')">
+            Connexion
+          </button>
+          <button class="auth-tab-btn" id="tab-register" onclick="switchMode('register')">
+            Inscription
+          </button>
+        </div>
+
+        <form id="authForm" class="auth-form" onsubmit="event.preventDefault();">
+          
+          <p>Champs obligatoires marqués d'un *</p>
+
+          <div id="register-fields-top" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="form-group">
+                <label for="user_firstname">Prénom*</label>
+                <input type="text" id="user_firstname" placeholder="Votre prénom" />
+            </div>
+            <div class="form-group">
+                <label for="user_lastname">Nom*</label>
+                <input type="text" id="user_lastname" placeholder="Votre nom" />
+            </div>
+          </div>
+
+          <div class="form-group">
+              <label for="user_mail">Email*</label>
+              <input type="email" id="user_mail" placeholder="Votre email" required />
+          </div>
+          
+          <div class="form-group">
+              <label for="user_password">Mot de passe*</label>
+              <input type="password" id="user_password" placeholder="Votre mot de passe" required />
+          </div>
+
+          <div id="register-fields-bottom" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="form-group">
+                <label for="user_age">Âge</label>
+                <input type="number" id="user_age" placeholder="Votre âge" min="13" max="120" />
+            </div>
+            
+            <div class="form-group">
+                <label for="user_gender">Genre</label>
+                <select id="user_gender">
+                  <option value="" disabled selected>-- Sélectionnez votre genre --</option>
+                  <option value="Homme">Homme</option>
+                  <option value="Femme">Femme</option>
+                  <option value="Non-binaire">Non-binaire</option>
+                  <option value="Autre">Autre</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_location">Localisation</label>
+                <input type="text" id="user_location" placeholder="Votre localisation" />
+            </div>
+          </div>
+
+          <button type="submit" id="loginBtn" class="auth-btn">
+            Se connecter
+          </button>
+          <button type="submit" id="registerBtn" class="auth-btn hidden">
+            Créer mon compte
+          </button>
+          
+        </form>
+
+        <p id="auth-message"></p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="titre-footer">
+        <h2>MuSE</h2>
+      </div>
+      <div class="navigation-footer">
+        <div>
+          <p>Société</p>
+          <div>
+            <a href="#">À propos de nous</a>
+            <a href="#">Offre d'emploi</a>
+          </div>
+        </div>
+        <div>
+          <p>Liens utiles</p>
+          <div>
+            <a href="contact.html">Nous contacter</a>
+          </div>
+        </div>
+        <div>
+          <p>Communauté</p>
+          <div>
+            <a href="#">Développeurs</a>
+          </div>
+        </div>
+        <div>
+          <p>Légal</p>
+          <div>
+            <a href="#">Mentions légales</a>
+          </div>
+        </div>
+      </div>
+      <div class="barre-separation-footer"></div>
+      <div class="fin-footer">
+        <div class="reseaux-sociaux-footer">
+          <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram" /></a>
+          <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn" /></a>
+          <a href="#"><img src="../images/icones/github.avif" alt="GitHub" /></a>
+          <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook" /></a>
+        </div>
+        <p>© 2026 MuSE Français</p>
+      </div>
+    </footer>
+
+    <script>
+      // Sélection des éléments du DOM
+      const loginBtn = document.getElementById("loginBtn");
+      const registerBtn = document.getElementById("registerBtn");
+      const message = document.getElementById("auth-message");
+
+      const tabLogin = document.getElementById("tab-login");
+      const tabRegister = document.getElementById("tab-register");
+      const regFieldsTop = document.getElementById("register-fields-top");
+      const regFieldsBottom = document.getElementById("register-fields-bottom");
+
+      // --- 1. FONCTION : Lire l'URL et activer le bon onglet au chargement ---
+      function checkUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode'); // Récupère la valeur de ?mode=...
+
+        if (mode === 'register') {
+            switchMode('register');
         } else {
-            message.style.color = "red";
-            message.textContent = result.error;
+            // Par défaut (ou si mode=login), on affiche la connexion
+            switchMode('login');
+        }
+      }
+
+      // --- 2. FONCTION : Basculer l'affichage (Connexion <-> Inscription) ---
+      function switchMode(mode) {
+        message.textContent = ""; // On vide les messages d'erreur
+
+        // Optionnel : Met à jour l'URL sans recharger la page (pour le partage de lien)
+        // const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?mode=' + mode;
+        // window.history.pushState({path:newUrl},'',newUrl);
+
+        if (mode === "login") {
+          // Onglets
+          tabLogin.classList.add("active");
+          tabRegister.classList.remove("active");
+          
+          // Masquer les champs d'inscription
+          regFieldsTop.classList.add("hidden");
+          regFieldsBottom.classList.add("hidden");
+          
+          // Gestion des boutons
+          loginBtn.classList.remove("hidden");
+          registerBtn.classList.add("hidden");
+
+        } else if (mode === "register") {
+          // Onglets
+          tabLogin.classList.remove("active");
+          tabRegister.classList.add("active");
+          
+          // Afficher les champs d'inscription
+          regFieldsTop.classList.remove("hidden");
+          regFieldsBottom.classList.remove("hidden");
+          
+          // Gestion des boutons
+          loginBtn.classList.add("hidden");
+          registerBtn.classList.remove("hidden");
+        }
+      }
+
+      // --- 3. FONCTION : Récupérer les données du formulaire ---
+      function getFormData() {
+        return {
+          firstName: document.getElementById("user_firstname").value.trim(),
+          lastName: document.getElementById("user_lastname").value.trim(),
+          email: document.getElementById("user_mail").value.trim(),
+          password: document.getElementById("user_password").value,
+          age: parseInt(document.getElementById("user_age").value) || null,
+          gender: document.getElementById("user_gender").value.trim() || null,
+          location: document.getElementById("user_location").value.trim() || null,
+        };
+      }
+
+      // --- 4. FONCTION : Envoyer la requête au serveur (Backend) ---
+      async function sendAuth(isRegister) {
+        const data = getFormData();
+        message.textContent = "Traitement en cours...";
+        message.style.color = "var(--orange)";
+
+        // Validation basique
+        if (!data.email || !data.password) {
+            message.style.color = "#c0392b"; // Rouge
+            message.textContent = "Veuillez remplir l'email et le mot de passe.";
+            return;
         }
 
+        try {
+          // URL de ton backend (à adapter si besoin)
+          const url = "http://localhost:3000/login"; 
+          
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", 
+            body: JSON.stringify(data),
+          });
 
-      } catch (err) {
-        console.error(err);
-        message.style.color = "red";
-        message.textContent = "Erreur serveur ou réseau";
+          const result = await res.json();
+
+          if (result.success) {
+            // Succès
+            message.style.color = "#27ae60"; // Vert
+            message.textContent = `Bienvenue, ${result.user.user_firstname || "Utilisateur"} !`;
+            
+            // Sauvegarde en localStorage (Session utilisateur)
+            localStorage.setItem("userId", result.user.user_id);
+            localStorage.setItem("userName", result.user.user_firstname);
+
+            // Redirection vers l'accueil après 1.5 secondes
+            setTimeout(() => {
+              window.location.href = "accueil.html";
+            }, 1500);
+
+          } else {
+            // Erreur renvoyée par le serveur (ex: mauvais mot de passe)
+            message.style.color = "#c0392b"; 
+            message.textContent = result.error || "Erreur d'authentification";
+          }
+        } catch (err) {
+          console.error(err);
+          message.style.color = "#c0392b";
+          message.textContent = "Impossible de joindre le serveur.";
+        }
       }
-    }
 
-    loginBtn.addEventListener("click", () => sendAuth(false));
-    registerBtn.addEventListener("click", () => sendAuth(true));
+      // --- 5. ÉVÉNEMENTS ---
+      
+      // Clics sur les boutons "Se connecter" / "Créer mon compte"
+      loginBtn.addEventListener("click", () => sendAuth(false));
+      registerBtn.addEventListener("click", () => sendAuth(true));
 
-  </script>
-</body>
+      // Au chargement de la page : Vérifier l'URL pour choisir le bon onglet
+      window.addEventListener('DOMContentLoaded', checkUrlParams);
+    </script>
+  </body>
 </html>
