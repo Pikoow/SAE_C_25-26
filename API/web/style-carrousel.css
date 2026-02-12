@@ -5,6 +5,7 @@
     position: relative;
     overflow: hidden;
     outline: red solid 2px;
+    padding: 0 3.125em 0 5em;
 }
 
 .carrousel-slide {
@@ -43,8 +44,9 @@
     width: 100%;
     position: relative;
     padding: 20px;
-    flex: 0 0 calc(100% / 4);
+    /* flex: 0 0 calc(100% / 4); */
     flex-wrap: nowrap;
+    transition: transform 0.4s ease;
 }
 
 .carrousel li {
@@ -116,25 +118,16 @@
 .accueil #albums-container-carrousel {
     display: flex;
     flex-wrap: nowrap;
-    justify-content: center;
     gap: 1em;
-    padding: 0 3.125em 3.125em 3.125em;
+    padding: 0 5.125em 3.125em 3.125em;
 }
-/* 
-.accueil #albums-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1em;
-    padding: 0 3.125em 3.125em 3.125em;
-}
-    */
 
 .accueil .album-card-carrousel {
     /* display: flex;
     align-items: center; */
     gap: 1.2em;
-    width: 20em;
+    width: 25em;
+    height: 15em;
     background-color: var(--gris-fonce);
     padding: 1em 1.5em;
     border-radius: 0.75em;

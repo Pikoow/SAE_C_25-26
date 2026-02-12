@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import Optional, List
@@ -26,7 +26,7 @@ app = FastAPI(title="API Muse", lifespan=lifespan)
 # Erreur page web Cors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,6 +53,7 @@ def get_db_connection():
 def read_root():
     return {"message": "Bienvenue sur l'API de Muse!"}
 
+# Récuérer toutes les tracks avec leurs informations
 @app.get("/tracks")
 def get_all_tracks(
     limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
@@ -101,11 +102,9 @@ def get_all_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère une musique spécifique par son ID avec toutes ses informations
 @app.get("/tracks/{track_id}")
 def get_track_by_id(track_id: int):
-    """
-    Récupère une musique spécifique par son ID avec toutes ses informations.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -219,14 +218,12 @@ def get_track_by_id(track_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère tout les artistes avec leurs informations
 @app.get("/artists")
 def get_artists(
     limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
 ):
-    """
-    Récupère la liste des artistes avec leurs statistiques.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -271,11 +268,9 @@ def get_artists(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère un artiste spécifique par son ID avec toutes ses informations
 @app.get("/artists/{artist_id}")
 def get_artist_by_id(artist_id: int):
-    """
-    Récupère un artiste spécifique par son ID.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -316,15 +311,13 @@ def get_artist_by_id(artist_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère toutes les musiques d'un artiste spécifique par son ID
 @app.get("/artists/{artist_id}/tracks")
 def get_artist_tracks(
     artist_id: int,
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
 ):
-    """
-    Récupère toutes les musiques d'un artiste spécifique.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -392,15 +385,13 @@ def get_artist_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère tout les albums avec leurs informations
 @app.get("/albums")
 def get_albums(
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination"),
     title: Optional[str] = Query(None, description="Filtrer par titre d'album")
 ):
-    """
-    Récupère la liste des albums.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -458,11 +449,9 @@ def get_albums(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère un album spécifique par son ID avec toutes ses informations
 @app.get("/albums/{album_id}")
 def get_album_by_id(album_id: int):
-    """
-    Récupère un album spécifique par son ID.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -503,15 +492,13 @@ def get_album_by_id(album_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère toutes les musiques d'un album spécifique par son ID
 @app.get("/albums/{album_id}/tracks")
 def get_album_tracks(
     album_id: int,
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
 ):
-    """
-    Récupère toutes les musiques d'un album spécifique.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -597,6 +584,7 @@ def get_album_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère une liste de recommandations de musiques similaires à une ou plusieurs musiques d'entrée
 @app.get("/reco/tracks")
 def recommend_tracks(
     track_ids: List[int] = Query(..., description="One or more track IDs to base recommendations on"),
@@ -619,6 +607,7 @@ def recommend_tracks(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère une liste de recommandations d'artistes similaires à une ou plusieurs artistes d'entrée
 @app.get("/reco/artists")
 def get_artist_recommendations(
     artist_ids: List[int] = Query(..., description="One or more artist IDs to base recommendations on"),
@@ -647,6 +636,7 @@ def get_artist_recommendations(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur reco: {str(e)}")
 
+# Récupère tout les genres avec leurs informations
 @app.get("/genres")
 def get_all_genres(
     limit: Optional[int] = Query(500, ge=1, le=500, description="Nombre maximum de résultats"),
@@ -691,15 +681,13 @@ def get_all_genres(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Récupère toutes les musiques d'un genre spécifique par son ID
 @app.get("/genres/{genre_id}/tracks")
 def get_genre_tracks(
     genre_id: int,
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
 ):
-    """
-    Récupère toutes les musiques d'un genre spécifique.
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -765,89 +753,6 @@ def get_genre_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/ternaire/{genre}/{genre_secondaire}")
-def get_all_id_ternaire(
-    genre: str,
-    genre_secondaire : str,
-    limit: Optional[int] = Query(500, ge=1, le=500, description="Nombre maximum de résultats"),
-    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
-):
-    conn = get_db_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
-    
-    try:
-        cur = conn.cursor()
-        query = """
-            SELECT DISTINCT
-                e.artist_id,
-                a.artist_name
-            FROM sae.artist_album_track e
-            INNER JOIN sae.tracks t ON e.track_id = t.track_id
-            INNER JOIN sae.artist a ON e.artist_id = a.artist_id
-            INNER JOIN sae.genre g ON g.genre_id = ANY(string_to_array(t.track_genre, ',')::int[])
-            WHERE (t.track_genre_top = %s OR g.genre_title = %s)
-            AND t.track_genre_top IS NOT NULL 
-            AND t.track_genre_top != 'NaN'
-            LIMIT %s OFFSET %s
-        """
-        cur.execute(query, (genre,genre_secondaire,limit, offset))
-        id = cur.fetchall()
-        
-        count_query = "SELECT COUNT(*) as total FROM sae.artist_album_track"
-        cur.execute(count_query)
-        total = cur.fetchone()['total']
-        
-        cur.close()
-        conn.close()
-        
-        return {
-            "total": total,
-            "count": len(id),
-            "limit": limit,
-            "offset": offset,
-            "results": id
-        }
-    except Exception as e:
-        if conn: conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/users")
-def get_all_users(
-    limit: Optional[int] = Query(500, ge=1, le=500, description="Nombre maximum de résultats"),
-    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
-):
-    conn = get_db_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
-    
-    try:
-        cur = conn.cursor()
-        query = """
-            SELECT *
-            FROM sae.users
-            LIMIT %s OFFSET %s
-        """
-        cur.execute(query, (limit, offset))
-        users = cur.fetchall()
-        
-        count_query = "SELECT COUNT(*) as total FROM sae.users"
-        cur.execute(count_query)
-        total = cur.fetchone()['total']
-        
-        cur.close()
-        conn.close()
-        
-        return {
-            "total": total,
-            "count": len(users),
-            "limit": limit,
-            "offset": offset,
-            "users": users
-        }
-    except Exception as e:
-        if conn: conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
 class PlaylistCreate(BaseModel):
     name: str
     description: Optional[str] = None
@@ -857,27 +762,9 @@ class PlaylistCreate(BaseModel):
 class PlaylistUpdateTracks(BaseModel):
     track_ids: List[int]
 
-@app.get("/users/{user_id}/playlists")
-def get_user_playlists(user_id: int):
-    conn = get_db_connection()
-    try:
-        cur = conn.cursor()
-        query = """
-            SELECT p.playlist_id, p.playlist_name, p.playlist_description, p.created_at
-            FROM sae.playlist p
-            JOIN sae.playlist_user pu ON p.playlist_id = pu.playlist_id
-            WHERE pu.user_id = %s
-        """
-        cur.execute(query, (user_id,))
-        return cur.fetchall()
-    finally:
-        conn.close()
-
+# Créer une nouvelle playlist avec ses informations et les musiques sélectionnées
 @app.post("/playlists")
 def create_playlist(data: PlaylistCreate):
-    """
-    Crée une nouvelle playlist avec ses informations et les musiques sélectionnées
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -943,6 +830,75 @@ def create_playlist(data: PlaylistCreate):
             cur.close()
             conn.close()
 
+# Récupère une playlist spécifique avec toutes ses tracks
+@app.get("/playlists/{playlist_id}")
+def get_playlist_by_id(playlist_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        # Récupérer les infos de la playlist
+        playlist_query = """
+            SELECT 
+                p.playlist_id,
+                p.playlist_name,
+                p.playlist_description,
+                p.created_at,
+                pu.user_id
+            FROM sae.playlist p
+            JOIN sae.playlist_user pu ON p.playlist_id = pu.playlist_id
+            WHERE p.playlist_id = %s
+        """
+        cur.execute(playlist_query, (playlist_id,))
+        playlist = cur.fetchone()
+        
+        if not playlist:
+            cur.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="Playlist non trouvée")
+        
+        # Récupérer toutes les tracks de la playlist
+        tracks_query = """
+            SELECT 
+                t.track_id,
+                t.track_title,
+                t.track_duration,
+                t.track_genre_top,
+                t.track_listens,
+                t.track_file,
+                t.track_image_file,
+                STRING_AGG(DISTINCT ar.artist_name, ', ') as artist_names,
+                STRING_AGG(DISTINCT alb.album_title, ', ') as album_titles
+            FROM sae.playlist_track pt
+            JOIN sae.tracks t ON pt.track_id = t.track_id
+            LEFT JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
+            LEFT JOIN sae.artist ar ON aat.artist_id = ar.artist_id
+            LEFT JOIN sae.album alb ON aat.album_id = alb.album_id
+            WHERE pt.playlist_id = %s
+            GROUP BY t.track_id, t.track_title, t.track_duration, t.track_genre_top, 
+                     t.track_listens, t.track_file, t.track_image_file
+            ORDER BY MIN(pt.track_id)  -- Changement ici : utilisation d'une fonction d'agrégat au lieu de pt.track_id directement
+        """
+        cur.execute(tracks_query, (playlist_id,))
+        tracks = cur.fetchall()
+        
+        playlist['tracks'] = tracks
+        playlist['tracks_count'] = len(tracks)
+        
+        cur.close()
+        conn.close()
+        
+        return playlist
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Supprimer une playlist et toutes ses associations (playlist_track, playlist_user)
 @app.delete("/playlists/{playlist_id}")
 def delete_playlist(playlist_id: int):
     conn = get_db_connection()
@@ -971,9 +927,42 @@ def delete_playlist(playlist_id: int):
     finally:
         conn.close()
 
+# Récupère les playlists d'un utilisateur spécifique par son ID
+@app.get("/playlist/{user_id}")
+def get_playlist_for_user(
+    user_id: int,
+    limit: Optional[int] = Query(20, ge=1, le=100, description="Nombre maximum de résultats"),
+    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
+):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        # Désactiver temporairement les triggers si nécessaire
+        cur.execute("SET session_replication_role = 'replica';")
+        
+        # Supprimer dans le bon ordre
+        cur.execute("DELETE FROM sae.playlist_track WHERE playlist_id = %s", (playlist_id,))
+        cur.execute("DELETE FROM sae.playlist_user WHERE playlist_id = %s", (playlist_id,))
+        cur.execute("DELETE FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+        
+        # Réactiver les triggers
+        cur.execute("SET session_replication_role = 'origin';")
+        
+        conn.commit()
+        return {"message": "Playlist supprimée"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+# Ajouter ou supprimer des musiques d'une playlist existante
 @app.post("/playlists/{playlist_id}/tracks")
 def update_tracks_in_playlist(playlist_id: int, data: PlaylistUpdateTracks):
-    """Remplace ou ajoute des musiques (Logique de mise à jour complète)"""
     conn = get_db_connection()
     try:
         cur = conn.cursor()
@@ -986,11 +975,64 @@ def update_tracks_in_playlist(playlist_id: int, data: PlaylistUpdateTracks):
     finally:
         conn.close()
 
+# Supprimer une track spécifique d'une playlist
+@app.delete("/playlists/{playlist_id}/tracks/{track_id}")
+def remove_track_from_playlist(playlist_id: int, track_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        # Vérifier si la track existe dans la playlist
+        check_query = """
+            SELECT * FROM sae.playlist_track 
+            WHERE playlist_id = %s AND track_id = %s
+        """
+        cur.execute(check_query, (playlist_id, track_id))
+        if not cur.fetchone():
+            cur.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="Cette track n'est pas dans la playlist")
+        
+        # Supprimer la track
+        cur.execute(
+            "DELETE FROM sae.playlist_track WHERE playlist_id = %s AND track_id = %s",
+            (playlist_id, track_id)
+        )
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return {"message": "Track supprimée de la playlist"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Récupère les playlists d'un utilisateur sans les détails des tracks
+@app.get("/users/{user_id}/playlists")
+def get_user_playlists(user_id: int):
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        query = """
+            SELECT p.playlist_id, p.playlist_name, p.playlist_description, p.created_at
+            FROM sae.playlist p
+            JOIN sae.playlist_user pu ON p.playlist_id = pu.playlist_id
+            WHERE pu.user_id = %s
+        """
+        cur.execute(query, (user_id,))
+        return cur.fetchall()
+    finally:
+        conn.close()
+
+# Récupère les playlists d'un utilisateur avec leurs détails
 @app.get("/users/{user_id}/playlists/detailed")
 def get_user_playlists_detailed(user_id: int):
-    """
-    Récupère les playlists d'un utilisateur avec leurs détails (nombre de tracks, etc.)
-    """
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -1046,116 +1088,7 @@ def get_user_playlists_detailed(user_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/playlists/{playlist_id}")
-def get_playlist_by_id(playlist_id: int):
-    """
-    Récupère une playlist spécifique avec toutes ses tracks
-    """
-    conn = get_db_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
-    
-    try:
-        cur = conn.cursor()
-        
-        # Récupérer les infos de la playlist
-        playlist_query = """
-            SELECT 
-                p.playlist_id,
-                p.playlist_name,
-                p.playlist_description,
-                p.created_at,
-                pu.user_id
-            FROM sae.playlist p
-            JOIN sae.playlist_user pu ON p.playlist_id = pu.playlist_id
-            WHERE p.playlist_id = %s
-        """
-        cur.execute(playlist_query, (playlist_id,))
-        playlist = cur.fetchone()
-        
-        if not playlist:
-            cur.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="Playlist non trouvée")
-        
-        # Récupérer toutes les tracks de la playlist
-        tracks_query = """
-            SELECT 
-                t.track_id,
-                t.track_title,
-                t.track_duration,
-                t.track_genre_top,
-                t.track_listens,
-                t.track_file,
-                t.track_image_file,
-                STRING_AGG(DISTINCT ar.artist_name, ', ') as artist_names,
-                STRING_AGG(DISTINCT alb.album_title, ', ') as album_titles
-            FROM sae.playlist_track pt
-            JOIN sae.tracks t ON pt.track_id = t.track_id
-            LEFT JOIN sae.artist_album_track aat ON t.track_id = aat.track_id
-            LEFT JOIN sae.artist ar ON aat.artist_id = ar.artist_id
-            LEFT JOIN sae.album alb ON aat.album_id = alb.album_id
-            WHERE pt.playlist_id = %s
-            GROUP BY t.track_id, t.track_title, t.track_duration, t.track_genre_top, 
-                     t.track_listens, t.track_file, t.track_image_file
-            ORDER BY pt.track_id
-        """
-        cur.execute(tracks_query, (playlist_id,))
-        tracks = cur.fetchall()
-        
-        playlist['tracks'] = tracks
-        playlist['tracks_count'] = len(tracks)
-        
-        cur.close()
-        conn.close()
-        
-        return playlist
-    except HTTPException:
-        raise
-    except Exception as e:
-        if conn: conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.delete("/playlists/{playlist_id}/tracks/{track_id}")
-def remove_track_from_playlist(playlist_id: int, track_id: int):
-    """
-    Supprime une track spécifique d'une playlist
-    """
-    conn = get_db_connection()
-    if not conn:
-        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
-    
-    try:
-        cur = conn.cursor()
-        
-        # Vérifier si la track existe dans la playlist
-        check_query = """
-            SELECT * FROM sae.playlist_track 
-            WHERE playlist_id = %s AND track_id = %s
-        """
-        cur.execute(check_query, (playlist_id, track_id))
-        if not cur.fetchone():
-            cur.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="Cette track n'est pas dans la playlist")
-        
-        # Supprimer la track
-        cur.execute(
-            "DELETE FROM sae.playlist_track WHERE playlist_id = %s AND track_id = %s",
-            (playlist_id, track_id)
-        )
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-        
-        return {"message": "Track supprimée de la playlist"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        if conn: conn.close()
-        raise HTTPException(status_code=500, detail=str(e))
-
+# Autocomplete pour la recherche de musiques par titre, artiste ou album
 @app.get("/search/tracks")
 def search_tracks(
     query: str = Query(..., description="Terme de recherche"),
@@ -1208,6 +1141,93 @@ def search_tracks(
     except Exception as e:
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/voir_favorite")
+def get_all_favorite(
+    limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
+    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
+):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        # On utilise la vue tracks_features pour simplifier
+        query = """
+            SELECT 
+                favorite_id,
+                user_favorite_tracks,
+                user_favorite_album ,
+                user_favorite_artist,
+                user_favorite_language,
+                user_favorite_genre,
+                user_id   
+            FROM sae.favorite
+            LIMIT %s OFFSET %s
+        """
+        cur.execute(query, (limit, offset))
+        tracks = cur.fetchall()
+        
+        # Compter le total
+        count_query = "SELECT COUNT(*) as total FROM sae.favorite"
+        cur.execute(count_query)
+        total = cur.fetchone()['total']
+        
+        cur.close()
+        conn.close()
+        
+        return {
+            "total": total,
+            "count": len(tracks),
+            "limit": limit,
+            "offset": offset,
+            "results": tracks
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/save-favorites")
+async def saveFavorite(request : Request):
+    conn = get_db_connection()
+
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    data = await request.json()
+    
+    user_id = data.get("user_id")
+    genres_str = ",".join(map(str, data.get("genres", [])))
+    artists_str = ",".join(map(str, data.get("artists", [])))
+    tracks_str = ",".join(map(str, data.get("tracks", [])))
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id manquant")
+
+    try:
+
+        cur = conn.cursor()
+        query = """
+            INSERT INTO sae.favorite
+                (user_favorite_tracks,user_favorite_artist,user_favorite_genre,user_id) 
+            VALUES (%s,%s,%s,%s)
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                user_favorite_genre = EXCLUDED.user_favorite_genre,
+                user_favorite_artist = EXCLUDED.user_favorite_artist,
+                user_favorite_tracks = EXCLUDED.user_favorite_tracks;
+        """
+        cur.execute(query, (tracks_str,artists_str,genres_str,user_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return {"success": True}
+
+    except Exception as e:
+        print(f"Erreur : {e}")
+        return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":
     import uvicorn

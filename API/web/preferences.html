@@ -7,6 +7,18 @@
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
+  <script>
+    $(document).ready(function() {
+        const userId = localStorage.getItem("userId");
+        const userName = localStorage.getItem("userName");
+        if (userId) {
+            console.log("Utilisateur connecté avec l'ID :", userId);
+            $('#bienvenue-msg').text(`Bonjour ${userName} !`);
+        } else {
+            window.location.href = "connexion.html";
+        }
+    });
+  </script>
 </head>
 
 <body class="preferences">
@@ -65,7 +77,7 @@
   </main>
   <div class="actions-container">
       <button id="btn-reset" class="btn-reset" onclick="Reset()">Réinitialiser</button>
-      <button id="btn-save" class="btn-save" >Sauvegarder</button>
+      <button id="btn-save" class="btn-save" onclick="Sauvegarde()">Sauvegarder</button>
   </div>
   <script src="script.js"></script>
   <footer>

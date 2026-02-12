@@ -10,6 +10,7 @@ logoutBtn.addEventListener("click", async () => {
     const result = await res.json();
 
     if (result.success) {
+      localStorage.clear();
       window.location.href = "../../accueil.html"; // redirige vers login
     } else {
       alert(result.error);

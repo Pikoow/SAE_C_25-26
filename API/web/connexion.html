@@ -98,6 +98,9 @@
         if (result.success) {
             message.style.color = "green";
             message.textContent = `Connecté : ${result.user.user_firstname}`;
+            localStorage.setItem("userId", result.user.user_id);
+            localStorage.setItem("userName", result.user.user_firstname);
+        
             setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
         } else {
             message.style.color = "red";

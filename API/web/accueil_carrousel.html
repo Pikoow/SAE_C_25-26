@@ -115,7 +115,7 @@
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
 
                         albumCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='../images/no_image_music.png'">
+                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src=images/no_image_music.png'">
                             <div class="album-info">
                                 <h3>${album.album_title}</h3>
                                 <p>${artistName}</p>
@@ -126,50 +126,90 @@
                     
                     // Partie Carrousel
 
-                    const carrousel_buttons_album = document.querySelectorAll(".carrousel-button-albums");
-                    const carrousel_slides_album = document.querySelectorAll(".album-card-carrousel");
-                    console.log("carrousel slide",carrousel_slides_album);
-                    const visible_cards = 3;
-                    let album_index = 4;
-                    carrousel_slides_album[3].classList.add("active");
-                    carrousel_slides_album[4].classList.add("active");
-                    carrousel_slides_album[5].classList.add("active");
-                    carrousel_buttons_album.forEach((carrBut) => {
-                        carrBut.addEventListener('click', (e) => {
-                            const direction = e.target.id === 'next-album' ? 1 : -1;
-                            const total = carrousel_slides_album.length;
+                    // fonctions :
 
-                            album_index = (album_index + direction + total) % total;
-                            console.log("actual index",album_index)
-                            
-                            var activeCards = document.querySelectorAll(".albums-card-carrousel.active");
-                            console.log("active cards : ",activeCards, "direction ",direction,"container",container)
-                            
-                            var slideWidth = carrousel_slides_album[0].offsetWidth;
-                            console.log("slide width",slideWidth);
-                            
-                            moveCarousel(container,album_index, slideWidth);
-                            
-                            const new_left  = (album_index - 1 + total) % total;
-                            const new_right = (album_index + 1) % total;
-                            
-                            console.log(new_left, album_index, new_right);
-                            
-                            carrousel_slides_album.forEach(slide =>
-                            slide.classList.remove("active")
-                        );
-                        
-                            carrousel_slides_album[album_index].classList.add("active");
-                            carrousel_slides_album[new_left].classList.add("active");
-                            carrousel_slides_album[new_right].classList.add("active");
-                            // console.log("test",{
-                                //     index: album_index,
-                                //     slideWidth,
-                                //     gap,
-                                //     offset
-                                // });
-                        })
-                    })
+                    function moveCarousel() {
+
+                        const slideWidth = cards[0].offsetWidth;
+                        const gap = parseFloat(getComputedStyle(container).gap) || 0;
+
+                        const offset = album_index * (slideWidth + gap);
+
+                        container.style.transform = `translateX(-${offset}px)`;
+
+                        updateActive();
+                    }
+
+                    function updateActive() {
+
+                        cards.forEach(card => card.classList.remove("active"));
+
+                        const center = album_index+1;
+
+                        cards[center].classList.add("active");
+                        cards[center - 1].classList.add("active");
+                        cards[center + 1].classList.add("active");
+                    }
+
+                    // container a déjà été récupéré
+                    const buttons = document.querySelectorAll(".carrousel-button-albums");
+                    const visibleCards = 3;
+                    const originalCards = document.querySelectorAll(".album-card-carrousel");
+                    const originalCount = originalCards.length;
+
+                    // --- DUPLICATION ---
+                    const cardsArray = Array.from(originalCards);
+
+                    // clones fin → début
+                    cardsArray.slice(-visibleCards).forEach(card => {
+                        container.prepend(card.cloneNode(true));
+                    });
+
+                    // clones début → fin
+                    cardsArray.slice(0, visibleCards).forEach(card => {
+                        container.append(card.cloneNode(true));
+                    });
+
+                    // IMPORTANT : on reprend toutes les cartes après duplication
+                    let cards = document.querySelectorAll(".album-card-carrousel");
+
+                    let album_index = visibleCards; // on démarre au vrai début
+                    moveCarousel();
+
+                    buttons.forEach(btn => {
+                        btn.addEventListener("click", (e) => {
+
+                            const direction = e.target.id === "next-album" ? 1 : -1;
+                            album_index += direction;
+
+                            moveCarousel();
+                            console.log("move by classic shit")
+                        });
+                    });
+
+                    container.addEventListener("transitionend", () => {
+
+                        // Si on est dans les clones de gauche
+                        if (album_index < visibleCards) {
+                            container.style.transition = "none";
+                            album_index = originalCount;
+                            moveCarousel();
+                            console.log("move by left shit")
+                        }
+
+                        // Si on est dans les clones de droite
+                        if (album_index >= originalCount + visibleCards) {
+                            container.style.transition = "none";
+                            album_index = visibleCards;
+                            moveCarousel();
+                            console.log("move by right shit")
+                        }
+
+                        // on réactive la transition
+                        setTimeout(() => {
+                            container.style.transition = "transform 0.4s ease";
+                        }, 20);
+                    });
                 })
                 .catch(error => {
                     console.error("Erreur lors du chargement des albums :", error);

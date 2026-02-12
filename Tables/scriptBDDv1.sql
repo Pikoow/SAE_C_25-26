@@ -58,12 +58,12 @@ CREATE TABLE user_fake (
 
 CREATE TABLE favorite (
     favorite_id            SERIAL PRIMARY KEY,
-    user_favorite_tracks   INT,
+    user_favorite_tracks   VARCHAR(65000),
     user_favorite_album    INT,
-    user_favorite_artist   INT,
+    user_favorite_artist   VARCHAR(65000),
     user_favorite_language VARCHAR(65000),
-    user_favorite_genre    INT,
-    user_id                INT    REFERENCES users(user_id)
+    user_favorite_genre    VARCHAR(65000),
+    user_id                INT UNIQUE REFERENCES users(user_id)
 );
 
 /* ========================== TABLE ALBUM  ========================== */

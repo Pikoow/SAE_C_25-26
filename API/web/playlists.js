@@ -121,8 +121,8 @@ function generatePlaylistCovers(tracks) {
     
     // Compléter avec des placeholders si moins de 4 images
     for (let i = tracks.length; i < 4; i++) {
-        html += `<div class="cover-item placeholder">
-            <span>🎵</span>
+        html += `<div class="cover-item">
+            <img src="images/no_image_music.png" alt="Aucune image">
         </div>`;
     }
     
