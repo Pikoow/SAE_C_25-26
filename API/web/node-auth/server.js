@@ -24,6 +24,10 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname, ".."))); 
 
+app.get("/", (req, res) => {
+  res.redirect("../accueil.html");
+});
+
 app.get("/connexion.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../connexion.html"));
 });

@@ -1380,6 +1380,7 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     overflow-y: auto;
     position: relative;
     animation: slideIn 0.3s ease;
+    top: 10em;
 }
 
 @keyframes slideIn {
@@ -1457,6 +1458,7 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 .modal-track-item .track-title {
     font-weight: 600;
     margin-bottom: 5px;
+    color: black !important;
 }
 
 .modal-track-item .track-artist {
@@ -1532,6 +1534,7 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 
 /* Résultats de recherche */
 .ui-autocomplete {
+    z-index: 999999 !important;
     max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;

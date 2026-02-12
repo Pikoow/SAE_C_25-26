@@ -9,6 +9,7 @@
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script src="script.js"></script>
     <script src="playlists.js"></script>
+    <script src="audio-player.js"></script>
     <script>
         $(document).ready(function() {
             const userId = localStorage.getItem("userId");
@@ -90,7 +91,6 @@
         <section class="my-playlists-section">
             <h2>Vos Playlists</h2>
             <div class="playlists-container">
-                <!-- Les playlists seront chargées dynamiquement ici -->
             </div>
         </section>
 
@@ -102,7 +102,6 @@
                 </button>
             </div>
             <div class="generated-playlists-container">
-                <!-- Les playlists générées apparaîtront ici -->
             </div>
         </section>
     </main>
@@ -279,6 +278,10 @@
 
         .active {
             color: var(--orange) !important;
+        }
+
+        .modal {
+            z-index: 900;
         }
     </style>
 </body>
