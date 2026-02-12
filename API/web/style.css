@@ -219,6 +219,107 @@ header nav .dropdown:hover > a {
     color: var(--orange);
 }
 
+/* =========================================
+   MENU UTILISATEUR (HEADER DROITE)
+   ========================================= */
+
+/* Conteneur global droite */
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Conteneur du dropdown utilisateur */
+.user-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* --- LE BOUTON "MON PROFIL" (Style identique à Inscription) --- */
+#user-name-display {
+    background-color: var(--orange);
+    color: var(--blanc);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem; /* Même taille que Inscription */
+    font-weight: bold;
+    border-radius: 0.313em; /* ~5px */
+    padding: 0 15px; /* Espace sur les côtés */
+    height: 1.9em;   /* Même hauteur que le bouton Inscription */
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espace entre le nom et la flèche */
+    
+    text-decoration: none;
+    transition: transform 0.2s, background-color 0.2s;
+    cursor: pointer;
+}
+
+/* Effet au survol du bouton */
+#user-name-display:hover {
+    background-color: var(--orange-fonce);
+    transform: scale(1.05);
+}
+
+/* --- LE MENU DÉROULANT (Caché par défaut) --- */
+.user-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--blanc);
+    min-width: 180px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+    z-index: 100;
+    
+    /* Positionnement : On le place sous le bouton, aligné à droite */
+    top: 100%;
+    right: 0; 
+    
+    border-radius: 8px;
+    border: 1px solid var(--gris-clair);
+    margin-top: 10px; /* Petit espace sous le bouton */
+    overflow: hidden; /* Pour les coins arrondis */
+}
+
+/* Pont invisible pour éviter que le menu se ferme au survol de l'espace */
+.user-dropdown::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 10px; /* Doit correspondre au margin-top ci-dessus */
+}
+
+/* Liens à l'intérieur du menu */
+.user-dropdown-content a {
+    color: var(--noir);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 1rem;
+    font-family: 'Outfit', sans-serif;
+    text-align: left; /* Texte aligné à gauche c'est plus propre */
+    transition: background 0.2s;
+}
+
+/* Hover sur les liens du menu */
+.user-dropdown-content a:hover {
+    background-color: var(--api-bg-light);
+    color: var(--orange);
+}
+
+/* Style spécial pour Déconnexion (Rouge au survol) */
+.user-dropdown-content a.logout-link:hover {
+    background-color: #fff5f5;
+    color: #c0392b;
+}
+
+/* Affichage du menu au survol du parent */
+.user-dropdown:hover .user-dropdown-content {
+    display: block;
+}
+
 
 /* FOOTER
 ***************************/
