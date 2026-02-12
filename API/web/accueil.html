@@ -146,13 +146,13 @@
                             const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                             filename = match ? match[1] : album.album_image_file;
                         }
-                        let imageUrl = "https://freemusicarchive.org/img/default/album.jpg";
+                        let imageUrl = "images/no_image_album.png";
                         if (filename) {
                             imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                         }
                         const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
                         albumCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_music.png'">
+                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_album.png'">
                             <div class="album-info">
                                 <h3>${album.album_title}</h3>
                                 <p>${artistName}</p>
