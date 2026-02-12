@@ -132,22 +132,8 @@ $(document).ready(function() {
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
-function moveCarousel(container, album_index, slideWidth) {
-    const gap = parseFloat(getComputedStyle(container).gap);
-    console.log("gap",gap)
-    const centerOffset = Math.floor(3 / 2);
 
-    // const styles = getComputedStyle(container);
-    // const gap = parseFloat(styles.gap); offsetWidth
 
-    // var offset = -(album_index * (slideWidth + gap));
-    var offset = album_index * (slideWidth + gap);
-    // -(album_index - centerOffset) * (slideWidth + gap);
-    container.style.transform = `translateX(${offset}px)`;
-
-    // console.log("slide width",slideWidth)
-    console.log("transform:", `translateX(-${offset}px)`);
-}
 
 // const carrousel_buttons = document.querySelectorAll(".carrousel-button");
 // const carrousel_slides = document.querySelectorAll(".carrousel-slide");
@@ -175,10 +161,6 @@ function moveCarousel(container, album_index, slideWidth) {
 //         carrousel_slides[new_right].classList.add("active");
 //     })
 // })
-
-
-
-
 
 
 
@@ -224,7 +206,7 @@ carrousel_buttons_track.forEach((carrBut) => {
         const new_left  = (track_index - 1 + total) % total;
         const new_right = (track_index + 1) % total;
 
-        console.log(new_left, currentIndex, new_right); // 🔥 5 6 0 ici
+        console.log(new_left, currentIndex, new_right); 
 
         carrousel_slides.forEach(slide =>
             slide.classList.remove("active")
