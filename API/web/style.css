@@ -936,8 +936,17 @@ footer {
     color: var(--gris-clair); 
 }
 
-/* PAGE CONTACT (Entièrement scopé sous .contact-page)
+/* PAGE CONTACT
 ***************************/
+.contact-page {
+    background-color: #f4f4f4;
+}
+
+.contact-page main { 
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 20px; }
+
 .contact-page .contact-title {
     font-family: 'Rammetto One', sans-serif; /* Police Titre */
     text-align: center;
