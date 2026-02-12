@@ -25,11 +25,11 @@
             </div>
         </nav>
         <div class="connexion-inscription">
-            <a href="connexion.html">Connexion</a>
-            <button>
-                <a href="connexion.html">Inscription</a>
-            </button>
-        </div>
+          <a href="connexion.html?mode=login">Connexion</a>
+          <button>
+              <a href="connexion.html?mode=register">Inscription</a>
+          </button>
+      </div>
     </header>
 
     <section class="auth-section">
@@ -158,6 +158,7 @@
     </footer>
 
     <script>
+      // Sélection des éléments du DOM
       const loginBtn = document.getElementById("loginBtn");
       const registerBtn = document.getElementById("registerBtn");
       const message = document.getElementById("auth-message");
@@ -167,32 +168,56 @@
       const regFieldsTop = document.getElementById("register-fields-top");
       const regFieldsBottom = document.getElementById("register-fields-bottom");
 
-      // Basculer entre Connexion et Inscription
+      // --- 1. FONCTION : Lire l'URL et activer le bon onglet au chargement ---
+      function checkUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode'); // Récupère la valeur de ?mode=...
+
+        if (mode === 'register') {
+            switchMode('register');
+        } else {
+            // Par défaut (ou si mode=login), on affiche la connexion
+            switchMode('login');
+        }
+      }
+
+      // --- 2. FONCTION : Basculer l'affichage (Connexion <-> Inscription) ---
       function switchMode(mode) {
-        message.textContent = "";
+        message.textContent = ""; // On vide les messages d'erreur
+
+        // Optionnel : Met à jour l'URL sans recharger la page (pour le partage de lien)
+        // const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?mode=' + mode;
+        // window.history.pushState({path:newUrl},'',newUrl);
 
         if (mode === "login") {
+          // Onglets
           tabLogin.classList.add("active");
           tabRegister.classList.remove("active");
           
+          // Masquer les champs d'inscription
           regFieldsTop.classList.add("hidden");
           regFieldsBottom.classList.add("hidden");
           
+          // Gestion des boutons
           loginBtn.classList.remove("hidden");
           registerBtn.classList.add("hidden");
+
         } else if (mode === "register") {
+          // Onglets
           tabLogin.classList.remove("active");
           tabRegister.classList.add("active");
           
+          // Afficher les champs d'inscription
           regFieldsTop.classList.remove("hidden");
           regFieldsBottom.classList.remove("hidden");
           
+          // Gestion des boutons
           loginBtn.classList.add("hidden");
           registerBtn.classList.remove("hidden");
         }
       }
 
-      // Récupération des données du formulaire
+      // --- 3. FONCTION : Récupérer les données du formulaire ---
       function getFormData() {
         return {
           firstName: document.getElementById("user_firstname").value.trim(),
@@ -205,19 +230,21 @@
         };
       }
 
-      // Envoi de la requête au Backend
+      // --- 4. FONCTION : Envoyer la requête au serveur (Backend) ---
       async function sendAuth(isRegister) {
         const data = getFormData();
         message.textContent = "Traitement en cours...";
         message.style.color = "var(--orange)";
 
+        // Validation basique
         if (!data.email || !data.password) {
-            message.style.color = "#c0392b";
+            message.style.color = "#c0392b"; // Rouge
             message.textContent = "Veuillez remplir l'email et le mot de passe.";
             return;
         }
 
         try {
+          // URL de ton backend (à adapter si besoin)
           const url = "http://localhost:3000/login"; 
           
           const res = await fetch(url, {
@@ -230,16 +257,21 @@
           const result = await res.json();
 
           if (result.success) {
-            message.style.color = "#27ae60"; 
+            // Succès
+            message.style.color = "#27ae60"; // Vert
             message.textContent = `Bienvenue, ${result.user.user_firstname || "Utilisateur"} !`;
             
+            // Sauvegarde en localStorage (Session utilisateur)
             localStorage.setItem("userId", result.user.user_id);
             localStorage.setItem("userName", result.user.user_firstname);
 
+            // Redirection vers l'accueil après 1.5 secondes
             setTimeout(() => {
               window.location.href = "accueil.html";
             }, 1500);
+
           } else {
+            // Erreur renvoyée par le serveur (ex: mauvais mot de passe)
             message.style.color = "#c0392b"; 
             message.textContent = result.error || "Erreur d'authentification";
           }
@@ -250,8 +282,14 @@
         }
       }
 
+      // --- 5. ÉVÉNEMENTS ---
+      
+      // Clics sur les boutons "Se connecter" / "Créer mon compte"
       loginBtn.addEventListener("click", () => sendAuth(false));
       registerBtn.addEventListener("click", () => sendAuth(true));
+
+      // Au chargement de la page : Vérifier l'URL pour choisir le bon onglet
+      window.addEventListener('DOMContentLoaded', checkUrlParams);
     </script>
   </body>
 </html>
