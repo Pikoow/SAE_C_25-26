@@ -2,152 +2,12 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <title>Connexion / Création de compte - MuSE</title>
+    <title>Connexion / Inscription - MuSE</title>
     <link rel="stylesheet" href="style.css" />
-    <style>
-      /* --- CSS SPÉCIFIQUE PAGE AUTHENTIFICATION --- */
-
-      .auth-section {
-        padding: 50px 20px;
-        background-color: #f4f4f4;
-        min-height: 80vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-      }
-
-      /* Titre principal de la page auth */
-      .auth-title {
-        font-family: "Rammetto One", sans-serif;
-        color: var(--orange-fonce);
-        font-size: 2rem;
-        text-align: center;
-        margin-bottom: 0;
-      }
-
-      /* Texte introductif */
-      .auth-text {
-        font-family: "Outfit", sans-serif;
-        color: var(--gris-fonce);
-        font-size: 1.1rem;
-        text-align: center;
-        max-width: 800px;
-        line-height: 1.5;
-        margin-bottom: 20px;
-      }
-
-      /* Carte du formulaire */
-      .auth-card {
-        background: var(--blanc);
-        padding: 0;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 450px;
-        overflow: hidden;
-        border-top: 5px solid var(--orange);
-      }
-
-      /* Les Onglets (Tabs) */
-      .auth-tabs {
-        display: flex;
-        background-color: #f9f9f9;
-        border-bottom: 1px solid var(--gris-clair);
-      }
-
-      .tab-btn {
-        flex: 1;
-        padding: 20px;
-        border: none;
-        background: none;
-        font-family: "Rammetto One", sans-serif;
-        font-size: 1rem;
-        cursor: pointer;
-        color: var(--gris-fonce);
-        transition: all 0.3s;
-        text-align: center;
-      }
-
-      .tab-btn:hover {
-        background-color: #eee;
-      }
-
-      /* Onglet Actif */
-      .tab-btn.active {
-        background-color: var(--blanc);
-        color: var(--orange);
-        border-bottom: 3px solid var(--orange);
-      }
-
-      /* Corps du formulaire */
-      .auth-form-body {
-        padding: 30px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      /* Champs Inputs */
-      .auth-form-body input {
-        width: 100%;
-        padding: 12px 15px;
-        border: 2px solid var(--gris-clair);
-        border-radius: 8px;
-        font-family: "Outfit", sans-serif;
-        font-size: 1rem;
-        box-sizing: border-box;
-        transition: border-color 0.3s;
-      }
-
-      .auth-form-body input:focus {
-        outline: none;
-        border-color: var(--orange);
-        background-color: #fffaf5;
-      }
-
-      /* Boutons d'action */
-      .btn-action {
-        width: 100%;
-        padding: 15px;
-        border: none;
-        border-radius: 8px;
-        background-color: var(--orange);
-        color: var(--blanc);
-        font-family: "Outfit", sans-serif;
-        font-weight: bold;
-        font-size: 1.1rem;
-        cursor: pointer;
-        transition:
-          background-color 0.3s,
-          transform 0.2s;
-        margin-top: 10px;
-      }
-
-      .btn-action:hover {
-        background-color: var(--orange-fonce);
-        transform: translateY(-2px);
-      }
-
-      /* Message d'erreur/succès */
-      #message {
-        text-align: center;
-        margin-top: 15px;
-        margin-bottom: 15px;
-        font-weight: bold;
-        min-height: 20px;
-        font-family: "Outfit", sans-serif;
-      }
-
-      /* Classes utilitaires pour cacher/montrer */
-      .hidden {
-        display: none !important;
-      }
-    </style>
   </head>
 
-  <body class="">
+  <body class="auth-page"> 
+    
     <header>
       <a href="accueil.html"><h2>MuSE</h2></a>
       <nav>
@@ -170,6 +30,7 @@
     </header>
 
     <section class="auth-section">
+        
       <h1 class="auth-title">Connectez-vous ou inscrivez-vous !</h1>
       <p class="auth-text">
         Pour utiliser pleinement les fonctionnalités de MuSE, veuillez vous
@@ -179,67 +40,74 @@
       </p>
 
       <div class="auth-card">
+        
         <div class="auth-tabs">
-          <button
-            class="tab-btn active"
-            id="tab-login"
-            onclick="switchMode('login')"
-          >
+          <button class="auth-tab-btn active" id="tab-login" onclick="switchMode('login')">
             Connexion
           </button>
-          <button
-            class="tab-btn"
-            id="tab-register"
-            onclick="switchMode('register')"
-          >
+          <button class="auth-tab-btn" id="tab-register" onclick="switchMode('register')">
             Inscription
           </button>
         </div>
 
-        <form id="authForm" class="auth-form-body">
-          <div id="register-fields-top" class="hidden">
-            <input type="text" id="user_firstname" placeholder="Prénom*" />
-            <input
-              type="text"
-              id="user_lastname"
-              placeholder="Nom*"
-              style="margin-top: 15px"
-            />
+        <form id="authForm" class="auth-form" onsubmit="event.preventDefault();">
+          
+          <p>Champs obligatoires marqués d'un *</p>
+
+          <div id="register-fields-top" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="form-group">
+                <label for="user_firstname">Prénom*</label>
+                <input type="text" id="user_firstname" placeholder="Votre prénom" />
+            </div>
+            <div class="form-group">
+                <label for="user_lastname">Nom*</label>
+                <input type="text" id="user_lastname" placeholder="Votre nom" />
+            </div>
           </div>
 
-          <input type="email" id="user_mail" placeholder="Email*" required />
-          <input
-            type="password"
-            id="user_password"
-            placeholder="Mot de passe*"
-            required
-          />
-
-          <div id="register-fields-bottom" class="hidden">
-            <input
-              type="number"
-              id="user_age"
-              placeholder="Âge"
-              style="margin-bottom: 15px"
-            />
-            <input
-              type="text"
-              id="user_gender"
-              placeholder="Genre"
-              style="margin-bottom: 15px"
-            />
-            <input type="text" id="user_location" placeholder="Localisation" />
+          <div class="form-group">
+              <label for="user_mail">Email*</label>
+              <input type="email" id="user_mail" placeholder="Votre email" required />
+          </div>
+          
+          <div class="form-group">
+              <label for="user_password">Mot de passe*</label>
+              <input type="password" id="user_password" placeholder="Votre mot de passe" required />
           </div>
 
-          <button type="button" id="loginBtn" class="btn-action">
+          <div id="register-fields-bottom" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="form-group">
+                <label for="user_age">Âge</label>
+                <input type="number" id="user_age" placeholder="Votre âge" min="13" max="120" />
+            </div>
+            
+            <div class="form-group">
+                <label for="user_gender">Genre</label>
+                <select id="user_gender">
+                  <option value="" disabled selected>-- Sélectionnez votre genre --</option>
+                  <option value="Homme">Homme</option>
+                  <option value="Femme">Femme</option>
+                  <option value="Non-binaire">Non-binaire</option>
+                  <option value="Autre">Autre</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_location">Localisation</label>
+                <input type="text" id="user_location" placeholder="Votre localisation" />
+            </div>
+          </div>
+
+          <button type="submit" id="loginBtn" class="auth-btn">
             Se connecter
           </button>
-          <button type="button" id="registerBtn" class="btn-action hidden">
+          <button type="submit" id="registerBtn" class="auth-btn hidden">
             Créer mon compte
           </button>
+          
         </form>
 
-        <p id="message"></p>
+        <p id="auth-message"></p>
       </div>
     </section>
 
@@ -277,18 +145,10 @@
       <div class="barre-separation-footer"></div>
       <div class="fin-footer">
         <div class="reseaux-sociaux-footer">
-          <a href="#"
-            ><img src="../images/icones/instagram.avif" alt="Instagram"
-          /></a>
-          <a href="#"
-            ><img src="../images/icones/linkedin.avif" alt="LinkedIn"
-          /></a>
-          <a href="#"
-            ><img src="../images/icones/github.avif" alt="GitHub"
-          /></a>
-          <a href="#"
-            ><img src="../images/icones/facebook.avif" alt="Facebook"
-          /></a>
+          <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram" /></a>
+          <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn" /></a>
+          <a href="#"><img src="../images/icones/github.avif" alt="GitHub" /></a>
+          <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook" /></a>
         </div>
         <p>© 2026 MuSE Français</p>
       </div>
@@ -297,46 +157,39 @@
     <script>
       const loginBtn = document.getElementById("loginBtn");
       const registerBtn = document.getElementById("registerBtn");
-      const message = document.getElementById("message");
+      const message = document.getElementById("auth-message");
 
-      // Éléments UI pour le switch
       const tabLogin = document.getElementById("tab-login");
       const tabRegister = document.getElementById("tab-register");
       const regFieldsTop = document.getElementById("register-fields-top");
       const regFieldsBottom = document.getElementById("register-fields-bottom");
 
-      // Fonction pour changer d'onglet
+      // Basculer entre Connexion et Inscription
       function switchMode(mode) {
-        // Reset messages
         message.textContent = "";
 
         if (mode === "login") {
-          // Style des onglets
           tabLogin.classList.add("active");
           tabRegister.classList.remove("active");
-
-          // Visibilité des champs
+          
           regFieldsTop.classList.add("hidden");
           regFieldsBottom.classList.add("hidden");
-
-          // Visibilité des boutons
+          
           loginBtn.classList.remove("hidden");
           registerBtn.classList.add("hidden");
         } else if (mode === "register") {
-          // Style des onglets
           tabLogin.classList.remove("active");
           tabRegister.classList.add("active");
-
-          // Visibilité des champs
+          
           regFieldsTop.classList.remove("hidden");
           regFieldsBottom.classList.remove("hidden");
-
-          // Visibilité des boutons
+          
           loginBtn.classList.add("hidden");
           registerBtn.classList.remove("hidden");
         }
       }
 
+      // Récupération des données du formulaire
       function getFormData() {
         return {
           firstName: document.getElementById("user_firstname").value.trim(),
@@ -345,41 +198,52 @@
           password: document.getElementById("user_password").value,
           age: parseInt(document.getElementById("user_age").value) || null,
           gender: document.getElementById("user_gender").value.trim() || null,
-          location:
-            document.getElementById("user_location").value.trim() || null,
+          location: document.getElementById("user_location").value.trim() || null,
         };
       }
 
+      // Envoi de la requête au Backend
       async function sendAuth(isRegister) {
         const data = getFormData();
         message.textContent = "Traitement en cours...";
         message.style.color = "var(--orange)";
 
+        if (!data.email || !data.password) {
+            message.style.color = "#c0392b";
+            message.textContent = "Veuillez remplir l'email et le mot de passe.";
+            return;
+        }
+
         try {
-          const res = await fetch("http://localhost:3000/login", {
+          const url = "http://localhost:3000/login"; 
+          
+          const res = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
+            credentials: "include", 
             body: JSON.stringify(data),
           });
 
           const result = await res.json();
 
           if (result.success) {
-            message.style.color = "green";
-            message.textContent = `Connecté : ${result.user.user_firstname}`;
+            message.style.color = "#27ae60"; 
+            message.textContent = `Bienvenue, ${result.user.user_firstname || "Utilisateur"} !`;
+            
             localStorage.setItem("userId", result.user.user_id);
             localStorage.setItem("userName", result.user.user_firstname);
-        
-            setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
-        } else {
-            message.style.color = "red";
+
+            setTimeout(() => {
+              window.location.href = "accueil.html";
+            }, 1500);
+          } else {
+            message.style.color = "#c0392b"; 
             message.textContent = result.error || "Erreur d'authentification";
           }
         } catch (err) {
           console.error(err);
-          message.style.color = "red";
-          message.textContent = "Erreur de connexion au serveur";
+          message.style.color = "#c0392b";
+          message.textContent = "Impossible de joindre le serveur.";
         }
       }
 
