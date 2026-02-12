@@ -251,35 +251,6 @@
                 console.error("Erreur :", error);
             });
         });
-
-        const goConnexion = document.getElementById("goConnexion");
-
-    goConnexion.addEventListener("click", () => {
-      window.location.href = "connexion.html"; // redirige vers la page unique login/register
-    });
-
-    // Fonction pour récupérer les données du dashboard
-    async function getDashboard() {
-        try {
-            const res = await fetch("http://localhost:3000/dashboard", {
-            method: "GET",
-            credentials: "include"
-            });
-
-            const data = await res.json();
-
-            if (data.error) {
-            document.getElementById("welcome").textContent = "Non connecté, veuillez revenir à la page login.";
-            } else {
-                document.getElementById("welcome").textContent = `Bienvenue ${data.user.user_firstname} !`;
-            }
-
-        } catch (err) {
-            console.error(err);
-            document.getElementById("welcome").textContent = "Erreur serveur";
-        }
-    }
-    getDashboard();
   </script>
 
 </body>
