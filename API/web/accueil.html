@@ -10,6 +10,7 @@
     <script src="script.js"></script>
     <script src="audio-player.js"></script>
     <script src="node-auth/js/app.js"></script>
+    <script src="header-ui.js" defer></script>
 </head>
 <body class="accueil">
     <header>
@@ -28,12 +29,26 @@
                 </div>
             </div>
         </nav>
-        <div class="connexion-inscription">
-          <a href="connexion.html?mode=login">Connexion</a>
-          <button>
-              <a href="connexion.html?mode=register">Inscription</a>
-          </button>
-      </div>
+
+        <div class="header-right">
+    
+        <div id="auth-buttons" class="connexion-inscription">
+            <a href="connexion.html?mode=login">Connexion</a>
+            <button>
+                <a href="connexion.html?mode=register">Inscription</a>
+            </button>
+        </div>
+
+        <div id="user-menu" class="user-dropdown hidden">
+            <a href="#" id="user-name-display">Mon Profil ▾</a>
+            
+            <div class="dropdown-content user-dropdown-content">
+                <a href="profil.html">Mon profil</a>
+                <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+            </div>
+        </div>
+
+    </div>
     </header>
 
     <main>
@@ -251,35 +266,6 @@
                 console.error("Erreur :", error);
             });
         });
-
-        const goConnexion = document.getElementById("goConnexion");
-
-    goConnexion.addEventListener("click", () => {
-      window.location.href = "connexion.html"; // redirige vers la page unique login/register
-    });
-
-    // Fonction pour récupérer les données du dashboard
-    async function getDashboard() {
-        try {
-            const res = await fetch("http://localhost:3000/dashboard", {
-            method: "GET",
-            credentials: "include"
-            });
-
-            const data = await res.json();
-
-            if (data.error) {
-            document.getElementById("welcome").textContent = "Non connecté, veuillez revenir à la page login.";
-            } else {
-                document.getElementById("welcome").textContent = `Bienvenue ${data.user.user_firstname} !`;
-            }
-
-        } catch (err) {
-            console.error(err);
-            document.getElementById("welcome").textContent = "Erreur serveur";
-        }
-    }
-    getDashboard();
   </script>
 
 </body>
