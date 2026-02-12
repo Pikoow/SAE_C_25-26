@@ -114,6 +114,44 @@ async function chargerMusiques() {
         console.error("Erreur Musiques :", error);
     }
 }
+//Fonction pour sauvegarder les preferences de user
+async function Sauvegarde() {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return alert("Veuillez vous connecter.");
+
+    const getIds = (containerId) => {
+        const badges = document.querySelectorAll(`#${containerId} .badge-item`);
+        return Array.from(badges).map(badge => String(badge.getAttribute('data-id')));
+    };
+
+    const payload = {
+        user_id: parseInt(userId),
+        genres: getIds("selected-genres-list"),
+        artists: getIds("selected-artists-list"),
+        tracks: getIds("selected-tracks-list")
+    };
+
+    console.log("Données envoyées au main.py :", payload);
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/save-favorites", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert("Vos préférences ont été enregistrées !");
+        }
+        else{
+            alert("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
+        }
+    } catch (err) {
+        console.error("Erreur de connexion à l'API Python :", err);
+    }
+}
+
 
 // Vide toutes les listes
 function Reset() {
@@ -132,22 +170,8 @@ $(document).ready(function() {
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
-function moveCarousel(container, album_index, slideWidth) {
-    const gap = parseFloat(getComputedStyle(container).gap);
-    console.log("gap",gap)
-    const centerOffset = Math.floor(3 / 2);
 
-    // const styles = getComputedStyle(container);
-    // const gap = parseFloat(styles.gap); offsetWidth
 
-    // var offset = -(album_index * (slideWidth + gap));
-    var offset = album_index * (slideWidth + gap);
-    // -(album_index - centerOffset) * (slideWidth + gap);
-    container.style.transform = `translateX(${offset}px)`;
-
-    // console.log("slide width",slideWidth)
-    console.log("transform:", `translateX(-${offset}px)`);
-}
 
 // const carrousel_buttons = document.querySelectorAll(".carrousel-button");
 // const carrousel_slides = document.querySelectorAll(".carrousel-slide");
@@ -175,10 +199,6 @@ function moveCarousel(container, album_index, slideWidth) {
 //         carrousel_slides[new_right].classList.add("active");
 //     })
 // })
-
-
-
-
 
 
 
@@ -224,7 +244,7 @@ carrousel_buttons_track.forEach((carrBut) => {
         const new_left  = (track_index - 1 + total) % total;
         const new_right = (track_index + 1) % total;
 
-        console.log(new_left, currentIndex, new_right); // 🔥 5 6 0 ici
+        console.log(new_left, currentIndex, new_right); 
 
         carrousel_slides.forEach(slide =>
             slide.classList.remove("active")

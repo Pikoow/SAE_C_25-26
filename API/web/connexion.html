@@ -367,11 +367,12 @@
 
           if (result.success) {
             message.style.color = "green";
-            message.textContent = `Bienvenue, ${result.user.user_firstname || "Utilisateur"} !`;
-            setTimeout(() => {
-              window.location.href = "accueil.html";
-            }, 1500);
-          } else {
+            message.textContent = `Connecté : ${result.user.user_firstname}`;
+            localStorage.setItem("userId", result.user.user_id);
+            localStorage.setItem("userName", result.user.user_firstname);
+        
+            setTimeout(() => { window.location.href = "accueil.html"; }, 1000);
+        } else {
             message.style.color = "red";
             message.textContent = result.error || "Erreur d'authentification";
           }

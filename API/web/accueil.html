@@ -9,70 +9,38 @@
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script src="script.js"></script>
     <script src="audio-player.js"></script>
+    <script src="node-auth/js/app.js"></script>
 </head>
 <body class="accueil">
     <header>
-            <a href="accueil.html"><h2>MuSE</h2></a> 
-            <nav>
-                <a href="accueil.html">Accueil</a>
-                <a href="playlists.html">Playlists</a>
-                <a href="preferences.html">Préférences</a>
+        <a href="accueil.html"><h2>MuSE</h2></a> 
+        <nav>
+            <a href="accueil.html">Accueil</a>
+            <a href="playlists.html">Playlists</a>
+            <a href="preferences.html">Préférences</a>
                 
-                <div class="dropdown">
-                    <a href="#">API ▾</a>
-                    <div class="dropdown-content">
-                        <a href="api-installation.html">Installation</a>
-                        <a href="api-documentation.html">Documentation</a>
-                        <a href="api-test.html">Testez l'API</a>
-                    </div>
+            <div class="dropdown">
+                <a href="#">API ▾</a>
+                <div class="dropdown-content">
+                    <a href="api-installation.html">Installation</a>
+                    <a href="api-documentation.html">Documentation</a>
+                    <a href="api-test.html">Testez l'API</a>
                 </div>
-            </nav>
+            </div>
+        </nav>
+        <div class="connexion-inscription">
+            <a href="connexion.html">Connexion</a>
             <button>
-                <a href="connexion.html">Connexion</a>
+                <a href="connexion.html">Inscription</a>
             </button>
-        </header>
+        </div>
+    </header>
 
-    <h1>Bienvenue</h1>
-  <p id="welcome"></p>
-  <button id="goConnexion">Aller sur la page Connexion / Register</button>
-  <button id="logoutBtn">Se déconnecter</button>
+    <h1 id="welcome"></h1>
+    <button id="goConnexion">Aller sur la page Connexion / Register</button>
+    <button id="logoutBtn">Se déconnecter</button>
       
-    <script src="node-auth/js/app.js"></script>
-
-
-  <script>
-    const goConnexion = document.getElementById("goConnexion");
-
-    goConnexion.addEventListener("click", () => {
-      window.location.href = "connexion.html"; // redirige vers la page unique login/register
-    });
-  </script>
-
-  <script>
-    async function getDashboard() {
-      try {
-        const res = await fetch("http://localhost:3000/dashboard", {
-          method: "GET",
-          credentials: "include"
-        });
-
-        const data = await res.json();
-
-        if (data.error) {
-          document.getElementById("welcome").textContent = "Non connecté, veuillez revenir à la page login.";
-        } else {
-          document.getElementById("welcome").textContent = `Bienvenue ${data.user.user_firstname} !`;
-        }
-
-      } catch (err) {
-        console.error(err);
-        document.getElementById("welcome").textContent = "Erreur serveur";
-      }
-    }
-
-    getDashboard();
-  </script>
-
+    
 
     <main>
         <section class="albums">
@@ -252,7 +220,36 @@
                 console.error("Erreur :", error);
             });
         });
-    </script>
+
+        const goConnexion = document.getElementById("goConnexion");
+
+    goConnexion.addEventListener("click", () => {
+      window.location.href = "connexion.html"; // redirige vers la page unique login/register
+    });
+
+    // Fonction pour récupérer les données du dashboard
+    async function getDashboard() {
+        try {
+            const res = await fetch("http://localhost:3000/dashboard", {
+            method: "GET",
+            credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+            document.getElementById("welcome").textContent = "Non connecté, veuillez revenir à la page login.";
+            } else {
+                document.getElementById("welcome").textContent = `Bienvenue ${data.user.user_firstname} !`;
+            }
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("welcome").textContent = "Erreur serveur";
+        }
+    }
+    getDashboard();
+  </script>
 
 </body>
 </html>
