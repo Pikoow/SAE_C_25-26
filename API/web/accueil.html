@@ -706,28 +706,48 @@
 
                 const popupContainer = document.getElementById('popup-tracks-container');
                 if (popupContainer && popupContainer.children.length === 0) {
-                    fetch("http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15")
-                        .then(response => response.json())
-                        .then(async data => {
-                            // Charger plus de tracks pour alimenter le pool
-                            const trackIds = data.results.map(t => t.track_id);
-                            const trackRequests = trackIds.map(id =>
-                                fetch(`http://127.0.0.1:8000/tracks/${id}`)
-                                    .then(res => res.json())
-                                    .catch(() => null)
-                            );
-                            const allTracks = (await Promise.all(trackRequests)).filter(t => t !== null);
-                            popupRecoPool = allTracks;
+                    // Construire l'URL de recommandation selon les préférences utilisateur
+                    const popupUserId = localStorage.getItem("userId");
+                    let recoUrlPromise;
 
-                            // Afficher les 3 premières
-                            const initialTracks = allTracks.slice(0, POPUP_VISIBLE_COUNT);
-                            initialTracks.forEach(track => {
-                                popupDisplayedIds.add(track.track_id);
-                                const card = createPopupTrackCard(track);
-                                popupContainer.appendChild(card);
-                            });
-                        })
-                        .catch(err => console.error("Erreur chargement tracks popup:", err));
+                    if (popupUserId) {
+                        recoUrlPromise = fetch(`http://127.0.0.1:8000/voir_favorite/${popupUserId}`)
+                            .then(res => res.json())
+                            .then(prefData => {
+                                let trackIds = [];
+                                if (prefData.count > 0 && prefData.results[0].ids_tracks) {
+                                    trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
+                                }
+                                if (trackIds.length === 0) trackIds = ['81466'];
+                                return `http://127.0.0.1:8000/reco/tracks?${trackIds.map(id => 'track_ids=' + id).join('&')}&limit=15`;
+                            })
+                            .catch(() => 'http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15');
+                    } else {
+                        recoUrlPromise = Promise.resolve('http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15');
+                    }
+
+                    recoUrlPromise.then(recoUrl => {
+                        fetch(recoUrl)
+                            .then(response => response.json())
+                            .then(async data => {
+                                const trackIds = data.results.map(t => t.track_id);
+                                const trackRequests = trackIds.map(id =>
+                                    fetch(`http://127.0.0.1:8000/tracks/${id}`)
+                                        .then(res => res.json())
+                                        .catch(() => null)
+                                );
+                                const allTracks = (await Promise.all(trackRequests)).filter(t => t !== null);
+                                popupRecoPool = allTracks;
+
+                                const initialTracks = allTracks.slice(0, POPUP_VISIBLE_COUNT);
+                                initialTracks.forEach(track => {
+                                    popupDisplayedIds.add(track.track_id);
+                                    const card = createPopupTrackCard(track);
+                                    popupContainer.appendChild(card);
+                                });
+                            })
+                            .catch(err => console.error("Erreur chargement tracks popup:", err));
+                    });
                 }
             }
 
