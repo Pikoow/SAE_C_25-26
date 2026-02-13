@@ -119,36 +119,43 @@ async function Sauvegarde() {
     const userId = localStorage.getItem("userId");
     if (!userId) return alert("Veuillez vous connecter.");
 
-    const getIds = (containerId) => {
-        const badges = document.querySelectorAll(`#${containerId} .badge-item`);
-        return Array.from(badges).map(badge => String(badge.getAttribute('data-id')));
-    };
+    const choixUtilisateur = confirm("Voulez-vous enregistrer vos préférences ?");
 
-    const payload = {
-        user_id: parseInt(userId),
-        genres: getIds("selected-genres-list"),
-        artists: getIds("selected-artists-list"),
-        tracks: getIds("selected-tracks-list")
-    };
+    if (choixUtilisateur) {
+        const getIds = (containerId) => {
+            const badges = document.querySelectorAll(`#${containerId} .badge-item`);
+            return Array.from(badges).map(badge => String(badge.getAttribute('data-id')));
+        };
 
-    console.log("Données envoyées au main.py :", payload);
+        const payload = {
+            user_id: parseInt(userId),
+            genres: getIds("selected-genres-list"),
+            artists: getIds("selected-artists-list"),
+            tracks: getIds("selected-tracks-list")
+        };
 
-    try {
-        const response = await fetch("http://127.0.0.1:8000/save-favorites", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        console.log("Données envoyées au main.py :", payload);
 
-        const result = await response.json();
-        if (result.success) {
-            console.log("Vos préférences ont été enregistrées !");
+        try {
+            const response = await fetch("http://127.0.0.1:8000/save-favorites", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                console.log("Vos préférences ont été enregistrées !");
+            }
+            else{
+                console.log("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
+            }
+        } catch (err) {
+            console.error("Erreur de connexion à l'API Python :", err);
         }
-        else{
-            console.log("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
-        }
-    } catch (err) {
-        console.error("Erreur de connexion à l'API Python :", err);
+        console.log("Préférences enregistrées.");
+    } else {
+        console.log("Action annulée.");
     }
 }
 
