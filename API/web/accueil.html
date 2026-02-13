@@ -434,88 +434,194 @@
 
         // Affichage des recommandations de tracks
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/reco/tracks?track_ids=81466")
-                .then(response => response.json())
-                .then(async data => {
-                    const container = document.getElementById("tracks-container");
-                    container.innerHTML = "";
-                    const trackIds = data.results.map(t => t.track_id);
-                    const trackRequests = trackIds.map(id =>
-                        fetch(`http://127.0.0.1:8000/tracks/${id}`)
-                            .then(res => res.json())
-                    );
-                    const tracksFullData = await Promise.all(trackRequests);
-                    tracksFullData.forEach(track => {
-
-                        
-
-                        let filename = null;
-                        if (track.track_image_file) {
-                            const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                            filename = match ? match[1] : track.track_image_file;
+            // Récupérer l'ID utilisateur depuis le localStorage
+            const userId = localStorage.getItem("userId");
+            if (userId) {
+                // Aller chercher les préférences de l'utilisateur
+                fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`)
+                    .then(response => response.json())
+                    .then(prefData => {
+                        let trackIds = [];
+                        if (prefData.count > 0 && prefData.results[0].ids_tracks) {
+                            trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
                         }
-                        console.log("Track ID:", track.track_id, "Image Filename:", filename);
-                        let imageUrl = "images/no_image_music.png";
-                        if (filename) {
-                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
-                        }
-                        const trackCard = document.createElement("div");
-                        trackCard.classList.add("track-card");
-                        trackCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
-                            <div class="track-info">
-                                <h3>${track.track_title}</h3>
-                                <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
-                            </div>
-                        `;
-                        trackCard.dataset.trackId = track.track_id;
-                        container.appendChild(trackCard);
+                        // Si pas de préférences, fallback sur une valeur par défaut
+                        if (trackIds.length === 0) trackIds = [81466];
+                        fetch(`http://127.0.0.1:8000/reco/tracks?` + trackIds.map(id => `track_ids=${id}`).join('&'))
+                            .then(response => response.json())
+                            .then(async data => {
+                                const container = document.getElementById("tracks-container");
+                                container.innerHTML = "";
+                                const ids = data.results.map(t => t.track_id);
+                                const trackRequests = ids.map(id =>
+                                    fetch(`http://127.0.0.1:8000/tracks/${id}`)
+                                        .then(res => res.json())
+                                );
+                                const tracksFullData = await Promise.all(trackRequests);
+                                tracksFullData.forEach(track => {
+                                    let filename = null;
+                                    if (track.track_image_file) {
+                                        const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                                        filename = match ? match[1] : track.track_image_file;
+                                    }
+                                    let imageUrl = "images/no_image_music.png";
+                                    if (filename) {
+                                        imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
+                                    }
+                                    const trackCard = document.createElement("div");
+                                    trackCard.classList.add("track-card");
+                                    trackCard.innerHTML = `
+                                        <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
+                                        <div class="track-info">
+                                            <h3>${track.track_title}</h3>
+                                            <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
+                                        </div>
+                                    `;
+                                    trackCard.dataset.trackId = track.track_id;
+                                    container.appendChild(trackCard);
+                                });
+                            })
+                            .catch(error => {
+                                console.error("Erreur lors du chargement des recommandations de tracks :", error);
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Erreur lors de la récupération des préférences utilisateur :", error);
                     });
-                })
-                .catch(error => {
-                    console.error("Erreur lors du chargement des recommandations de tracks :", error);
-                });
+            } else {
+                // Utilisateur non connecté : fallback sur une valeur par défaut
+                fetch("http://127.0.0.1:8000/reco/tracks?track_ids=81466")
+                    .then(response => response.json())
+                    .then(async data => {
+                        const container = document.getElementById("tracks-container");
+                        container.innerHTML = "";
+                        const trackIds = data.results.map(t => t.track_id);
+                        const trackRequests = trackIds.map(id =>
+                            fetch(`http://127.0.0.1:8000/tracks/${id}`)
+                                .then(res => res.json())
+                        );
+                        const tracksFullData = await Promise.all(trackRequests);
+                        tracksFullData.forEach(track => {
+                            let filename = null;
+                            if (track.track_image_file) {
+                                const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                                filename = match ? match[1] : track.track_image_file;
+                            }
+                            let imageUrl = "images/no_image_music.png";
+                            if (filename) {
+                                imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
+                            }
+                            const trackCard = document.createElement("div");
+                            trackCard.classList.add("track-card");
+                            trackCard.innerHTML = `
+                                <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
+                                <div class="track-info">
+                                    <h3>${track.track_title}</h3>
+                                    <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
+                                </div>
+                            `;
+                            trackCard.dataset.trackId = track.track_id;
+                            container.appendChild(trackCard);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Erreur lors du chargement des recommandations de tracks :", error);
+                    });
+            }
         });
 
         // Affichage des recommandations d'artistes
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/reco/artists?artist_ids=1")
-                .then(response => response.json())
-                .then(async data => {
-                    const container = document.getElementById("artists-container");
-                    container.innerHTML = "";
-                    const artistIds = data.results.map(a => a.artist_id);
-                    const artistRequests = artistIds.map(id =>
-                        fetch(`http://127.0.0.1:8000/artists/${id}`)
-                            .then(res => res.json())
-                    );
-                    const artistsFullData = await Promise.all(artistRequests);
-                    artistsFullData.forEach(artist => {
-                        let filename = null;
-                        if (artist.artist_image_file) {
-                            const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                            filename = match ? match[1] : artist.artist_image_file;
+            const userId = localStorage.getItem("userId");
+            if (userId) {
+                fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`)
+                    .then(response => response.json())
+                    .then(prefData => {
+                        let artistIds = [];
+                        if (prefData.count > 0 && prefData.results[0].ids_artists) {
+                            artistIds = prefData.results[0].ids_artists.split(',').filter(x => x);
                         }
-                        let imageUrl = "..images/no_image_artist.png";
-                        if (filename) {
-                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
-                        }
-                        const artistCard = document.createElement("div");
-                        artistCard.classList.add("artist-card");
-                        artistCard.innerHTML = `
-                            <img src="${imageUrl}" 
-                                alt="${artist.artist_name}" 
-                                class="artist-cover"
-                                onerror="this.src='..images/no_image_artist.png'">
-                            <h3>${artist.artist_name}</h3>
-                            <p>Artiste</p>
-                        `;
-                        container.appendChild(artistCard);
+                        if (artistIds.length === 0) artistIds = [1];
+                        fetch(`http://127.0.0.1:8000/reco/artists?` + artistIds.map(id => `artist_ids=${id}`).join('&'))
+                            .then(response => response.json())
+                            .then(async data => {
+                                const container = document.getElementById("artists-container");
+                                container.innerHTML = "";
+                                const ids = data.results.map(a => a.artist_id);
+                                const artistRequests = ids.map(id =>
+                                    fetch(`http://127.0.0.1:8000/artists/${id}`)
+                                        .then(res => res.json())
+                                );
+                                const artistsFullData = await Promise.all(artistRequests);
+                                artistsFullData.forEach(artist => {
+                                    let filename = null;
+                                    if (artist.artist_image_file) {
+                                        const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                                        filename = match ? match[1] : artist.artist_image_file;
+                                    }
+                                    let imageUrl = "images/no_image_artist.png";
+                                    if (filename) {
+                                        imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
+                                    }
+                                    const artistCard = document.createElement("div");
+                                    artistCard.classList.add("artist-card");
+                                    artistCard.innerHTML = `
+                                        <img src="${imageUrl}" 
+                                            alt="${artist.artist_name}" 
+                                            class="artist-cover"
+                                            onerror="this.src='images/no_image_artist.png'">
+                                        <h3>${artist.artist_name}</h3>
+                                        <p>Artiste</p>
+                                    `;
+                                    container.appendChild(artistCard);
+                                });
+                            })
+                            .catch(error => {
+                                console.error("Erreur lors du chargement des recommandations d'artistes :", error);
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Erreur lors de la récupération des préférences utilisateur :", error);
                     });
-                })
-            .catch(error => {
-                console.error("Erreur :", error);
-            });
+            } else {
+                fetch("http://127.0.0.1:8000/reco/artists?artist_ids=1")
+                    .then(response => response.json())
+                    .then(async data => {
+                        const container = document.getElementById("artists-container");
+                        container.innerHTML = "";
+                        const artistIds = data.results.map(a => a.artist_id);
+                        const artistRequests = artistIds.map(id =>
+                            fetch(`http://127.0.0.1:8000/artists/${id}`)
+                                .then(res => res.json())
+                        );
+                        const artistsFullData = await Promise.all(artistRequests);
+                        artistsFullData.forEach(artist => {
+                            let filename = null;
+                            if (artist.artist_image_file) {
+                                const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                                filename = match ? match[1] : artist.artist_image_file;
+                            }
+                            let imageUrl = "images/no_image_artist.png";
+                            if (filename) {
+                                imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
+                            }
+                            const artistCard = document.createElement("div");
+                            artistCard.classList.add("artist-card");
+                            artistCard.innerHTML = `
+                                <img src="${imageUrl}" 
+                                    alt="${artist.artist_name}" 
+                                    class="artist-cover"
+                                    onerror="this.src='images/no_image_artist.png'">
+                                <h3>${artist.artist_name}</h3>
+                                <p>Artiste</p>
+                            `;
+                            container.appendChild(artistCard);
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Erreur lors du chargement des recommandations d'artistes :", error);
+                    });
+            }
         });
 
         const goConnexion = document.getElementById("goConnexion");

@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel
 import os
 import sys
+import math
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Recommendation'))
 
@@ -26,7 +27,7 @@ app = FastAPI(title="API Muse", lifespan=lifespan)
 # Erreur page web Cors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,6 +41,15 @@ DB_CONFIG = {
     "password": os.getenv("POSTGRES_PASSWORD"),
     "port": int(os.getenv("POSTGRES_PORT", 5432))
 }
+
+def clean_nan(obj):
+    if isinstance(obj, float) and math.isnan(obj):
+        return None
+    elif isinstance(obj, dict):
+        return {k: clean_nan(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nan(v) for v in obj]
+    return obj
 
 def get_db_connection():
     try:
@@ -211,7 +221,7 @@ def get_track_by_id(track_id: int):
         cur.close()
         conn.close()
         
-        return track
+        return clean_nan(track)
     except HTTPException:
         raise
     except Exception as e:
