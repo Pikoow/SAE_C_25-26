@@ -11,6 +11,164 @@
     <script src="audio-player.js"></script>
     <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
+    <!-- Pop-up Exit Intent - À insérer n'importe où dans votre page -->
+<style>
+    .exit-popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .exit-popup-overlay.show {
+        display: flex;
+        opacity: 1;
+    }
+
+    .exit-popup-overlay.fade-out {
+        opacity: 0;
+    }
+
+    .exit-popup {
+        background: white;
+        padding: 50px 60px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+        position: relative;
+    }
+
+    .exit-popup-overlay.show .exit-popup {
+        transform: scale(1);
+    }
+
+    .exit-popup.scale-out {
+        transform: scale(0.9);
+    }
+
+    .exit-popup h1 {
+        color: #2c3e50;
+        margin: 0 0 20px 0;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.4;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .exit-popup-subtitle {
+        color: #7f8c8d;
+        font-size: 15px;
+        margin-bottom: 35px;
+        font-weight: 400;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .exit-popup-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .exit-popup-btn {
+        padding: 12px 32px;
+        font-size: 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    .exit-popup-btn-yes {
+        background: #3498db;
+        color: white;
+    }
+
+    .exit-popup-btn-yes:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .exit-popup-btn-no {
+        background: #ecf0f1;
+        color: #7f8c8d;
+    }
+
+    .exit-popup-btn-no:hover {
+        background: #d5dbdb;
+        color: #5a6c7d;
+    }
+
+    .exit-popup-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 36px;
+        font-weight: 600;
+        color: #e74c3c;
+        z-index: 10000;
+        opacity: 0;
+        animation: exitPopupFadeInOut 3s ease-in-out;
+        pointer-events: none;
+        background: white;
+        padding: 30px 50px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    @keyframes exitPopupFadeInOut {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+        15% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        85% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+    }
+
+    .exit-popup-confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        position: absolute;
+        animation: exitPopupConfettiFall 3s linear forwards;
+        z-index: 9998;
+    }
+
+    @keyframes exitPopupConfettiFall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+</style>
 </head>
 <body class="accueil">
     <header>
@@ -78,6 +236,16 @@
             <h2>Artistes qui pourraient vous plaire</h2>
             <div id="artists-container"></div>
         </section>
+        <div class="exit-popup-overlay" id="exitPopupOverlay">
+            <div class="exit-popup" id="exitPopup">
+                <h1>Aimez-vous notre site ?</h1>
+                <p class="exit-popup-subtitle">Votre avis compte beaucoup pour nous</p>
+                <div class="exit-popup-buttons">
+                    <button class="exit-popup-btn exit-popup-btn-yes" onclick="exitPopupHandleYes()">Oui</button>
+                    <button class="exit-popup-btn exit-popup-btn-no fermerAvecDelai()" onclick="exitPopupHandleNo()">Non</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer>
@@ -123,6 +291,7 @@
         </div>
     </footer>
 
+    
     <script>
         (function() {
             const container = document.getElementById('equalizer-bg');
@@ -144,6 +313,88 @@
                 bar.style.height = hMin + 'px';
 
                 container.appendChild(bar);
+            }
+        })();
+
+        (function() {
+            let exitPopupShown = false;
+
+            // Détection de la souris qui sort de la fenêtre
+            document.addEventListener('mouseout', function(e) {
+                if (!exitPopupShown && e.clientY <= 0) {
+                    exitPopupShow();
+                }
+            });
+
+            // Fermeture en cliquant sur l'overlay
+            document.getElementById('exitPopupOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    exitPopupClose();
+                }
+            });
+
+            function exitPopupShow() {
+                const overlay = document.getElementById('exitPopupOverlay');
+                overlay.classList.add('show');
+                exitPopupShown = true;
+            }
+
+            function exitPopupClose() {
+                const popup = document.getElementById('exitPopup');
+                const overlay = document.getElementById('exitPopupOverlay');
+                
+                popup.classList.add('scale-out');
+                overlay.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    overlay.classList.remove('show', 'fade-out');
+                    popup.classList.remove('scale-out');
+                }, 300);
+            }
+
+            function exitPopupCreateConfetti() {
+                const colors = ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c'];
+                const confettiCount = 150;
+
+                for (let i = 0; i < confettiCount; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'exit-popup-confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    
+                    const size = Math.random() * 10 + 5;
+                    confetti.style.width = size + 'px';
+                    confetti.style.height = size + 'px';
+                    
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => confetti.remove(), 3000);
+                }
+            }
+
+            window.exitPopupHandleYes = function() {
+                exitPopupCreateConfetti();
+                exitPopupClose();
+            }
+
+            window.exitPopupHandleNo = function() {
+                const audio = new Audio('../images/rizzStanislans.mp3');
+                audio.play().catch(err => console.log('Erreur lecture audio:', err));
+
+                const message = document.createElement('div');
+                message.className = 'exit-popup-message';
+                message.textContent = 'Bah vtnm fdp';
+                document.body.appendChild(message);
+                
+                setTimeout(function () {
+                    window.location.href = "https://fr.wikipedia.org/wiki/Encul%C3%A9"; // page de destination
+                }, 2000); // 3000 ms = 3 secondes
+                
+                setTimeout(() => {
+                    message.remove();
+                }, 3000);
             }
         })();
 
@@ -266,6 +517,83 @@
                 console.error("Erreur :", error);
             });
         });
+
+        const goConnexion = document.getElementById("goConnexion");
+
+    goConnexion.addEventListener("click", () => {
+      window.location.href = "connexion.html"; // redirige vers la page unique login/register
+    });
+
+    // Fonction pour récupérer les données du dashboard
+    async function getDashboard() {
+        try {
+            const res = await fetch("http://localhost:3000/dashboard", {
+            method: "GET",
+            credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+            document.getElementById("welcome").textContent = "Non connecté, veuillez revenir à la page login.";
+            } else {
+                document.getElementById("welcome").textContent = `Bienvenue ${data.user.user_firstname} !`;
+            }
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("welcome").textContent = "Erreur serveur";
+        }
+    }
+    getDashboard();
+
+    <!-- Confetti CDN -->
+        src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
+
+        // On attend que la page soit chargée
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const popup = document.getElementById("avisPopup");
+            let avisDejaAffichee = false;
+
+            // On cache la popup au chargement
+            popup.style.display = "none";
+
+            // Détection sortie souris vers le haut (exit intent)
+            document.addEventListener("mouseleave", function(e) {
+                if (e.clientY <= 0 && !avisDejaAffichee) {
+                    popup.style.display = "flex";
+                    avisDejaAffichee = true;
+                }
+            });
+
+            // Bouton OUI
+            window.avisLike = function() {
+                confetti({
+                    particleCount: 200,
+                    spread: 100
+                });
+
+                popup.style.display = "none";
+            }
+
+            // Bouton NON
+            window.avisDislike = function() {
+                popup.style.display = "none";
+
+                const message = document.createElement("div");
+                message.classList.add("avis-message");
+                message.textContent = "Bah vtnm fdp";
+
+                document.body.appendChild(message);
+
+                setTimeout(() => {
+                    message.remove();
+                }, 4000);
+            }
+
+        });
+
   </script>
 
 </body>

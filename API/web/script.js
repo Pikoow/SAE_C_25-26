@@ -152,20 +152,69 @@ async function Sauvegarde() {
     }
 }
 
-
 // Vide toutes les listes
 function Reset() {
     $('.selected-list-container').empty();
     $('#selected-genres-list, #selected-artists-list, #selected-tracks-list').empty();
 }
 
+//Fonction pour remplir avec les anciennes données de user
+async function chargerPreferencesUtilisateur() {
+    const userId = localStorage.getItem("userId");
+    try {
+        console.log(`http://127.0.0.1:8000/voir_favorite/${userId}`);
+        const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
+        const result = await response.json();
+        if (result.count !== 0) {
+            const data = result.results;
+            const mappings = [
+                { data: data[0].user_favorite_genre, container: 'selected-genres-list' },
+                { data: data[0].user_favorite_artist, container: 'selected-artists-list' },
+                { data: data[0].user_favorite_tracks, container: 'selected-tracks-list' }
+            ];
+            mappings.forEach(map => {
+                if (map.data) {
+                    const items = map.data.split(',');
+                    
+                    items.forEach((item, index) => {
+                        const cleanName = item.trim();
+                        if (cleanName !== "") {
+                            ajouterElementSelectionne(cleanName, map.container, `load-${index}`);
+                        }
+                    });
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors du chargement des préférences :", error);
+    }
+}
+
+
 // Initialisation
 $(document).ready(function() {
-    chargerGenres();
-    chargerArtists();
-    chargerMusiques();
+    initPage();
 });
 
+//Pour lancer les fonctions en parrallèles
+async function initPage() {
+    console.time("ChargementParallèle");
+
+    try {
+        await Promise.all([
+            chargerGenres(),
+            chargerArtists(),
+            chargerMusiques(),
+            chargerPreferencesUtilisateur()
+        ]);
+
+        console.log("Toutes les ressources sont chargées !");
+    } catch (error) {
+        console.error("Une des requêtes a échoué", error);
+    }
+
+    //console.timeEnd("ChargementParallèle");
+}
 
 /****************************************
  *********** C A R R O U S E L **********

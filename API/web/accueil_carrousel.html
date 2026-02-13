@@ -143,12 +143,17 @@
                     function updateActive() {
 
                         cards.forEach(card => card.classList.remove("active"));
-
-                        const center = album_index+1;
+                        
+                        var center;
+                        console.log("cardsnumber-2",cardsNumber-visibleCards);
+                        if (center == cardsNumber-visibleCards) { center = 12}
+                        else {center = album_index+1;}
+                        console.log("center",center);
 
                         cards[center].classList.add("active");
                         cards[center - 1].classList.add("active");
-                        cards[center + 1].classList.add("active");
+                        if (center+1 > cards.length) {cards[0].classList.add("active")}
+                        else {cards[center + 1].classList.add("active");}
                     }
 
                     // container a déjà été récupéré
@@ -160,55 +165,63 @@
                     // --- DUPLICATION ---
                     const cardsArray = Array.from(originalCards);
 
-                    // clones fin → début
+                    // clones fin → début (gauche)
                     cardsArray.slice(-visibleCards).forEach(card => {
                         container.prepend(card.cloneNode(true));
                     });
 
-                    // clones début → fin
+                    // clones début → fin (droite)
                     cardsArray.slice(0, visibleCards).forEach(card => {
                         container.append(card.cloneNode(true));
                     });
 
-                    // IMPORTANT : on reprend toutes les cartes après duplication
                     let cards = document.querySelectorAll(".album-card-carrousel");
-
-                    let album_index = visibleCards; // on démarre au vrai début
+                    const cardsNumber = cards.length;
+                    let album_index = visibleCards;
                     moveCarousel();
 
                     buttons.forEach(btn => {
                         btn.addEventListener("click", (e) => {
+                            
+                            if (isSchmoving) {console.log("u too fast");return};
+
+                            isSchmoving = true;
 
                             const direction = e.target.id === "next-album" ? 1 : -1;
                             album_index += direction;
 
                             moveCarousel();
-                            console.log("move by classic shit")
+                            console.log(album_index-1,album_index,album_index+1)
                         });
                     });
 
                     container.addEventListener("transitionend", () => {
 
-                        // Si on est dans les clones de gauche
+                        // Si on est dans les clones du début / gauche
                         if (album_index < visibleCards) {
                             container.style.transition = "none";
-                            album_index = originalCount;
+                            container.classList.add("no-animation");
+                            album_index = originalCount + visibleCards -1;
                             moveCarousel();
-                            console.log("move by left shit")
+                            // console.log("move by left and index =",album_index)
                         }
 
-                        // Si on est dans les clones de droite
+                        // Si on est dans les clones de fin / droite
                         if (album_index >= originalCount + visibleCards) {
                             container.style.transition = "none";
+                            container.classList.add("no-animation");
                             album_index = visibleCards;
                             moveCarousel();
-                            console.log("move by right shit")
+                            // console.log("move by right and index =",album_index)
                         }
 
                         // on réactive la transition
                         setTimeout(() => {
+                            // console.log("c'est la ?");
                             container.style.transition = "transform 0.4s ease";
-                        }, 20);
+                            container.classList.remove("no-animation");
+                        }, 10);
+                        isSchmoving = false;
                     });
                 })
                 .catch(error => {
