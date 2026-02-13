@@ -142,10 +142,10 @@ async function Sauvegarde() {
 
         const result = await response.json();
         if (result.success) {
-            alert("Vos préférences ont été enregistrées !");
+            console.log("Vos préférences ont été enregistrées !");
         }
         else{
-            alert("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
+            console.log("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
         }
     } catch (err) {
         console.error("Erreur de connexion à l'API Python :", err);
@@ -154,8 +154,15 @@ async function Sauvegarde() {
 
 // Vide toutes les listes
 function Reset() {
-    $('.selected-list-container').empty();
-    $('#selected-genres-list, #selected-artists-list, #selected-tracks-list').empty();
+    const choixUtilisateur = confirm("Voulez-vous vraiment supprimer vos préférences ?");
+
+    if (choixUtilisateur) {
+        $('.selected-list-container').empty();
+        $('#selected-genres-list, #selected-artists-list, #selected-tracks-list').empty();
+        console.log("Préférences supprimées.");
+    } else {
+        console.log("Action annulée.");
+    }
 }
 
 //Fonction pour remplir avec les anciennes données de user
