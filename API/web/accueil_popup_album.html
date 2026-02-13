@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style-popup-album.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
+    <script src="script.js"></script>
+    <script src="audio-player.js"></script>
+    <script src="node-auth/js/app.js"></script>
+    <script src="header-ui.js" defer></script>
+
+</head>
+<body class="accueil">
+    <header>
+        <a href="accueil.html"><h2>MuSE</h2></a> 
+        <nav>
+            <a href="accueil.html">Accueil</a>
+            <a href="playlists.html">Playlists</a>
+            <a href="preferences.html">Préférences</a>
+                
+            <div class="dropdown">
+                <a href="#">API ▾</a>
+                <div class="dropdown-content">
+                    <a href="api-installation.html">Installation</a>
+                    <a href="api-documentation.html">Documentation</a>
+                    <a href="api-test.html">Testez l'API</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="header-right">
+    
+        <div id="auth-buttons" class="connexion-inscription">
+            <a href="connexion.html?mode=login">Connexion</a>
+            <button>
+                <a href="connexion.html?mode=register">Inscription</a>
+            </button>
+        </div>
+
+        <div id="user-menu" class="user-dropdown hidden">
+            <a href="#" id="user-name-display">Mon Profil ▾</a>
+            
+            <div class="dropdown-content user-dropdown-content">
+                <a href="profil.html">Mon profil</a>
+                <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+            </div>
+        </div>
+
+    </div>
+    </header>
+
+    <main>
+        <section class="hero">
+
+    <!-- Barres equalizer (injectées par JS) -->
+    <div class="equalizer-bg" id="equalizer-bg"></div>
+
+    <!-- Contenu -->
+    <h1>Découvre, Ressens, Partage</h1>
+    <h2>MuSE te connecte aux albums, artistes et playlists qui te correspondent. Explore une nouvelle façon d'écouter la musique.</h2>
+    <div class="btns">
+        <a href="connexion.html" class="btn-login">Connexion</a>
+        <a href="connexion.html" class="btn-signup">Inscription</a>
+    </div>
+
+</section>
+        <section class="albums">
+            <h2>Sélection d'albums</h2>
+            <div id="albums-container"></div>
+        </section>
+        <section class="tracks">
+            <h2>Musiques que vous pourriez aimer</h2>
+            <div id="tracks-container"></div>
+        </section>
+        <section class="artists">
+            <h2>Artistes qui pourraient vous plaire</h2>
+            <div id="artists-container"></div>
+        </section>
+        <div class="exit-popup-overlay" id="exitPopupOverlay">
+            <div class="exit-popup" id="exitPopup">
+                <h1>Aimez-vous notre site ?</h1>
+                <p class="exit-popup-subtitle">Votre avis compte beaucoup pour nous</p>
+                <div class="exit-popup-buttons">
+                    <button class="exit-popup-btn exit-popup-btn-yes" onclick="exitPopupHandleYes()">Oui</button>
+                    <button class="exit-popup-btn exit-popup-btn-no fermerAvecDelai()" onclick="exitPopupHandleNo()">Non</button>
+                </div>
+            </div>
+        </div>
+        <!-- popup ALBUM -->
+        <div class="album-popup hidden" id="albumPopup">
+            <div class="album-popup-content">
+                <span class="album-close">&times;</span>
+
+                <h2 id="popupTitle"></h2>
+                <p><strong>Artiste :</strong> <span id="popupArtist"></span></p>
+                <p><strong>Nombre de tracks :</strong> <span id="popupTracksCount"></span></p>
+
+                <h3>Tracks</h3>
+                <ul id="popupTracksList"></ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="titre-footer">
+            <h2>MuSE</h2>
+        </div>
+        <div class="navigation-footer">
+            <div>
+                <p>Société</p>
+                <div>
+                    <a href="#">À propos de nous</a>
+                    <a href="#">Offre d'emploi</a>
+                </div>
+            </div>
+            <div>
+                <p>Liens utiles</p>
+                <div>
+                    <a href="contact.html">Nous contacter</a>
+                </div>
+            </div>
+            <div>
+                <p>Communauté</p>
+                <div>
+                    <a href="#">Développeurs</a>
+                </div>
+            </div>
+            <div>
+                <p>Légal</p>
+                <div>
+                    <a href="#">Mentions légales</a>
+                </div>
+            </div>
+        </div>
+        <div class="barre-separation-footer"></div>
+        <div class="fin-footer">
+            <div class="reseaux-sociaux-footer">
+                <a href="#"><img src="/images/icones/instagram.avif" alt="Instagram"/></a>
+                <a href="#"><img src="/images/icones/linkedin.avif" alt="LinkedIn"/></a>
+                <a href="#"><img src="/images/icones/github.avif" alt="GitHub"/></a>
+                <a href="#"><img src="/images/icones/facebook.avif" alt="Facebook"/></a>
+            </div>
+            <p>© 2026 MuSE Français</p>
+        </div>
+    </footer>
+
+    
+    <script>
+        (function() {
+            const container = document.getElementById('equalizer-bg');
+            const BAR_COUNT = 60;
+
+            for (let i = 0; i < BAR_COUNT; i++) {
+                const bar = document.createElement('div');
+                bar.classList.add('eq-bar');
+
+                const hMin     = Math.floor(Math.random() * 60)  + 15;   // 15–75 px
+                const hMax     = Math.floor(Math.random() * 220) + 80;   // 80–300 px
+                const duration = (Math.random() * 1.2 + 0.4).toFixed(2); // 0.4–1.6 s
+                const delay    = (Math.random() * 2.0).toFixed(2);       // 0–2 s
+
+                bar.style.setProperty('--h-min', hMin + 'px');
+                bar.style.setProperty('--h-max', hMax + 'px');
+                bar.style.setProperty('--duration', duration + 's');
+                bar.style.animationDelay = `-${delay}s`;
+                bar.style.height = hMin + 'px';
+
+                container.appendChild(bar);
+            }
+        })();
+
+        // Affichage des albums
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("http://127.0.0.1:8000/albums?limit=8")
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById("albums-container");
+                    data.results.forEach(album => {
+                        const albumCard = document.createElement("div");
+                        albumCard.classList.add("album-card");
+                        albumCard.setAttribute("data-id", album.album_id);
+                        let filename = null;
+                        if (album.album_image_file) {
+                            const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                            filename = match ? match[1] : album.album_image_file;
+                        }
+                        let imageUrl = "images/no_image_album.png";
+                        if (filename) {
+                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
+                        }
+                        const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
+                        albumCard.innerHTML = `
+                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_album.png'">
+                            <div class="album-info">
+                                <h3>${album.album_title}</h3>
+                                <p>${artistName}</p>
+                            </div>
+                        `;
+                        container.appendChild(albumCard);
+                    });
+                })
+                
+                .catch(error => {
+                    console.error("Erreur lors du chargement des albums :", error);
+                });
+
+                const popupAlbum = document.getElementById("albumPopup");
+                const closeBtn = document.querySelector(".album-close");
+
+                const popupTitle = document.getElementById("popupTitle");
+                const popupArtist = document.getElementById("popupArtist");
+                const popupTracksCount = document.getElementById("popupTracksCount");
+                const popupTracksList = document.getElementById("popupTracksList");
+
+                // Click sur un album
+                document.addEventListener("click", function (e) {
+                const card = e.target.closest(".album-card");
+
+                if (card) {
+                    const albumId = card.dataset.id;
+                    openAlbumPopup(albumId);
+                }
+                });
+
+                async function openAlbumPopup(albumId) {
+                try {
+                    const response = await fetch(`http://127.0.0.1:8000/albums/${albumId}/tracks`);    
+                    const data = await response.json();
+
+                    // IMPORTANT : on récupère les bons niveaux
+                    console.log("id",albumId);
+                    console.log("data",data);
+                    const album = data.album;
+                    const tracks = data.tracks;
+                    const artists = data.artists;
+
+                    // Remplir la popup
+                    popupTitle.textContent = album.album_title;
+                    popupArtist.textContent = artists.join(", ");
+                    popupTracksCount.textContent = album.album_tracks;
+
+                    popupTracksList.innerHTML = "";
+
+                    tracks.forEach(track => {
+                    const li = document.createElement("li");
+
+                    // convertir durée secondes → mm:ss
+                    const minutes = Math.floor(track.track_duration / 60);
+                    const seconds = track.track_duration % 60;
+                    const formattedDuration =
+                        `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+                    li.textContent = `${track.track_title} (${formattedDuration})`;
+
+                    popupTracksList.appendChild(li);
+                    });
+
+                    popupAlbum.classList.remove("hidden");
+
+                } catch (error) {
+                    console.error("Erreur fetch album :", error);
+                }
+            }
+
+        });
+
+        // Affichage des recommandations de tracks
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("http://127.0.0.1:8000/reco/tracks?track_ids=81466")
+                .then(response => response.json())
+                .then(async data => {
+                    const container = document.getElementById("tracks-container");
+                    container.innerHTML = "";
+                    const trackIds = data.results.map(t => t.track_id);
+                    const trackRequests = trackIds.map(id =>
+                        fetch(`http://127.0.0.1:8000/tracks/${id}`)
+                            .then(res => res.json())
+                    );
+                    const tracksFullData = await Promise.all(trackRequests);
+                    tracksFullData.forEach(track => {
+
+                        
+
+                        let filename = null;
+                        if (track.track_image_file) {
+                            const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                            filename = match ? match[1] : track.track_image_file;
+                        }
+                        console.log("Track ID:", track.track_id, "Image Filename:", filename);
+                        let imageUrl = "images/no_image_music.png";
+                        if (filename) {
+                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
+                        }
+                        const trackCard = document.createElement("div");
+                        trackCard.classList.add("track-card");
+                        trackCard.innerHTML = `
+                            <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
+                            <div class="track-info">
+                                <h3>${track.track_title}</h3>
+                                <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
+                            </div>
+                        `;
+                        trackCard.dataset.trackId = track.track_id;
+                        container.appendChild(trackCard);
+                    });
+                })
+                .catch(error => {
+                    console.error("Erreur lors du chargement des recommandations de tracks :", error);
+                });
+        });
+
+        // Affichage des recommandations d'artistes
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("http://127.0.0.1:8000/reco/artists?artist_ids=1")
+                .then(response => response.json())
+                .then(async data => {
+                    const container = document.getElementById("artists-container");
+                    container.innerHTML = "";
+                    const artistIds = data.results.map(a => a.artist_id);
+                    const artistRequests = artistIds.map(id =>
+                        fetch(`http://127.0.0.1:8000/artists/${id}`)
+                            .then(res => res.json())
+                    );
+                    const artistsFullData = await Promise.all(artistRequests);
+                    artistsFullData.forEach(artist => {
+                        let filename = null;
+                        if (artist.artist_image_file) {
+                            const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                            filename = match ? match[1] : artist.artist_image_file;
+                        }
+                        let imageUrl = "..images/no_image_artist.png";
+                        if (filename) {
+                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
+                        }
+                        const artistCard = document.createElement("div");
+                        artistCard.classList.add("artist-card");
+                        artistCard.innerHTML = `
+                            <img src="${imageUrl}" 
+                                alt="${artist.artist_name}" 
+                                class="artist-cover"
+                                onerror="this.src='..images/no_image_artist.png'">
+                            <h3>${artist.artist_name}</h3>
+                            <p>Artiste</p>
+                        `;
+                        container.appendChild(artistCard);
+                    });
+                })
+            .catch(error => {
+                console.error("Erreur :", error);
+            });
+        });
+
+        const goConnexion = document.getElementById("goConnexion");
+
+    goConnexion.addEventListener("click", () => {
+      window.location.href = "connexion.html"; // redirige vers la page unique login/register
+    });
+
+    // Fonction pour récupérer les données du dashboard
+    async function getDashboard() {
+        try {
+            const res = await fetch("http://localhost:3000/dashboard", {
+            method: "GET",
+            credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+            document.getElementById("welcome").textContent = "Non connecté, veuillez revenir à la page login.";
+            } else {
+                document.getElementById("welcome").textContent = `Bienvenue ${data.user.user_firstname} !`;
+            }
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("welcome").textContent = "Erreur serveur";
+        }
+    }
+    getDashboard();
+
+    <!-- Confetti CDN -->
+        src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
+
+        // On attend que la page soit chargée
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const popup = document.getElementById("avisPopup");
+            let avisDejaAffichee = false;
+
+            // On cache la popup au chargement
+            popup.style.display = "none";
+
+            // Détection sortie souris vers le haut (exit intent)
+            document.addEventListener("mouseleave", function(e) {
+                if (e.clientY <= 0 && !avisDejaAffichee) {
+                    popup.style.display = "flex";
+                    avisDejaAffichee = true;
+                }
+            });
+
+            // Bouton OUI
+            window.avisLike = function() {
+                confetti({
+                    particleCount: 200,
+                    spread: 100
+                });
+
+                popup.style.display = "none";
+            }
+
+            // Bouton NON
+            window.avisDislike = function() {
+                popup.style.display = "none";
+
+                const message = document.createElement("div");
+                message.classList.add("avis-message");
+                message.textContent = "Bah vtnm fdp";
+
+                document.body.appendChild(message);
+
+                setTimeout(() => {
+                    message.remove();
+                }, 4000);
+            }
+
+        });
+
+  </script>
+  <!-- <script src="popup_album.js"></script> -->
+
+</body>
+</html>
