@@ -1142,11 +1142,8 @@ def search_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/voir_favorite")
-def get_all_favorite(
-    limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
-    offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
-):
+@app.get("/voir_favorite/{user_id}")
+def get_all_favorite(user_id : int):
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -1156,17 +1153,26 @@ def get_all_favorite(
         # On utilise la vue tracks_features pour simplifier
         query = """
             SELECT 
-                favorite_id,
-                user_favorite_tracks,
-                user_favorite_album ,
-                user_favorite_artist,
-                user_favorite_language,
-                user_favorite_genre,
-                user_id   
-            FROM sae.favorite
-            LIMIT %s OFFSET %s
+                f.favorite_id,
+                f.user_id,
+                (SELECT string_agg(a.artist_name, ', ') 
+                 FROM sae.artist a 
+                 WHERE a.artist_id::text = ANY(string_to_array(f.user_favorite_artist, ','))) as user_favorite_artist,
+                (SELECT string_agg(t.track_title, ', ') 
+                 FROM sae.tracks t 
+                 WHERE t.track_id::text = ANY(string_to_array(f.user_favorite_tracks, ','))) as user_favorite_tracks,
+                (SELECT string_agg(g.genre_title, ', ') 
+                 FROM sae.genre g 
+                 WHERE g.genre_id::text = ANY(string_to_array(f.user_favorite_genre, ','))) as user_favorite_genre,
+                f.user_favorite_artist as ids_artists,
+                f.user_favorite_tracks as ids_tracks,
+                f.user_favorite_genre as ids_genres
+            FROM sae.favorite f
+            WHERE f.user_id = %s
+            ORDER BY f.favorite_id DESC
+            LIMIT 1
         """
-        cur.execute(query, (limit, offset))
+        cur.execute(query, (user_id,))
         tracks = cur.fetchall()
         
         # Compter le total
@@ -1180,8 +1186,6 @@ def get_all_favorite(
         return {
             "total": total,
             "count": len(tracks),
-            "limit": limit,
-            "offset": offset,
             "results": tracks
         }
     except Exception as e:

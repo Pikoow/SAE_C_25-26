@@ -9,6 +9,7 @@
   <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
       <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
+    <script src="header-ui.js" defer></script>
   <script>
     $(document).ready(function() {
         const userId = localStorage.getItem("userId");
@@ -61,45 +62,49 @@
 
     </div>
     </header>
-    
-  <h2>Préférences</h2>
-  <main class="preferences-container">
-    <section class="search-section">
-      <h2>Genres</h2>
-      <div class="search-wrapper">
-          <input type="text" id="genre" placeholder="Rechercher un genre">
-      </div>
-      <div class="selection-area">
-          <h3>Genres sélectionnés</h3>
-          <div id="selected-genres-list"></div>
-      </div>
-    </section>
-    <section class="search-section">
-        <h2>Artistes</h2>
+  <main>
+    <div class="page-header">
+        <h1>Mes Playlists</h1>
+        <p>Créez et gérez vos playlists personnalisées</p>
+    </div>
+    <section class="preferences-container">
+        <section class="search-section">
+        <h2>Genres</h2>
         <div class="search-wrapper">
-            <input type="text" id="artistes" placeholder="Rechercher un artiste">
+            <input type="text" id="genre" placeholder="Rechercher un genre">
         </div>
         <div class="selection-area">
-            <h3>Artistes sélectionnés</h3>
-            <div id="selected-artists-list"></div>
+            <h3>Genres sélectionnés</h3>
+            <div id="selected-genres-list"></div>
         </div>
+        </section>
+        <section class="search-section">
+            <h2>Artistes</h2>
+            <div class="search-wrapper">
+                <input type="text" id="artistes" placeholder="Rechercher un artiste">
+            </div>
+            <div class="selection-area">
+                <h3>Artistes sélectionnés</h3>
+                <div id="selected-artists-list"></div>
+            </div>
+        </section>
+        <section class="search-section">
+            <h2>Musiques</h2>
+            <div class="search-wrapper">
+                <input type="text" id="musique" placeholder="Rechercher une musique">
+            </div>
+            <div class="selection-area">
+                <h3>Musiques sélectionnés</h3>
+                <div id="selected-tracks-list"></div>
+            </div>
+        </section>
     </section>
-    <section class="search-section">
-        <h2>Musiques</h2>
-        <div class="search-wrapper">
-            <input type="text" id="musique" placeholder="Rechercher une musique">
-        </div>
-        <div class="selection-area">
-            <h3>Musiques sélectionnés</h3>
-            <div id="selected-tracks-list"></div>
-        </div>
-    </section>
-  </main>
-  <div class="actions-container">
-      <button id="btn-reset" class="btn-reset" onclick="Reset()">Réinitialiser</button>
-      <button id="btn-save" class="btn-save" onclick="Sauvegarde()">Sauvegarder</button>
-  </div>
-  <script src="script.js"></script>
+    </main>
+    <div class="actions-container">
+        <button id="btn-reset" class="btn-reset" onclick="Reset()">Réinitialiser</button>
+        <button id="btn-save" class="btn-save" onclick="Sauvegarde()">Sauvegarder</button>
+    </div>
+    <script src="script.js"></script>
   <footer>
         <div class="titre-footer">
             <h2>MuSE</h2>
