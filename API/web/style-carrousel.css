@@ -1,5 +1,4 @@
 .carrousel {
-    /* left: 10rem; */
     height: 100%;
     width: 100%;
     position: relative;
@@ -13,7 +12,6 @@
     height: 25%;
     width: 25%; 
     opacity: 0.3;
-    transition: transform 0.4s ease;
 }
 
 .carrousel-slide.active {
@@ -21,10 +19,8 @@
 }
 
 .carrousel-slide img {
-    /* display: block; */
     height: 100%;
     width: 100%;
-    /* object-fit: cover; */
 }
 
 .carrousel button {
@@ -44,9 +40,7 @@
     width: 100%;
     position: relative;
     padding: 20px;
-    /* flex: 0 0 calc(100% / 4); */
     flex-wrap: nowrap;
-    transition: transform 0.4s ease;
 }
 
 .carrousel li {
@@ -75,16 +69,11 @@
     transform: scale(1);
 }
 
-/* PAGE ACCUEIL
-***************************/
-.accueil main section > h2 {
-    font-family: 'Rammetto One', sans-serif;
-    font-size: 1.875rem;
-    color: var(--noir);
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
+.no-animation .album-card-carrousel {
+    transition: none !important;
 }
+
+
 .accueil .album-card-carrousel {
     background-color: var(--blanc);
     padding: 15px;
@@ -103,7 +92,6 @@
     border-radius: 12px;
     text-align: center;
     color: var(--noir);
-    transition: transform 0.2s ease;
 }
 .accueil .album-card-carrousel:hover {
     transform: scale(1.05);
@@ -123,8 +111,7 @@
 }
 
 .accueil .album-card-carrousel {
-    /* display: flex;
-    align-items: center; */
+
     gap: 1.2em;
     width: 25em;
     height: 15em;
@@ -133,7 +120,6 @@
     border-radius: 0.75em;
     color: var(--blanc);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .accueil .album-card:hover {
