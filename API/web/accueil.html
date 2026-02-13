@@ -451,6 +451,353 @@
             opacity: 0;
         }
     }
+
+    /* ====== CAROUSEL SECTIONS ====== */
+    .carousel-section {
+        margin-bottom: 0;
+        position: relative;
+        padding: 2.5em 0;
+        background-color: var(--blanc);
+    }
+
+    .carousel-section-header {
+        padding: 0 3.125em;
+        margin-bottom: 18px;
+        text-align: center;
+    }
+
+    .carousel-section-header h2 {
+        font-family: 'Rammetto One', 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        color: var(--noir);
+        margin: 0 0 4px;
+    }
+
+    .carousel-section-header .section-subtitle {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        color: var(--gris-fonce);
+        font-weight: 400;
+    }
+
+    .carousel-wrapper {
+        position: relative;
+        overflow: hidden;
+        padding: 6px 0;
+    }
+
+    .carousel-track {
+        display: flex;
+        gap: 18px;
+        animation: carouselScroll var(--scroll-duration, 40s) linear infinite;
+        width: max-content;
+        padding: 6px 0;
+    }
+
+    .carousel-track:hover {
+        animation-play-state: paused;
+    }
+
+    @keyframes carouselScroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    .carousel-wrapper::before,
+    .carousel-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 70px;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    .carousel-wrapper::before {
+        left: 0;
+        background: linear-gradient(to right, var(--blanc) 0%, transparent 100%);
+    }
+
+    .carousel-wrapper::after {
+        right: 0;
+        background: linear-gradient(to left, var(--blanc) 0%, transparent 100%);
+    }
+
+    .cr-card {
+        flex-shrink: 0;
+        width: 200px;
+        background: var(--blanc);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid var(--gris-clair);
+        position: relative;
+    }
+
+    .cr-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(237, 122, 38, 0.25);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .cr-card-img-wrapper {
+        position: relative;
+        overflow: hidden;
+        width: 200px;
+        height: 200px;
+    }
+
+    .cr-card-img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.4s ease;
+    }
+
+    .cr-card:hover .cr-card-img {
+        transform: scale(1.06);
+    }
+
+    .cr-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(transparent 30%, rgba(0,0,0,0.7) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 12px;
+    }
+
+    .cr-card:hover .cr-card-overlay {
+        opacity: 1;
+    }
+
+    .cr-play-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--orange);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 3px 12px rgba(237, 122, 38, 0.35);
+    }
+
+    .cr-play-btn:hover {
+        transform: scale(1.1);
+        background: var(--orange-fonce);
+    }
+
+    .cr-play-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: white;
+        margin-left: 2px;
+    }
+
+    .cr-add-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(8px);
+        border: 1.5px solid rgba(255,255,255,0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: 300;
+        transition: all 0.2s ease;
+        line-height: 1;
+        padding: 0;
+    }
+
+    .cr-add-btn:hover {
+        background: rgba(237, 122, 38, 0.3);
+        border-color: var(--orange);
+        color: var(--orange);
+    }
+
+    .cr-add-btn.added {
+        background: rgba(39, 174, 96, 0.3);
+        border-color: #27ae60;
+        color: #27ae60;
+    }
+
+    .cr-card-info {
+        padding: 12px 14px 14px;
+    }
+
+    .cr-card-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--noir);
+        margin: 0 0 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cr-card-sub {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem;
+        color: var(--gris-fonce);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cr-card.artist-style {
+        width: 200px;
+        text-align: center;
+        background: var(--blanc);
+    }
+
+    .cr-card.artist-style .cr-card-img-wrapper {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        margin: 20px auto 0;
+    }
+
+    .cr-card.artist-style .cr-card-img {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+    }
+
+    .cr-card.artist-style .cr-card-overlay {
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cr-card.artist-style .cr-play-btn {
+        display: none;
+    }
+
+    .cr-card.artist-style .cr-card-info {
+        text-align: center;
+    }
+
+    .cr-playlist-dropdown {
+        position: fixed;
+        background: var(--blanc, white);
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        z-index: 5001;
+        min-width: 240px;
+        max-height: 260px;
+        overflow-y: auto;
+        padding: 6px 0;
+        display: none;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .cr-playlist-dropdown.visible { display: block; }
+
+    .cr-playlist-dropdown .crd-title {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #95a5a6;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 8px 14px 4px;
+        margin: 0;
+    }
+
+    .cr-playlist-dropdown .crd-item {
+        padding: 9px 14px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: var(--noir);
+        transition: background 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .cr-playlist-dropdown .crd-item:hover {
+        background: #fff3e6;
+        color: var(--orange);
+    }
+
+    .cr-playlist-dropdown .crd-login {
+        padding: 14px;
+        font-size: 0.8rem;
+        color: var(--orange);
+        text-align: center;
+    }
+
+    .cr-playlist-dropdown .crd-login a {
+        color: var(--orange);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .cr-playlist-dropdown .crd-quick-create {
+        padding: 10px 14px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .cr-playlist-dropdown .crd-quick-create input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1.5px solid #ddd;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-family: 'Outfit', sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+        margin-bottom: 6px;
+    }
+
+    .cr-playlist-dropdown .crd-quick-create input:focus {
+        border-color: var(--orange);
+    }
+
+    .cr-playlist-dropdown .crd-quick-create button {
+        width: 100%;
+        padding: 8px;
+        background: var(--orange);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        font-family: 'Outfit', sans-serif;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .cr-playlist-dropdown .crd-quick-create button:hover {
+        background: var(--orange-fonce);
+    }
+
+    .cr-playlist-dropdown .crd-quick-create button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    @keyframes crNotifAnim {
+        0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    }
 </style>
 </head>
 <body class="accueil">
@@ -507,18 +854,41 @@
     </div>
 
 </section>
-        <section class="albums">
-            <h2>Sélection d'albums</h2>
-            <div id="albums-container"></div>
+        <!-- Albums Carousel -->
+        <section class="carousel-section">
+            <div class="carousel-section-header">
+                <h2>Sélection d'albums</h2>
+                <span class="section-subtitle">Survolez pour explorer</span>
+            </div>
+            <div class="carousel-wrapper">
+                <div class="carousel-track" id="albums-track" style="--scroll-duration: 45s;"></div>
+            </div>
         </section>
-        <section class="tracks">
-            <h2>Musiques que vous pourriez aimer</h2>
-            <div id="tracks-container"></div>
+
+        <!-- Tracks Carousel -->
+        <section class="carousel-section">
+            <div class="carousel-section-header">
+                <h2>Morceaux pour vous</h2>
+                <span class="section-subtitle">Basé sur vos préférences — cliquez + pour ajouter à une playlist</span>
+            </div>
+            <div class="carousel-wrapper">
+                <div class="carousel-track" id="tracks-track" style="--scroll-duration: 50s;"></div>
+            </div>
         </section>
-        <section class="artists">
-            <h2>Artistes qui pourraient vous plaire</h2>
-            <div id="artists-container"></div>
+
+        <!-- Artists Carousel -->
+        <section class="carousel-section">
+            <div class="carousel-section-header">
+                <h2>Artistes recommandés</h2>
+                <span class="section-subtitle">Des talents à suivre</span>
+            </div>
+            <div class="carousel-wrapper">
+                <div class="carousel-track" id="artists-track" style="--scroll-duration: 40s;"></div>
+            </div>
         </section>
+
+        <!-- Playlist Dropdown Carousel -->
+        <div class="cr-playlist-dropdown" id="crPlaylistDropdown"></div>
         <div class="exit-popup-overlay" id="exitPopupOverlay">
             <div class="exit-popup" id="exitPopup">
                 <span class="popup-emoji">🎧</span>
@@ -1017,230 +1387,287 @@
 
         })();
 
-        // Affichage des albums
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch("http://127.0.0.1:8000/albums?limit=8")
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById("albums-container");
-                    data.results.forEach(album => {
-                        const albumCard = document.createElement("div");
-                        albumCard.classList.add("album-card");
-                        let filename = null;
-                        if (album.album_image_file) {
-                            const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                            filename = match ? match[1] : album.album_image_file;
-                        }
-                        let imageUrl = "images/no_image_album.png";
-                        if (filename) {
-                            imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
-                        }
-                        const artistName = album.artists ? album.artists.split(",")[0].trim() : "Artiste inconnu";
-                        albumCard.innerHTML = `
-                            <img src="${imageUrl}" alt="${album.album_title}" class="album-cover" onerror="this.src='images/no_image_album.png'">
-                            <div class="album-info">
-                                <h3>${album.album_title}</h3>
-                                <p>${artistName}</p>
-                            </div>
-                        `;
-                        container.appendChild(albumCard);
-                    });
-                })
-                .catch(error => {
-                    console.error("Erreur lors du chargement des albums :", error);
+        // ====== CAROUSEL CARD BUILDERS ======
+        function crEscHtml(s) {
+            if (!s) return '';
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function crShowNotif(message, type) {
+            const existing = document.querySelector('.cr-notif');
+            if (existing) existing.remove();
+            const n = document.createElement('div');
+            n.className = 'cr-notif';
+            n.textContent = message;
+            n.style.cssText = `
+                position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+                background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white; padding: 12px 28px; border-radius: 10px; font-size: 14px;
+                font-weight: 500; font-family: 'Outfit', sans-serif; z-index: 10002;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+                animation: crNotifAnim 2.8s ease forwards;
+            `;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
+        }
+
+        function buildCrTrackCard(track) {
+            let filename = null;
+            if (track.track_image_file) {
+                const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                filename = match ? match[1] : track.track_image_file;
+            }
+            let imageUrl = 'images/no_image_music.png';
+            if (filename) imageUrl = 'https://freemusicarchive.org/image/?file=images%2Falbums%2F' + filename + '&width=290&height=290&type=album';
+            const artistName = track.artist_names?.split(',')[0] || track.artist_info?.artist_name || 'Artiste inconnu';
+            const card = document.createElement('div');
+            card.className = 'cr-card';
+            card.dataset.trackId = track.track_id;
+            card.innerHTML = `
+                <div class="cr-card-img-wrapper">
+                    <img src="${imageUrl}" alt="${crEscHtml(track.track_title)}" class="cr-card-img" onerror="this.src='images/no_image_music.png'">
+                    <div class="cr-card-overlay">
+                        <button class="cr-play-btn" title="Écouter" data-track-id="${track.track_id}">
+                            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                        <button class="cr-add-btn" title="Ajouter à une playlist" data-track-id="${track.track_id}">+</button>
+                    </div>
+                </div>
+                <div class="cr-card-info">
+                    <p class="cr-card-title">${crEscHtml(track.track_title)}</p>
+                    <p class="cr-card-sub">${crEscHtml(artistName)}</p>
+                </div>
+            `;
+            return card;
+        }
+
+        function buildCrAlbumCard(album) {
+            let filename = null;
+            if (album.album_image_file) {
+                const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                filename = match ? match[1] : album.album_image_file;
+            }
+            let imageUrl = 'images/no_image_music.png';
+            if (filename && filename !== 'album.jpg') imageUrl = 'https://freemusicarchive.org/image/?file=images%2Falbums%2F' + filename + '&width=290&height=290&type=album';
+            const artistName = album.artists ? album.artists.split(',')[0].trim() : 'Artiste inconnu';
+            const card = document.createElement('div');
+            card.className = 'cr-card';
+            card.innerHTML = `
+                <div class="cr-card-img-wrapper">
+                    <img src="${imageUrl}" alt="${crEscHtml(album.album_title)}" class="cr-card-img" onerror="this.src='images/no_image_music.png'">
+                    <div class="cr-card-overlay"></div>
+                </div>
+                <div class="cr-card-info">
+                    <p class="cr-card-title">${crEscHtml(album.album_title)}</p>
+                    <p class="cr-card-sub">${crEscHtml(artistName)}</p>
+                </div>
+            `;
+            return card;
+        }
+
+        function buildCrArtistCard(artist) {
+            let filename = null;
+            if (artist.artist_image_file) {
+                const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                filename = match ? match[1] : artist.artist_image_file;
+            }
+            let imageUrl = 'images/no_image_artist.png';
+            if (filename) imageUrl = 'https://freemusicarchive.org/image/?file=images%2Fartists%2F' + filename + '&width=290&height=290&type=artist';
+            const card = document.createElement('div');
+            card.className = 'cr-card artist-style';
+            card.innerHTML = `
+                <div class="cr-card-img-wrapper">
+                    <img src="${imageUrl}" alt="${crEscHtml(artist.artist_name)}" class="cr-card-img" onerror="this.src='images/no_image_artist.png'">
+                    <div class="cr-card-overlay"></div>
+                </div>
+                <div class="cr-card-info">
+                    <p class="cr-card-title">${crEscHtml(artist.artist_name)}</p>
+                    <p class="cr-card-sub">Artiste</p>
+                </div>
+            `;
+            return card;
+        }
+
+        function duplicateForInfiniteScroll(trackEl) {
+            Array.from(trackEl.children).forEach(card => trackEl.appendChild(card.cloneNode(true)));
+        }
+
+        // ====== CAROUSEL PLAYLIST LOGIC ======
+        const crDropdown = document.getElementById('crPlaylistDropdown');
+        let crActiveAddBtn = null;
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.cr-playlist-dropdown') && !e.target.closest('.cr-add-btn') && !e.target.closest('.crd-quick-create')) {
+                crDropdown.classList.remove('visible');
+            }
+        });
+
+        async function crShowPlaylistPicker(trackId, btnEl) {
+            const dd = crDropdown;
+            crActiveAddBtn = btnEl;
+            const rect = btnEl.getBoundingClientRect();
+            if (window.innerHeight - rect.bottom > 280) {
+                dd.style.top = (rect.bottom + 6) + 'px'; dd.style.bottom = 'auto';
+            } else {
+                dd.style.bottom = (window.innerHeight - rect.top + 6) + 'px'; dd.style.top = 'auto';
+            }
+            dd.style.left = Math.max(10, rect.left - 100) + 'px';
+            dd.innerHTML = '<p class="crd-title">Chargement...</p>';
+            dd.classList.add('visible');
+
+            try {
+                const authRes = await fetch('http://localhost:3000/dashboard', { credentials: 'include' });
+                const authData = await authRes.json();
+                if (authData.error) {
+                    dd.innerHTML = '<div class="crd-login"><a href="connexion.html">Connectez-vous</a> pour ajouter à une playlist</div>';
+                    return;
+                }
+                const userId = authData.user.user_id || 1;
+                const plRes = await fetch(`http://127.0.0.1:8000/users/${userId}/playlists`);
+                const playlists = await plRes.json();
+
+                if (!playlists || playlists.length === 0) {
+                    dd.innerHTML = `<p class="crd-title">Aucune playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBtn">Créer et ajouter</button></div>`;
+                    setTimeout(() => {
+                        const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
+                        const btn = document.getElementById('crdQuickCreateBtn'); if (btn) btn.addEventListener('click', () => crQuickCreate(userId, trackId));
+                    }, 50);
+                    return;
+                }
+
+                let html = '<p class="crd-title">Ajouter à...</p>';
+                playlists.forEach(pl => { html += `<div class="crd-item" data-playlist-id="${pl.playlist_id}">${crEscHtml(pl.playlist_name)}</div>`; });
+                html += '<div style="border-top:1px solid #f0f0f0;margin-top:4px;"></div>';
+                html += '<div class="crd-item crd-new" style="color:var(--orange);font-weight:500;">+ Nouvelle playlist</div>';
+                dd.innerHTML = html;
+
+                dd.querySelectorAll('.crd-item:not(.crd-new)').forEach(item => {
+                    item.addEventListener('click', async () => { await crAddToPlaylist(item.dataset.playlistId, trackId); dd.classList.remove('visible'); });
                 });
+                const newBtn = dd.querySelector('.crd-new');
+                if (newBtn) {
+                    newBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dd.innerHTML = `<p class="crd-title">Nouvelle playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBtn">Créer et ajouter</button></div>`;
+                        setTimeout(() => {
+                            const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
+                            const btn = document.getElementById('crdQuickCreateBtn'); if (btn) btn.addEventListener('click', () => crQuickCreate(userId, trackId));
+                        }, 50);
+                    });
+                }
+            } catch (err) {
+                dd.innerHTML = '<div class="crd-login">Erreur de chargement</div>';
+            }
+        }
+
+        async function crAddToPlaylist(playlistId, trackId) {
+            try {
+                const getRes = await fetch(`http://127.0.0.1:8000/playlists/${playlistId}`);
+                const playlist = await getRes.json();
+                const existingIds = (playlist.tracks || []).map(t => t.track_id);
+                if (existingIds.includes(parseInt(trackId))) { crShowNotif('Déjà dans cette playlist', 'info'); return; }
+                existingIds.push(parseInt(trackId));
+                const postRes = await fetch(`http://127.0.0.1:8000/playlists/${playlistId}/tracks`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ track_ids: existingIds })
+                });
+                if (postRes.ok) {
+                    if (crActiveAddBtn) { crActiveAddBtn.textContent = '✓'; crActiveAddBtn.classList.add('added'); setTimeout(() => { crActiveAddBtn.textContent = '+'; crActiveAddBtn.classList.remove('added'); }, 2000); }
+                    crShowNotif('Ajouté à « ' + (playlist.playlist_name || 'la playlist') + ' »', 'success');
+                } else { crShowNotif('Erreur lors de l\'ajout', 'error'); }
+            } catch (err) { crShowNotif('Erreur lors de l\'ajout', 'error'); }
+        }
+
+        async function crQuickCreate(userId, trackId) {
+            const nameInput = document.getElementById('crdQuickName');
+            const btn = document.getElementById('crdQuickCreateBtn');
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!name) { nameInput.style.borderColor = '#e74c3c'; nameInput.placeholder = 'Entrez un nom !'; return; }
+            btn.disabled = true; btn.textContent = 'Création...';
+            try {
+                const res = await fetch('http://127.0.0.1:8000/playlists', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: '', user_id: userId, track_ids: [parseInt(trackId)] })
+                });
+                if (res.ok) {
+                    crDropdown.classList.remove('visible');
+                    if (crActiveAddBtn) { crActiveAddBtn.textContent = '✓'; crActiveAddBtn.classList.add('added'); setTimeout(() => { crActiveAddBtn.textContent = '+'; crActiveAddBtn.classList.remove('added'); }, 2000); }
+                    crShowNotif('Playlist « ' + name + ' » créée !', 'success');
+                } else { crShowNotif('Erreur lors de la création', 'error'); btn.disabled = false; btn.textContent = 'Créer et ajouter'; }
+            } catch (err) { crShowNotif('Erreur lors de la création', 'error'); btn.disabled = false; btn.textContent = 'Créer et ajouter'; }
+        }
+
+        // ====== CAROUSEL EVENT DELEGATION ======
+        document.addEventListener('click', function(e) {
+            const playBtn = e.target.closest('.cr-play-btn');
+            if (playBtn) {
+                e.stopPropagation();
+                const trackId = playBtn.dataset.trackId;
+                if (trackId && typeof audioPlayer !== 'undefined') {
+                    fetch(`http://127.0.0.1:8000/tracks/${trackId}`)
+                        .then(r => r.json())
+                        .then(track => {
+                            audioPlayer.playTrack({ url: track.track_file, title: track.track_title, artist: track.artist_info?.artist_name || 'Artiste inconnu', trackId });
+                        }).catch(err => console.error('Play error:', err));
+                }
+                return;
+            }
+            const addBtn = e.target.closest('.cr-add-btn');
+            if (addBtn) { e.stopPropagation(); const trackId = addBtn.dataset.trackId; if (trackId) crShowPlaylistPicker(trackId, addBtn); return; }
         });
 
-        // Affichage des recommandations de tracks
-        document.addEventListener("DOMContentLoaded", function () {
-            // Récupérer l'ID utilisateur depuis le localStorage
-            const userId = localStorage.getItem("userId");
-            if (userId) {
-                // Aller chercher les préférences de l'utilisateur
-                fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`)
-                    .then(response => response.json())
-                    .then(prefData => {
+        // ====== CAROUSEL DATA LOADING ======
+        document.addEventListener('DOMContentLoaded', async function() {
+            const userId = localStorage.getItem('userId');
+
+            // Albums
+            try {
+                const albumRes = await fetch('http://127.0.0.1:8000/albums?limit=12');
+                const albumData = await albumRes.json();
+                const albumsTrack = document.getElementById('albums-track');
+                albumData.results.forEach(album => albumsTrack.appendChild(buildCrAlbumCard(album)));
+                duplicateForInfiniteScroll(albumsTrack);
+            } catch (err) { console.error('Erreur albums:', err); }
+
+            // Tracks (avec préférences)
+            try {
+                let recoUrl = 'http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=12';
+                if (userId) {
+                    try {
+                        const prefRes = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
+                        const prefData = await prefRes.json();
                         let trackIds = [];
-                        if (prefData.count > 0 && prefData.results[0].ids_tracks) {
-                            trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
-                        }
-                        // Si pas de préférences, fallback sur une valeur par défaut
-                        if (trackIds.length === 0) trackIds = [81466];
-                        fetch(`http://127.0.0.1:8000/reco/tracks?` + trackIds.map(id => `track_ids=${id}`).join('&'))
-                            .then(response => response.json())
-                            .then(async data => {
-                                const container = document.getElementById("tracks-container");
-                                container.innerHTML = "";
-                                const ids = data.results.map(t => t.track_id);
-                                const trackRequests = ids.map(id =>
-                                    fetch(`http://127.0.0.1:8000/tracks/${id}`)
-                                        .then(res => res.json())
-                                );
-                                const tracksFullData = await Promise.all(trackRequests);
-                                tracksFullData.forEach(track => {
-                                    let filename = null;
-                                    if (track.track_image_file) {
-                                        const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                                        filename = match ? match[1] : track.track_image_file;
-                                    }
-                                    let imageUrl = "images/no_image_music.png";
-                                    if (filename) {
-                                        imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
-                                    }
-                                    const trackCard = document.createElement("div");
-                                    trackCard.classList.add("track-card");
-                                    trackCard.innerHTML = `
-                                        <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
-                                        <div class="track-info">
-                                            <h3>${track.track_title}</h3>
-                                            <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
-                                        </div>
-                                    `;
-                                    trackCard.dataset.trackId = track.track_id;
-                                    container.appendChild(trackCard);
-                                });
-                            })
-                            .catch(error => {
-                                console.error("Erreur lors du chargement des recommandations de tracks :", error);
-                            });
-                    })
-                    .catch(error => {
-                        console.error("Erreur lors de la récupération des préférences utilisateur :", error);
-                    });
-            } else {
-                // Utilisateur non connecté : fallback sur une valeur par défaut
-                fetch("http://127.0.0.1:8000/reco/tracks?track_ids=81466")
-                    .then(response => response.json())
-                    .then(async data => {
-                        const container = document.getElementById("tracks-container");
-                        container.innerHTML = "";
-                        const trackIds = data.results.map(t => t.track_id);
-                        const trackRequests = trackIds.map(id =>
-                            fetch(`http://127.0.0.1:8000/tracks/${id}`)
-                                .then(res => res.json())
-                        );
-                        const tracksFullData = await Promise.all(trackRequests);
-                        tracksFullData.forEach(track => {
-                            let filename = null;
-                            if (track.track_image_file) {
-                                const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                                filename = match ? match[1] : track.track_image_file;
-                            }
-                            let imageUrl = "images/no_image_music.png";
-                            if (filename) {
-                                imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
-                            }
-                            const trackCard = document.createElement("div");
-                            trackCard.classList.add("track-card");
-                            trackCard.innerHTML = `
-                                <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
-                                <div class="track-info">
-                                    <h3>${track.track_title}</h3>
-                                    <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
-                                </div>
-                            `;
-                            trackCard.dataset.trackId = track.track_id;
-                            container.appendChild(trackCard);
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Erreur lors du chargement des recommandations de tracks :", error);
-                    });
-            }
-        });
+                        if (prefData.count > 0 && prefData.results[0].ids_tracks) trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
+                        if (trackIds.length > 0) recoUrl = 'http://127.0.0.1:8000/reco/tracks?' + trackIds.map(id => 'track_ids=' + id).join('&') + '&limit=12';
+                    } catch (e) { /* fallback */ }
+                }
+                const recoRes = await fetch(recoUrl);
+                const recoData = await recoRes.json();
+                const tracksTrack = document.getElementById('tracks-track');
+                const trackDetails = await Promise.all(recoData.results.map(t => fetch(`http://127.0.0.1:8000/tracks/${t.track_id}`).then(r => r.json()).catch(() => null)));
+                trackDetails.filter(t => t).forEach(track => tracksTrack.appendChild(buildCrTrackCard(track)));
+                duplicateForInfiniteScroll(tracksTrack);
+            } catch (err) { console.error('Erreur tracks:', err); }
 
-        // Affichage des recommandations d'artistes
-        document.addEventListener("DOMContentLoaded", function () {
-            const userId = localStorage.getItem("userId");
-            if (userId) {
-                fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`)
-                    .then(response => response.json())
-                    .then(prefData => {
+            // Artists (avec préférences)
+            try {
+                let artistRecoUrl = 'http://127.0.0.1:8000/reco/artists?artist_ids=1&limit=12';
+                if (userId) {
+                    try {
+                        const prefRes = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
+                        const prefData = await prefRes.json();
                         let artistIds = [];
-                        if (prefData.count > 0 && prefData.results[0].ids_artists) {
-                            artistIds = prefData.results[0].ids_artists.split(',').filter(x => x);
-                        }
-                        if (artistIds.length === 0) artistIds = [1];
-                        fetch(`http://127.0.0.1:8000/reco/artists?` + artistIds.map(id => `artist_ids=${id}`).join('&'))
-                            .then(response => response.json())
-                            .then(async data => {
-                                const container = document.getElementById("artists-container");
-                                container.innerHTML = "";
-                                const ids = data.results.map(a => a.artist_id);
-                                const artistRequests = ids.map(id =>
-                                    fetch(`http://127.0.0.1:8000/artists/${id}`)
-                                        .then(res => res.json())
-                                );
-                                const artistsFullData = await Promise.all(artistRequests);
-                                artistsFullData.forEach(artist => {
-                                    let filename = null;
-                                    if (artist.artist_image_file) {
-                                        const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                                        filename = match ? match[1] : artist.artist_image_file;
-                                    }
-                                    let imageUrl = "images/no_image_artist.png";
-                                    if (filename) {
-                                        imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
-                                    }
-                                    const artistCard = document.createElement("div");
-                                    artistCard.classList.add("artist-card");
-                                    artistCard.innerHTML = `
-                                        <img src="${imageUrl}" 
-                                            alt="${artist.artist_name}" 
-                                            class="artist-cover"
-                                            onerror="this.src='images/no_image_artist.png'">
-                                        <h3>${artist.artist_name}</h3>
-                                        <p>Artiste</p>
-                                    `;
-                                    container.appendChild(artistCard);
-                                });
-                            })
-                            .catch(error => {
-                                console.error("Erreur lors du chargement des recommandations d'artistes :", error);
-                            });
-                    })
-                    .catch(error => {
-                        console.error("Erreur lors de la récupération des préférences utilisateur :", error);
-                    });
-            } else {
-                fetch("http://127.0.0.1:8000/reco/artists?artist_ids=1")
-                    .then(response => response.json())
-                    .then(async data => {
-                        const container = document.getElementById("artists-container");
-                        container.innerHTML = "";
-                        const artistIds = data.results.map(a => a.artist_id);
-                        const artistRequests = artistIds.map(id =>
-                            fetch(`http://127.0.0.1:8000/artists/${id}`)
-                                .then(res => res.json())
-                        );
-                        const artistsFullData = await Promise.all(artistRequests);
-                        artistsFullData.forEach(artist => {
-                            let filename = null;
-                            if (artist.artist_image_file) {
-                                const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
-                                filename = match ? match[1] : artist.artist_image_file;
-                            }
-                            let imageUrl = "images/no_image_artist.png";
-                            if (filename) {
-                                imageUrl = "https://freemusicarchive.org/image/?file=images%2Fartists%2F" + filename  + "&width=290&height=290&type=artist";
-                            }
-                            const artistCard = document.createElement("div");
-                            artistCard.classList.add("artist-card");
-                            artistCard.innerHTML = `
-                                <img src="${imageUrl}" 
-                                    alt="${artist.artist_name}" 
-                                    class="artist-cover"
-                                    onerror="this.src='images/no_image_artist.png'">
-                                <h3>${artist.artist_name}</h3>
-                                <p>Artiste</p>
-                            `;
-                            container.appendChild(artistCard);
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Erreur lors du chargement des recommandations d'artistes :", error);
-                    });
-            }
+                        if (prefData.count > 0 && prefData.results[0].ids_artists) artistIds = prefData.results[0].ids_artists.split(',').filter(x => x);
+                        if (artistIds.length > 0) artistRecoUrl = 'http://127.0.0.1:8000/reco/artists?' + artistIds.map(id => 'artist_ids=' + id).join('&') + '&limit=12';
+                    } catch (e) { /* fallback */ }
+                }
+                const artistRecoRes = await fetch(artistRecoUrl);
+                const artistRecoData = await artistRecoRes.json();
+                const artistsTrack = document.getElementById('artists-track');
+                const artistDetails = await Promise.all(artistRecoData.results.map(a => fetch(`http://127.0.0.1:8000/artists/${a.artist_id}`).then(r => r.json()).catch(() => null)));
+                artistDetails.filter(a => a).forEach(artist => artistsTrack.appendChild(buildCrArtistCard(artist)));
+                duplicateForInfiniteScroll(artistsTrack);
+            } catch (err) { console.error('Erreur artistes:', err); }
         });
 
         const goConnexion = document.getElementById("goConnexion");
