@@ -6,8 +6,20 @@ class AudioPlayer {
         this.volume = 0.7;
         this.audio.volume = this.volume;
 
+        // Queue system
+        this.queue = [];
+        this.queueIndex = -1;
+        this.onTrackEnd = null; // callback when track finishes
+        this.onNext = null; // callback for skip next
+        this.onPrev = null; // callback for skip prev
+        this.source = null; // { type: 'playlist'|'album'|'artist', id, name }
+
         this.createPlayerUI();
         this.setupEventListeners();
+        this.restoreState();
+
+        // Save state before leaving page
+        window.addEventListener('beforeunload', () => this.saveState());
     }
 
     createPlayerUI() {
@@ -17,6 +29,7 @@ class AudioPlayer {
             <div class="player-left">
                 <div class="track-title" id="current-track-title">Aucune musique</div>
                 <div class="artist-name" id="current-artist-name">Sélectionnez une piste</div>
+                <div class="player-source-tag" id="player-source-tag" style="display:none;"></div>
             </div>
             
             <div class="player-center">
@@ -25,12 +38,22 @@ class AudioPlayer {
                         <rect x="6" y="6" width="12" height="12"/>
                     </svg>
                 </button>
+                <button id="prev-btn" class="skip-btn" title="Précédent">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                    </svg>
+                </button>
                 <button id="play-pause-btn" class="play-btn" disabled>
                     <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8 5v14l11-7z"/>
                     </svg>
                     <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
                         <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                </button>
+                <button id="next-btn" class="skip-btn" title="Suivant">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
                     </svg>
                 </button>
             </div>
@@ -61,7 +84,7 @@ class AudioPlayer {
                 background: rgb(0, 0, 0);
                 color: white;
                 padding: 0 40px;
-                z-index: 1000;
+                z-index: 7000;
                 display: grid;
                 grid-template-columns: 1fr auto 1fr;
                 align-items: center;
@@ -86,6 +109,26 @@ class AudioPlayer {
             .artist-name {
                 font-size: 14px;
                 color: rgba(255, 255, 255, 0.6);
+            }
+
+            .player-source-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 11px;
+                color: var(--orange, #e67e22);
+                cursor: pointer;
+                opacity: 0.85;
+                transition: opacity 0.2s;
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .player-source-tag:hover {
+                opacity: 1;
+                text-decoration: underline;
             }
 
             .player-center {
@@ -121,6 +164,30 @@ class AudioPlayer {
                 width: 18px;
                 height: 18px;
                 color: white;
+            }
+
+            .skip-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+                color: rgba(255,255,255,0.7);
+            }
+
+            .skip-btn:hover {
+                color: white;
+                background: rgba(255,255,255,0.1);
+            }
+
+            .skip-btn svg {
+                width: 20px;
+                height: 20px;
             }
 
             .play-btn {
@@ -202,7 +269,7 @@ class AudioPlayer {
                 background: white;
                 border-radius: 10px;
                 box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-                z-index: 1001;
+                z-index: 8000;
                 min-width: 230px;
                 max-height: 240px;
                 overflow-y: auto;
@@ -428,6 +495,17 @@ class AudioPlayer {
         this.playIcon = this.playPauseBtn.querySelector('.play-icon');
         this.pauseIcon = this.playPauseBtn.querySelector('.pause-icon');
         this.addPlaylistBtn = document.getElementById('player-add-playlist-btn');
+        this.prevBtn = document.getElementById('prev-btn');
+        this.nextBtn = document.getElementById('next-btn');
+        this.sourceTagEl = document.getElementById('player-source-tag');
+
+        // Source tag click
+        this.sourceTagEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (this.source && typeof window.openPlayerSource === 'function') {
+                window.openPlayerSource(this.source.type, this.source.id, this.source.name);
+            }
+        });
 
         // Créer le dropdown playlist du player
         this.playlistDropdown = document.createElement('div');
@@ -479,7 +557,15 @@ class AudioPlayer {
         });
 
         this.audio.addEventListener('ended', () => {
-            this.stop();
+            // If external callback handles it (playlist modal), use that
+            if (this.onTrackEnd) {
+                this.onTrackEnd();
+                return;
+            }
+            // Otherwise try to play next in queue
+            if (!this.playNext()) {
+                this.stop();
+            }
         });
 
         this.audio.addEventListener('play', () => {
@@ -490,6 +576,23 @@ class AudioPlayer {
         this.audio.addEventListener('pause', () => {
             this.isPlaying = false;
             this.updatePlayPauseButton();
+        });
+
+        // Skip buttons
+        this.prevBtn.addEventListener('click', () => {
+            if (this.onPrev) {
+                this.onPrev();
+            } else {
+                this.playPrev();
+            }
+        });
+
+        this.nextBtn.addEventListener('click', () => {
+            if (this.onNext) {
+                this.onNext();
+            } else {
+                this.playNext();
+            }
         });
     }
 
@@ -525,7 +628,27 @@ class AudioPlayer {
             this.addPlaylistBtn.disabled = !trackId;
         }
 
+        // Clear source if not set externally before this call
+        // (source is set via setSource before playTrack)
+
         this.play();
+    }
+
+    setSource(type, id, name) {
+        if (!type) {
+            this.source = null;
+            this.sourceTagEl.style.display = 'none';
+            return;
+        }
+        const icons = { playlist: '📋', album: '💿', artist: '🎤' };
+        this.source = { type, id, name };
+        this.sourceTagEl.textContent = (icons[type] || '🎵') + ' ' + name;
+        this.sourceTagEl.title = 'Ouvrir : ' + name;
+        this.sourceTagEl.style.display = 'inline-flex';
+    }
+
+    clearSource() {
+        this.setSource(null);
     }
 
     play() {
@@ -783,6 +906,96 @@ class AudioPlayer {
     escapeHtml(str) {
         if (!str) return '';
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ---- Queue system ----
+    setQueue(tracks, startIndex = 0) {
+        this.queue = tracks; // Array of { url, title, artist, trackId }
+        this.queueIndex = startIndex;
+    }
+
+    playNext() {
+        if (this.queue.length === 0) return false;
+        this.queueIndex++;
+        if (this.queueIndex >= this.queue.length) {
+            this.queueIndex = this.queue.length; // past end
+            return false;
+        }
+        this.playTrack(this.queue[this.queueIndex]);
+        return true;
+    }
+
+    playPrev() {
+        if (this.queue.length === 0) return false;
+        // If more than 3s in, restart current track
+        if (this.audio.currentTime > 3) {
+            this.audio.currentTime = 0;
+            return true;
+        }
+        this.queueIndex--;
+        if (this.queueIndex < 0) {
+            this.queueIndex = 0;
+            this.audio.currentTime = 0;
+            return true;
+        }
+        this.playTrack(this.queue[this.queueIndex]);
+        return true;
+    }
+
+    // ---- Cross-page persistence ----
+    saveState() {
+        if (!this.currentTrack || !this.audio.src) return;
+        const state = {
+            track: this.currentTrack,
+            currentTime: this.audio.currentTime,
+            isPlaying: this.isPlaying,
+            queue: this.queue,
+            queueIndex: this.queueIndex,
+            source: this.source
+        };
+        try {
+            localStorage.setItem('audioPlayerState', JSON.stringify(state));
+        } catch (e) { /* ignore */ }
+    }
+
+    restoreState() {
+        try {
+            const raw = localStorage.getItem('audioPlayerState');
+            if (!raw) return;
+            localStorage.removeItem('audioPlayerState');
+            const state = JSON.parse(raw);
+            if (!state.track || !state.track.url) return;
+
+            this.currentTrack = state.track;
+            this.audio.src = state.track.url;
+            this.trackTitleEl.textContent = state.track.title || 'Titre inconnu';
+            this.artistNameEl.textContent = state.track.artist || 'Artiste inconnu';
+            if (this.addPlaylistBtn) {
+                this.addPlaylistBtn.disabled = !state.track.trackId;
+            }
+
+            // Restore queue
+            if (state.queue && state.queue.length > 0) {
+                this.queue = state.queue;
+                this.queueIndex = state.queueIndex || 0;
+            }
+
+            // Restore source tag
+            if (state.source) {
+                this.setSource(state.source.type, state.source.id, state.source.name);
+            }
+
+            // Wait for metadata then seek and play
+            this.audio.addEventListener('loadedmetadata', () => {
+                this.audio.currentTime = state.currentTime || 0;
+                if (state.isPlaying) {
+                    this.play();
+                }
+            }, { once: true });
+            this.audio.load();
+        } catch (e) {
+            console.warn('Could not restore audio state:', e);
+        }
     }
 }
 

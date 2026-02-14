@@ -452,6 +452,468 @@
         }
     }
 
+    /* ====== ALBUM POPUP ====== */
+    .album-popup-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 6000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .album-popup-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .album-popup-card {
+        background: var(--blanc);
+        width: 520px;
+        max-width: 92vw;
+        max-height: 82vh;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(30px);
+        transition: transform 0.3s ease;
+    }
+
+    .album-popup-overlay.visible .album-popup-card {
+        transform: translateY(0);
+    }
+
+    .album-popup-header {
+        display: flex;
+        gap: 18px;
+        padding: 24px 24px 16px;
+        background: linear-gradient(135deg, var(--gris-fonce) 0%, #1a1a1a 100%);
+        color: white;
+        position: relative;
+    }
+
+    .album-popup-header img {
+        width: 110px;
+        height: 110px;
+        border-radius: 10px;
+        object-fit: cover;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        flex-shrink: 0;
+    }
+
+    .album-popup-meta {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .album-popup-meta h2 {
+        font-family: 'Rammetto One', 'Outfit', sans-serif;
+        font-size: 1.1rem;
+        margin: 0;
+        color: white;
+        line-height: 1.3;
+    }
+
+    .album-popup-meta .ap-artist {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.85rem;
+        color: var(--orange);
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .album-popup-meta .ap-count {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem;
+        color: var(--gris-clair);
+        margin: 0;
+    }
+
+    .ap-add-all-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 6px 14px;
+        border: 1.5px solid var(--orange);
+        border-radius: 20px;
+        background: transparent;
+        color: var(--orange);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .ap-add-all-btn:hover {
+        background: var(--orange);
+        color: white;
+    }
+
+    .ap-add-all-btn svg {
+        flex-shrink: 0;
+    }
+
+    .album-popup-close {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .album-popup-close:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .album-popup-tracks {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+    }
+
+    .album-popup-tracks::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .album-popup-tracks::-webkit-scrollbar-thumb {
+        background: var(--gris-clair);
+        border-radius: 3px;
+    }
+
+    .ap-track-row {
+        display: flex;
+        align-items: center;
+        padding: 10px 24px;
+        gap: 12px;
+        transition: background 0.15s;
+        cursor: default;
+    }
+
+    .ap-track-row:hover {
+        background: #f5f5f5;
+    }
+
+    .ap-track-num {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        color: var(--gris-clair);
+        width: 22px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .ap-track-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ap-track-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--noir);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ap-track-duration {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.7rem;
+        color: var(--gris-clair);
+        margin: 0;
+    }
+
+    .ap-track-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .ap-play-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--orange);
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(237,122,38,0.25);
+    }
+
+    .ap-play-btn:hover {
+        transform: scale(1.1);
+        background: var(--orange-fonce);
+    }
+
+    .ap-play-btn svg {
+        width: 14px;
+        height: 14px;
+        fill: white;
+        margin-left: 1px;
+    }
+
+    .ap-add-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: transparent;
+        border: 1.5px solid var(--gris-clair);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gris-fonce);
+        font-size: 16px;
+        font-weight: 400;
+        transition: all 0.2s;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .ap-add-btn:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+        background: rgba(237,122,38,0.06);
+    }
+
+    .ap-add-btn.added {
+        border-color: #27ae60;
+        color: #27ae60;
+    }
+
+    .ap-loading {
+        text-align: center;
+        padding: 40px;
+        font-family: 'Outfit', sans-serif;
+        color: var(--gris-clair);
+        font-size: 0.9rem;
+    }
+
+    .ap-back-btn {
+        position: absolute;
+        top: 14px;
+        right: 54px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .ap-back-btn:hover {
+        background: rgba(255,255,255,0.25);
+    }
+
+    .ap-back-btn.visible {
+        display: flex;
+    }
+
+    /* ====== ARTIST POPUP ====== */
+    .artist-popup-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 6000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .artist-popup-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .artist-popup-card {
+        background: var(--blanc);
+        width: 560px;
+        max-width: 92vw;
+        max-height: 82vh;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(30px);
+        transition: transform 0.3s ease;
+    }
+
+    .artist-popup-overlay.visible .artist-popup-card {
+        transform: translateY(0);
+    }
+
+    .artist-popup-header {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 24px 24px 16px;
+        background: linear-gradient(135deg, var(--gris-fonce) 0%, #1a1a1a 100%);
+        color: white;
+        position: relative;
+    }
+
+    .artist-popup-header img {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        border: 3px solid rgba(255,255,255,0.15);
+        flex-shrink: 0;
+    }
+
+    .artist-popup-header .artp-meta h2 {
+        font-family: 'Rammetto One', 'Outfit', sans-serif;
+        font-size: 1.15rem;
+        margin: 0 0 4px;
+        color: white;
+    }
+
+    .artist-popup-header .artp-meta p {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        color: var(--gris-clair);
+        margin: 0;
+    }
+
+    .artist-popup-close {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .artist-popup-close:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .artist-popup-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 24px 24px;
+    }
+
+    .artist-popup-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .artist-popup-body::-webkit-scrollbar-thumb {
+        background: var(--gris-clair);
+        border-radius: 3px;
+    }
+
+    .artp-section-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--gris-fonce);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 12px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--orange);
+        display: inline-block;
+    }
+
+    .artp-albums-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .artp-album-card {
+        width: 120px;
+        cursor: pointer;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #f7f7f7;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .artp-album-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        border-color: var(--orange);
+    }
+
+    .artp-album-card img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .artp-album-card .artp-album-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--noir);
+        padding: 6px 8px;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .artp-album-card .artp-album-count {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.65rem;
+        color: var(--gris-clair);
+        padding: 0 8px 6px;
+        margin: 0;
+    }
+
     /* ====== CAROUSEL SECTIONS ====== */
     .carousel-section {
         margin-bottom: 0;
@@ -697,7 +1159,7 @@
         background: var(--blanc, white);
         border-radius: 12px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        z-index: 5001;
+        z-index: 7000;
         min-width: 240px;
         max-height: 260px;
         overflow-y: auto;
@@ -889,6 +1351,46 @@
 
         <!-- Playlist Dropdown Carousel -->
         <div class="cr-playlist-dropdown" id="crPlaylistDropdown"></div>
+
+        <!-- Album Popup -->
+        <div class="album-popup-overlay" id="albumPopupOverlay">
+            <div class="album-popup-card">
+                <div class="album-popup-header">
+                    <button class="ap-back-btn" id="apBackBtn" title="Retour à l'artiste">&larr;</button>
+                    <img id="apAlbumImg" src="images/no_image_music.png" alt="Album">
+                    <div class="album-popup-meta">
+                        <h2 id="apAlbumTitle">Chargement...</h2>
+                        <p class="ap-artist" id="apAlbumArtist"></p>
+                        <p class="ap-count" id="apAlbumCount"></p>
+                        <button class="ap-add-all-btn" id="apAddAllBtn" title="Ajouter tout à une playlist">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/></svg>
+                            Ajouter tout
+                        </button>
+                    </div>
+                    <button class="album-popup-close" id="apCloseBtn">&times;</button>
+                </div>
+                <div class="album-popup-tracks" id="apTracksList">
+                    <div class="ap-loading">Chargement des morceaux...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artist Popup -->
+        <div class="artist-popup-overlay" id="artistPopupOverlay">
+            <div class="artist-popup-card">
+                <div class="artist-popup-header">
+                    <img id="artpImg" src="images/no_image_artist.png" alt="Artiste">
+                    <div class="artp-meta">
+                        <h2 id="artpName">Chargement...</h2>
+                        <p id="artpStats"></p>
+                    </div>
+                    <button class="artist-popup-close" id="artpCloseBtn">&times;</button>
+                </div>
+                <div class="artist-popup-body" id="artpBody">
+                    <div class="ap-loading">Chargement...</div>
+                </div>
+            </div>
+        </div>
         <div class="exit-popup-overlay" id="exitPopupOverlay">
             <div class="exit-popup" id="exitPopup">
                 <span class="popup-emoji">🎧</span>
@@ -1451,7 +1953,8 @@
             if (filename && filename !== 'album.jpg') imageUrl = 'https://freemusicarchive.org/image/?file=images%2Falbums%2F' + filename + '&width=290&height=290&type=album';
             const artistName = album.artists ? album.artists.split(',')[0].trim() : 'Artiste inconnu';
             const card = document.createElement('div');
-            card.className = 'cr-card';
+            card.className = 'cr-card cr-album-card';
+            card.dataset.albumId = album.album_id;
             card.innerHTML = `
                 <div class="cr-card-img-wrapper">
                     <img src="${imageUrl}" alt="${crEscHtml(album.album_title)}" class="cr-card-img" onerror="this.src='images/no_image_music.png'">
@@ -1474,7 +1977,8 @@
             let imageUrl = 'images/no_image_artist.png';
             if (filename) imageUrl = 'https://freemusicarchive.org/image/?file=images%2Fartists%2F' + filename + '&width=290&height=290&type=artist';
             const card = document.createElement('div');
-            card.className = 'cr-card artist-style';
+            card.className = 'cr-card artist-style cr-artist-card';
+            card.dataset.artistId = artist.artist_id;
             card.innerHTML = `
                 <div class="cr-card-img-wrapper">
                     <img src="${imageUrl}" alt="${crEscHtml(artist.artist_name)}" class="cr-card-img" onerror="this.src='images/no_image_artist.png'">
@@ -1487,6 +1991,338 @@
             `;
             return card;
         }
+
+        // ====== ALBUM POPUP LOGIC ======
+        const apOverlay = document.getElementById('albumPopupOverlay');
+        const apCloseBtn = document.getElementById('apCloseBtn');
+
+        document.addEventListener('click', function(e) {
+            const albumCard = e.target.closest('.cr-album-card');
+            if (albumCard && !e.target.closest('.cr-play-btn') && !e.target.closest('.cr-add-btn')) {
+                const albumId = albumCard.dataset.albumId;
+                if (albumId) openAlbumPopup(albumId, albumCard);
+            }
+        });
+
+        function closeAlbumPopup() {
+            apOverlay.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+        apCloseBtn.addEventListener('click', closeAlbumPopup);
+        apOverlay.addEventListener('click', (e) => { if (e.target === apOverlay) closeAlbumPopup(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAlbumPopup(); });
+
+        async function openAlbumPopup(albumId, cardEl, fromArtistId) {
+            const titleEl = document.getElementById('apAlbumTitle');
+            const artistEl = document.getElementById('apAlbumArtist');
+            const countEl = document.getElementById('apAlbumCount');
+            const imgEl = document.getElementById('apAlbumImg');
+            const listEl = document.getElementById('apTracksList');
+            const backBtn = document.getElementById('apBackBtn');
+
+            // Show/hide back button
+            if (fromArtistId) {
+                backBtn.classList.add('visible');
+                backBtn.onclick = function() {
+                    closeAlbumPopup();
+                    // Find a card for the artist to re-open the popup
+                    const artistCards = document.querySelectorAll('.cr-artist-card');
+                    let targetCard = null;
+                    artistCards.forEach(c => { if (c.dataset.artistId == fromArtistId) targetCard = c; });
+                    if (!targetCard) {
+                        // Create a dummy element for the image
+                        targetCard = document.createElement('div');
+                    }
+                    setTimeout(() => openArtistPopup(fromArtistId, targetCard), 200);
+                };
+            } else {
+                backBtn.classList.remove('visible');
+                backBtn.onclick = null;
+            }
+
+            // Get image from the card
+            const cardImg = cardEl.querySelector('.cr-card-img');
+            imgEl.src = cardImg ? cardImg.src : 'images/no_image_music.png';
+            titleEl.textContent = 'Chargement...';
+            artistEl.textContent = '';
+            countEl.textContent = '';
+            listEl.innerHTML = '<div class="ap-loading">Chargement des morceaux...</div>';
+
+            apOverlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/albums/${albumId}/tracks`);
+                const data = await res.json();
+                const album = data.album;
+                const tracks = data.tracks;
+                const artists = data.artists;
+
+                titleEl.textContent = album.album_title;
+                artistEl.textContent = artists.join(', ');
+                countEl.textContent = tracks.length + ' morceaux';
+
+                // Store track IDs for "Add all" button
+                apCurrentAlbumTrackIds = tracks.map(t => t.track_id);
+                apCurrentAlbumId = albumId;
+                apCurrentAlbumTitle = album.album_title;
+
+                listEl.innerHTML = '';
+                if (tracks.length === 0) {
+                    listEl.innerHTML = '<div class="ap-loading">Aucun morceau trouvé</div>';
+                    return;
+                }
+
+                tracks.forEach((track, idx) => {
+                    const mins = Math.floor((track.track_duration || 0) / 60);
+                    const secs = (track.track_duration || 0) % 60;
+                    const dur = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                    const row = document.createElement('div');
+                    row.className = 'ap-track-row';
+                    row.innerHTML = `
+                        <span class="ap-track-num">${idx + 1}</span>
+                        <div class="ap-track-info">
+                            <p class="ap-track-title">${crEscHtml(track.track_title)}</p>
+                            <p class="ap-track-duration">${dur}</p>
+                        </div>
+                        <div class="ap-track-actions">
+                            <button class="ap-play-btn" data-track-id="${track.track_id}" title="Écouter">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                            <button class="ap-add-btn" data-track-id="${track.track_id}" title="Ajouter à une playlist">+</button>
+                        </div>
+                    `;
+                    listEl.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error('Erreur chargement album:', err);
+                listEl.innerHTML = '<div class="ap-loading">Erreur de chargement</div>';
+            }
+        }
+
+        // Album popup: play + add-to-playlist event delegation
+        let apCurrentlyPlayingId = null;
+        let apCurrentAlbumTrackIds = [];
+        let apCurrentAlbumId = null;
+        let apCurrentAlbumTitle = '';
+
+        // "Add all to playlist" button
+        document.getElementById('apAddAllBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (apCurrentAlbumTrackIds.length === 0) return;
+            crShowAddAllPlaylistPicker(apCurrentAlbumTrackIds, this);
+        });
+        document.getElementById('apTracksList').addEventListener('click', function(e) {
+            const playBtn = e.target.closest('.ap-play-btn');
+            if (playBtn) {
+                e.stopPropagation();
+                const trackId = playBtn.dataset.trackId;
+                if (trackId && typeof audioPlayer !== 'undefined') {
+                    // If same track is playing, toggle pause
+                    if (apCurrentlyPlayingId === trackId && audioPlayer.audio && !audioPlayer.audio.paused) {
+                        audioPlayer.audio.pause();
+                        playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+                        apCurrentlyPlayingId = null;
+                        return;
+                    }
+                    // Reset all play buttons in the popup
+                    document.querySelectorAll('#apTracksList .ap-play-btn').forEach(b => {
+                        b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+                    });
+                    // Play the track
+                    fetch(`http://127.0.0.1:8000/tracks/${trackId}`)
+                        .then(r => r.json())
+                        .then(track => {
+                            audioPlayer.setSource('album', apCurrentAlbumId, apCurrentAlbumTitle);
+                            audioPlayer.playTrack({ url: track.track_file, title: track.track_title, artist: track.artist_info?.artist_name || 'Artiste inconnu', trackId });
+                            apCurrentlyPlayingId = trackId;
+                            playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                        }).catch(err => console.error('Play error:', err));
+                }
+                return;
+            }
+            const addBtn = e.target.closest('.ap-add-btn');
+            if (addBtn) {
+                e.stopPropagation();
+                const trackId = addBtn.dataset.trackId;
+                if (trackId) crShowPlaylistPicker(trackId, addBtn);
+            }
+        });
+
+        // ====== ARTIST POPUP LOGIC ======
+        const artpOverlay = document.getElementById('artistPopupOverlay');
+        const artpCloseBtn = document.getElementById('artpCloseBtn');
+
+        function closeArtistPopup() {
+            artpOverlay.classList.remove('visible');
+            document.body.style.overflow = '';
+        }
+        artpCloseBtn.addEventListener('click', closeArtistPopup);
+        artpOverlay.addEventListener('click', (e) => { if (e.target === artpOverlay) closeArtistPopup(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && artpOverlay.classList.contains('visible')) closeArtistPopup(); });
+
+        document.addEventListener('click', function(e) {
+            const artistCard = e.target.closest('.cr-artist-card');
+            if (artistCard) {
+                const artistId = artistCard.dataset.artistId;
+                if (artistId) openArtistPopup(artistId, artistCard);
+            }
+        });
+
+        async function openArtistPopup(artistId, cardEl) {
+            const nameEl = document.getElementById('artpName');
+            const statsEl = document.getElementById('artpStats');
+            const imgEl = document.getElementById('artpImg');
+            const bodyEl = document.getElementById('artpBody');
+
+            const cardImg = cardEl.querySelector('.cr-card-img');
+            imgEl.src = cardImg ? cardImg.src : 'images/no_image_artist.png';
+            nameEl.textContent = 'Chargement...';
+            statsEl.textContent = '';
+            bodyEl.innerHTML = '<div class="ap-loading">Chargement...</div>';
+
+            artpOverlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
+
+            try {
+                const res = await fetch(`http://127.0.0.1:8000/artists/${artistId}/tracks?limit=200`);
+                const data = await res.json();
+
+                nameEl.textContent = data.artist;
+                statsEl.textContent = data.total + ' morceaux';
+
+                // Group tracks by album
+                const albums = new Map();
+                const standaloneTracks = [];
+
+                data.tracks.forEach(t => {
+                    if (t.album_id && t.album_title) {
+                        if (!albums.has(t.album_id)) {
+                            albums.set(t.album_id, {
+                                album_id: t.album_id,
+                                album_title: t.album_title,
+                                album_image_file: t.album_image_file,
+                                tracks: []
+                            });
+                        }
+                        albums.get(t.album_id).tracks.push(t);
+                    } else {
+                        standaloneTracks.push(t);
+                    }
+                });
+
+                bodyEl.innerHTML = '';
+
+                // Albums section
+                if (albums.size > 0) {
+                    const albumSection = document.createElement('div');
+                    albumSection.innerHTML = '<p class="artp-section-title">Albums</p>';
+                    const grid = document.createElement('div');
+                    grid.className = 'artp-albums-grid';
+
+                    albums.forEach(album => {
+                        let fn = null;
+                        if (album.album_image_file) {
+                            const m = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
+                            fn = m ? m[1] : album.album_image_file;
+                        }
+                        let imgUrl = 'images/no_image_music.png';
+                        if (fn && fn !== 'album.jpg') imgUrl = 'https://freemusicarchive.org/image/?file=images%2Falbums%2F' + fn + '&width=290&height=290&type=album';
+
+                        const ac = document.createElement('div');
+                        ac.className = 'artp-album-card';
+                        ac.dataset.albumId = album.album_id;
+                        ac.innerHTML = `
+                            <img src="${imgUrl}" alt="${crEscHtml(album.album_title)}" onerror="this.src='images/no_image_music.png'">
+                            <p class="artp-album-title">${crEscHtml(album.album_title)}</p>
+                            <p class="artp-album-count">${album.tracks.length} morceaux</p>
+                        `;
+                        ac.addEventListener('click', () => {
+                            closeArtistPopup();
+                            setTimeout(() => openAlbumPopup(album.album_id, ac, artistId), 200);
+                        });
+                        grid.appendChild(ac);
+                    });
+
+                    albumSection.appendChild(grid);
+                    bodyEl.appendChild(albumSection);
+                }
+
+                // Standalone tracks section
+                if (standaloneTracks.length > 0) {
+                    const trackSection = document.createElement('div');
+                    trackSection.innerHTML = '<p class="artp-section-title">Morceaux</p>';
+
+                    standaloneTracks.forEach((track, idx) => {
+                        const mins = Math.floor((track.track_duration || 0) / 60);
+                        const secs = (track.track_duration || 0) % 60;
+                        const dur = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                        const row = document.createElement('div');
+                        row.className = 'ap-track-row';
+                        row.innerHTML = `
+                            <span class="ap-track-num">${idx + 1}</span>
+                            <div class="ap-track-info">
+                                <p class="ap-track-title">${crEscHtml(track.track_title)}</p>
+                                <p class="ap-track-duration">${dur}</p>
+                            </div>
+                            <div class="ap-track-actions">
+                                <button class="ap-play-btn" data-track-id="${track.track_id}" title="Écouter">
+                                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </button>
+                                <button class="ap-add-btn" data-track-id="${track.track_id}" title="Ajouter à une playlist">+</button>
+                            </div>
+                        `;
+                        trackSection.appendChild(row);
+                    });
+                    bodyEl.appendChild(trackSection);
+                }
+
+                if (albums.size === 0 && standaloneTracks.length === 0) {
+                    bodyEl.innerHTML = '<div class="ap-loading">Aucun contenu trouvé</div>';
+                }
+
+            } catch (err) {
+                console.error('Erreur chargement artiste:', err);
+                bodyEl.innerHTML = '<div class="ap-loading">Erreur de chargement</div>';
+            }
+        }
+
+        // Artist popup: play + add-to-playlist event delegation
+        document.getElementById('artpBody').addEventListener('click', function(e) {
+            const playBtn = e.target.closest('.ap-play-btn');
+            if (playBtn) {
+                e.stopPropagation();
+                const trackId = playBtn.dataset.trackId;
+                if (trackId && typeof audioPlayer !== 'undefined') {
+                    if (apCurrentlyPlayingId === trackId && audioPlayer.audio && !audioPlayer.audio.paused) {
+                        audioPlayer.audio.pause();
+                        playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+                        apCurrentlyPlayingId = null;
+                        return;
+                    }
+                    document.querySelectorAll('#artpBody .ap-play-btn').forEach(b => {
+                        b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+                    });
+                    fetch(`http://127.0.0.1:8000/tracks/${trackId}`)
+                        .then(r => r.json())
+                        .then(track => {
+                            audioPlayer.playTrack({ url: track.track_file, title: track.track_title, artist: track.artist_info?.artist_name || 'Artiste inconnu', trackId });
+                            apCurrentlyPlayingId = trackId;
+                            playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+                        }).catch(err => console.error('Play error:', err));
+                }
+                return;
+            }
+            const addBtn = e.target.closest('.ap-add-btn');
+            if (addBtn) {
+                e.stopPropagation();
+                const trackId = addBtn.dataset.trackId;
+                if (trackId) crShowPlaylistPicker(trackId, addBtn);
+            }
+        });
 
         function duplicateForInfiniteScroll(trackEl) {
             Array.from(trackEl.children).forEach(card => trackEl.appendChild(card.cloneNode(true)));
@@ -1595,6 +2431,107 @@
                     crShowNotif('Playlist « ' + name + ' » créée !', 'success');
                 } else { crShowNotif('Erreur lors de la création', 'error'); btn.disabled = false; btn.textContent = 'Créer et ajouter'; }
             } catch (err) { crShowNotif('Erreur lors de la création', 'error'); btn.disabled = false; btn.textContent = 'Créer et ajouter'; }
+        }
+
+        // ====== ADD ALL ALBUM TRACKS TO PLAYLIST ======
+        async function crShowAddAllPlaylistPicker(trackIds, btnEl) {
+            const dd = crDropdown;
+            crActiveAddBtn = btnEl;
+            const rect = btnEl.getBoundingClientRect();
+            if (window.innerHeight - rect.bottom > 280) {
+                dd.style.top = (rect.bottom + 6) + 'px'; dd.style.bottom = 'auto';
+            } else {
+                dd.style.bottom = (window.innerHeight - rect.top + 6) + 'px'; dd.style.top = 'auto';
+            }
+            dd.style.left = Math.max(10, rect.left - 100) + 'px';
+            dd.innerHTML = '<p class="crd-title">Chargement...</p>';
+            dd.classList.add('visible');
+
+            try {
+                const authRes = await fetch('http://localhost:3000/dashboard', { credentials: 'include' });
+                const authData = await authRes.json();
+                if (authData.error) {
+                    dd.innerHTML = '<div class="crd-login"><a href="connexion.html">Connectez-vous</a> pour ajouter à une playlist</div>';
+                    return;
+                }
+                const userId = authData.user.user_id || 1;
+                const plRes = await fetch(`http://127.0.0.1:8000/users/${userId}/playlists`);
+                const playlists = await plRes.json();
+
+                if (!playlists || playlists.length === 0) {
+                    dd.innerHTML = `<p class="crd-title">Aucune playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBulkBtn">Créer et tout ajouter</button></div>`;
+                    setTimeout(() => {
+                        const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
+                        const btn = document.getElementById('crdQuickCreateBulkBtn'); if (btn) btn.addEventListener('click', () => crQuickCreateBulk(userId, trackIds));
+                    }, 50);
+                    return;
+                }
+
+                let html = '<p class="crd-title">Ajouter tout l\'album à...</p>';
+                playlists.forEach(pl => { html += `<div class="crd-item" data-playlist-id="${pl.playlist_id}">${crEscHtml(pl.playlist_name)}</div>`; });
+                html += '<div style="border-top:1px solid #f0f0f0;margin-top:4px;"></div>';
+                html += '<div class="crd-item crd-new" style="color:var(--orange);font-weight:500;">+ Nouvelle playlist</div>';
+                dd.innerHTML = html;
+
+                dd.querySelectorAll('.crd-item:not(.crd-new)').forEach(item => {
+                    item.addEventListener('click', async () => { await crAddAllToPlaylist(item.dataset.playlistId, trackIds); dd.classList.remove('visible'); });
+                });
+                const newBtn = dd.querySelector('.crd-new');
+                if (newBtn) {
+                    newBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dd.innerHTML = `<p class="crd-title">Nouvelle playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBulkBtn">Créer et tout ajouter</button></div>`;
+                        setTimeout(() => {
+                            const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
+                            const btn = document.getElementById('crdQuickCreateBulkBtn'); if (btn) btn.addEventListener('click', () => crQuickCreateBulk(userId, trackIds));
+                        }, 50);
+                    });
+                }
+            } catch (err) {
+                dd.innerHTML = '<div class="crd-login">Erreur de chargement</div>';
+            }
+        }
+
+        async function crAddAllToPlaylist(playlistId, trackIds) {
+            try {
+                const getRes = await fetch(`http://127.0.0.1:8000/playlists/${playlistId}`);
+                const playlist = await getRes.json();
+                const existingIds = (playlist.tracks || []).map(t => t.track_id);
+                let addedCount = 0;
+                const newIds = [...existingIds];
+                trackIds.forEach(id => {
+                    if (!newIds.includes(parseInt(id))) {
+                        newIds.push(parseInt(id));
+                        addedCount++;
+                    }
+                });
+                if (addedCount === 0) { crShowNotif('Tous les morceaux sont déjà dans cette playlist', 'info'); return; }
+                const postRes = await fetch(`http://127.0.0.1:8000/playlists/${playlistId}/tracks`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ track_ids: newIds })
+                });
+                if (postRes.ok) {
+                    crShowNotif(addedCount + ' morceaux ajoutés à « ' + (playlist.playlist_name || 'la playlist') + ' »', 'success');
+                } else { crShowNotif('Erreur lors de l\'ajout', 'error'); }
+            } catch (err) { crShowNotif('Erreur lors de l\'ajout', 'error'); }
+        }
+
+        async function crQuickCreateBulk(userId, trackIds) {
+            const nameInput = document.getElementById('crdQuickName');
+            const btn = document.getElementById('crdQuickCreateBulkBtn');
+            const name = nameInput ? nameInput.value.trim() : '';
+            if (!name) { nameInput.style.borderColor = '#e74c3c'; nameInput.placeholder = 'Entrez un nom !'; return; }
+            btn.disabled = true; btn.textContent = 'Création...';
+            try {
+                const res = await fetch('http://127.0.0.1:8000/playlists', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: '', user_id: userId, track_ids: trackIds.map(id => parseInt(id)) })
+                });
+                if (res.ok) {
+                    crDropdown.classList.remove('visible');
+                    crShowNotif('Playlist « ' + name + ' » créée avec ' + trackIds.length + ' morceaux !', 'success');
+                } else { crShowNotif('Erreur lors de la création', 'error'); btn.disabled = false; btn.textContent = 'Créer et tout ajouter'; }
+            } catch (err) { crShowNotif('Erreur lors de la création', 'error'); btn.disabled = false; btn.textContent = 'Créer et tout ajouter'; }
         }
 
         // ====== CAROUSEL EVENT DELEGATION ======
@@ -1745,6 +2682,24 @@
             }
 
         });
+
+        // ====== OPEN PLAYER SOURCE HANDLER ======
+        window.openPlayerSource = function(type, id, name) {
+            if (type === 'album' && id) {
+                // Open album popup
+                const dummyCard = document.createElement('div');
+                dummyCard.innerHTML = '<img class="cr-card-img" src="images/no_image_music.png">';
+                openAlbumPopup(id, dummyCard);
+            } else if (type === 'artist' && id) {
+                // Open artist popup
+                const dummyCard = document.createElement('div');
+                dummyCard.innerHTML = '<img class="cr-card-img" src="images/no_image_artist.png">';
+                openArtistPopup(id, dummyCard);
+            } else if (type === 'playlist') {
+                // Navigate to playlists page
+                window.location.href = 'playlists.html';
+            }
+        };
 
   </script>
 
