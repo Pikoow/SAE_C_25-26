@@ -12,8 +12,9 @@ $(document).ready(function () {
     // Configurer l'autocomplete pour la recherche de tracks
     setupTrackSearch();
 
-    // Gestionnaire pour le bouton de création
+    // Gestionnaire pour le bouton de création et de génération de playlist
     $("#create-playlist-button").on("click", createPlaylist);
+    $("#generate-playlist-btn").on("click", generateAutoPlaylist);
 });
 
 // Vérifier l'utilisateur connecté
@@ -94,19 +95,111 @@ function createPlaylistCard(playlist) {
         </div>
     `);
 
-    // Whole card opens the playlist
     card.css("cursor", "pointer");
     card.on("click", function () {
         viewPlaylist(playlist.playlist_id);
     });
 
-    // Delete button stops propagation
     card.find(".pl-delete-btn").on("click", function (e) {
         e.stopPropagation();
         deletePlaylist($(this).data("pid"));
     });
 
     return card;
+}
+
+async function generateAutoPlaylist() {
+    if (!currentUserId) {
+        showNotification("Veuillez vous connecter pour générer une playlist.", "error");
+        return;
+    }
+
+    try {
+        showNotification("Génération de votre playlist personnalisée...", "info");
+
+        // 1. Récupérer les favoris
+        const favResponse = await fetch(`${API_BASE_URL}/voir_favorite/${currentUserId}`);
+        const favData = await favResponse.json();
+
+        if (!favData.results || favData.results.length === 0) {
+            showNotification("Ajoutez des favoris pour générer une playlist !", "warning");
+            return;
+        }
+
+        const favorites = favData.results[0];
+
+        const trackSeeds = favorites.ids_tracks ? favorites.ids_tracks.split(',').filter(id => id) : [];
+        const artistSeeds = favorites.ids_artists ? favorites.ids_artists.split(',').filter(id => id) : [];
+
+        let generatedTrackIds = new Set();
+
+        // 2. Récupérer les recommandations de tracks basées sur les favoris
+        if (trackSeeds.length > 0) {
+            const trackParams = trackSeeds.map(id => `track_ids=${id}`).join('&');
+            const recTracksResp = await fetch(`${API_BASE_URL}/reco/tracks?${trackParams}&limit=15`);
+            const recTracksData = await recTracksResp.json();
+            
+            if (recTracksData.results) {
+                recTracksData.results.forEach(t => generatedTrackIds.add(t.track_id));
+            }
+        }
+
+        // 3. Récupérer les recommandations d'artistes basées sur les favoris et leurs top tracks
+        if (artistSeeds.length > 0) {
+            const artistParams = artistSeeds.map(id => `artist_ids=${id}`).join('&');
+            const recArtistsResp = await fetch(`${API_BASE_URL}/reco/artists?${artistParams}&limit=5`);
+            const recArtistsData = await recArtistsResp.json();
+
+            if (recArtistsData.results) {
+                // Récupérer les top tracks de chaque artiste recommandé
+                for (const artist of recArtistsData.results) {
+                    const artistTracksResp = await fetch(`${API_BASE_URL}/artists/${artist.artist_id}/tracks?limit=3`);
+                    const artistTracksData = await artistTracksResp.json();
+                    if (artistTracksData.tracks) {
+                        artistTracksData.tracks.forEach(t => generatedTrackIds.add(t.track_id));
+                    }
+                }
+            }
+        }
+
+        // 4. Préparer la liste finale de tracks (unique) et limiter la tailles
+        let finalTrackList = Array.from(generatedTrackIds);
+        
+        // Mélanger et limiter à une taille aléatoire entre 10 et 20
+        const size = 10;
+        finalTrackList = finalTrackList.sort(() => 0.5 - Math.random()).slice(0, size);
+
+        if (finalTrackList.length === 0) {
+            showNotification("Pas assez de recommandations trouvées.", "warning");
+            return;
+        }
+
+        // 5. Créer la playlist avec les tracks recommandés
+        const playlistPayload = {
+            name: `Playlist Générée`,
+            description: `Générée automatiquement le ${new Date().toLocaleDateString('fr-FR')}.`,
+            user_id: parseInt(currentUserId),
+            track_ids: finalTrackList.map(id => parseInt(id))
+        };
+
+        const createResp = await fetch(`${API_BASE_URL}/playlists`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(playlistPayload)
+        });
+
+        if (createResp.ok) {
+            showNotification("Playlist générée avec succès !", "success");
+            loadUserPlaylists(currentUserId); // Refresh
+        } else {
+            const error = await createResp.json();
+            throw new Error(error.detail || "Erreur lors de la création");
+        }
+
+    } catch (err) {
+        console.error("Erreur generation playlist:", err);
+        showNotification("Erreur lors de la génération : " + err.message, "error");
+    }
 }
 
 // Générer la grille d'images pour la playlist
