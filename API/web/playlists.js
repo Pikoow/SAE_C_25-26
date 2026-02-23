@@ -106,7 +106,7 @@ function displayPlaylists(playlists) {
 
     // Ajouter la carte "Nouvelle playlist" EN DERNIER dans la grille
     appendNewPlaylistCard(container);
-}
+
 
 // Ajouter la carte "+ Nouvelle playlist"
 function appendNewPlaylistCard(container) {
