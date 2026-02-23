@@ -2,21 +2,50 @@
 const API_BASE_URL = "http://127.0.0.1:8000";
 const AUTH_API_URL = "http://localhost:3000";
 let currentUserId = null;
-let selectedTracks = []; // Tracks sélectionnées pour la création
+let selectedTracks = [];
 
 // Initialisation
 $(document).ready(function() {
-    // Vérifier l'utilisateur connecté
     checkAuthenticatedUser();
-    
-    // Configurer l'autocomplete pour la recherche de tracks
     setupTrackSearch();
-    
-    // Gestionnaire pour le bouton de création
+    setupCreateModal();
+
     $("#create-playlist-button").on("click", createPlaylist);
 });
 
-// Vérifier l'utilisateur connecté
+// ===== GESTION DE LA MODAL DE CRÉATION =====
+function setupCreateModal() {
+    // Fermer avec le bouton ×
+    $("#close-create-modal").on("click", closeCreateModal);
+
+    // Fermer en cliquant sur l'overlay
+    $("#create-playlist-modal").on("click", function(e) {
+        if ($(e.target).is("#create-playlist-modal")) {
+            closeCreateModal();
+        }
+    });
+
+    // Fermer avec Échap
+    $(document).on("keydown", function(e) {
+        if (e.key === "Escape" && $("#create-playlist-modal").is(":visible")) {
+            closeCreateModal();
+        }
+    });
+}
+
+function openCreateModal() {
+    $("#create-playlist-modal").fadeIn(200);
+    $("body").css("overflow", "hidden");
+    // Focus sur le champ nom
+    setTimeout(() => $("#playlist-name-input").focus(), 250);
+}
+
+function closeCreateModal() {
+    $("#create-playlist-modal").fadeOut(200);
+    $("body").css("overflow", "");
+}
+
+// ===== AUTHENTIFICATION =====
 async function checkAuthenticatedUser() {
     try {
         const response = await fetch(`${AUTH_API_URL}/dashboard`, {
@@ -32,12 +61,12 @@ async function checkAuthenticatedUser() {
         }
     } catch (err) {
         console.error("Erreur d'authentification:", err);
-        currentUserId = 1; // ID par défaut
+        currentUserId = 1;
         loadUserPlaylists(currentUserId);
     }
 }
 
-// Charger les playlists de l'utilisateur
+// ===== CHARGEMENT DES PLAYLISTS =====
 async function loadUserPlaylists(userId) {
     try {
         const response = await fetch(`${API_BASE_URL}/users/${userId}/playlists/detailed`);
@@ -50,28 +79,43 @@ async function loadUserPlaylists(userId) {
     }
 }
 
-// Afficher les playlists
+// ===== AFFICHAGE DES PLAYLISTS =====
 function displayPlaylists(playlists) {
     const container = $(".playlists-container");
     container.empty();
-    
+
     if (playlists.length === 0) {
         container.html(`
             <div class="empty-state">
                 <p>Vous n'avez pas encore de playlist</p>
-                <p>Créez votre première playlist ci-dessus !</p>
+                <p>Créez votre première playlist en cliquant sur le bouton ci-contre !</p>
             </div>
         `);
-        return;
+    } else {
+        playlists.forEach(playlist => {
+            const playlistCard = createPlaylistCard(playlist);
+            container.append(playlistCard);
+        });
     }
-    
-    playlists.forEach(playlist => {
-        const playlistCard = createPlaylistCard(playlist);
-        container.append(playlistCard);
-    });
+
+    // Ajouter la carte "Nouvelle playlist" EN DERNIER dans la grille
+    appendNewPlaylistCard(container);
 }
 
-// Créer une carte de playlist
+// Ajouter la carte "+ Nouvelle playlist"
+function appendNewPlaylistCard(container) {
+    const newCard = $(`
+        <div class="playlist-card-new" id="open-create-playlist" title="Créer une nouvelle playlist">
+            <div class="new-playlist-plus">+</div>
+            <span class="new-playlist-label">Nouvelle playlist</span>
+        </div>
+    `);
+
+    newCard.on("click", openCreateModal);
+    container.append(newCard);
+}
+
+// ===== CARTE DE PLAYLIST =====
 function createPlaylistCard(playlist) {
     const card = $(`
         <div class="playlist-card" data-playlist-id="${playlist.playlist_id}">
@@ -87,10 +131,10 @@ function createPlaylistCard(playlist) {
                 </div>
                 <div class="playlist-actions">
                     <button class="btn-view" onclick="viewPlaylist(${playlist.playlist_id})">
-                        <span class="icon">👁️</span> Voir
+                        <span class="icon"></span> Voir
                     </button>
                     <button class="btn-delete" onclick="deletePlaylist(${playlist.playlist_id})">
-                        <span class="icon">🗑️</span> Supprimer
+                        <span class="icon"></span> Supprimer
                     </button>
                 </div>
             </div>
@@ -114,7 +158,6 @@ function generatePlaylistCovers(tracks) {
         </div>`;
     });
     
-    // Compléter avec des placeholders si moins de 4 images
     for (let i = tracks.length; i < 4; i++) {
         html += `<div class="cover-item">
             <img src="images/no_image_music.png" alt="Aucune image">
@@ -137,7 +180,7 @@ function getTrackImageUrl(track) {
     return 'images/no_image_music.png';
 }
 
-// Configurer la recherche automatique de tracks
+// ===== RECHERCHE DE TRACKS (AUTOCOMPLETE) =====
 function setupTrackSearch() {
     const searchInput = $("#track-search-input");
     
@@ -182,9 +225,8 @@ function setupTrackSearch() {
     };
 }
 
-// Ajouter une track à la sélection
+// ===== SÉLECTION DES TRACKS =====
 function addTrackToSelection(trackId, trackTitle, imageUrl) {
-    // Vérifier si déjà sélectionné
     if (selectedTracks.some(t => t.id === trackId)) {
         showNotification("Cette musique est déjà dans la sélection", "info");
         return;
@@ -192,11 +234,14 @@ function addTrackToSelection(trackId, trackTitle, imageUrl) {
     
     const track = { id: trackId, title: trackTitle, image: imageUrl };
     selectedTracks.push(track);
-    
+    updateSelectedCount();
     displaySelectedTracks();
 }
 
-// Afficher les tracks sélectionnées
+function updateSelectedCount() {
+    $("#selected-count").text(`(${selectedTracks.length})`);
+}
+
 function displaySelectedTracks() {
     const container = $("#selected-tracks-container");
     container.empty();
@@ -206,7 +251,7 @@ function displaySelectedTracks() {
         return;
     }
     
-    selectedTracks.forEach((track, index) => {
+    selectedTracks.forEach((track) => {
         const badge = $(`
             <div class="selected-track-badge" data-track-id="${track.id}">
                 <img src="${track.image}" alt="" class="track-mini-image">
@@ -218,13 +263,13 @@ function displaySelectedTracks() {
     });
 }
 
-// Supprimer une track de la sélection
 window.removeTrackFromSelection = function(trackId) {
     selectedTracks = selectedTracks.filter(t => t.id !== trackId);
+    updateSelectedCount();
     displaySelectedTracks();
 };
 
-// Créer une playlist
+// ===== CRÉATION DE PLAYLIST =====
 async function createPlaylist() {
     const name = $("#playlist-name-input").val().trim();
     const description = $("#playlist-description-input").val().trim();
@@ -244,9 +289,7 @@ async function createPlaylist() {
     try {
         const response = await fetch(`${API_BASE_URL}/playlists`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 name: name,
                 description: description,
@@ -264,7 +307,11 @@ async function createPlaylist() {
             $("#playlist-name-input").val("");
             $("#playlist-description-input").val("");
             selectedTracks = [];
+            updateSelectedCount();
             displaySelectedTracks();
+            
+            // Fermer la modal
+            closeCreateModal();
             
             // Recharger les playlists
             loadUserPlaylists(currentUserId);
@@ -277,7 +324,7 @@ async function createPlaylist() {
     }
 }
 
-// Voir une playlist (redirection ou modal)
+// ===== VOIR UNE PLAYLIST =====
 window.viewPlaylist = function(playlistId) {
     fetch(`${API_BASE_URL}/playlists/${playlistId}`)
         .then(response => response.json())
@@ -290,7 +337,7 @@ window.viewPlaylist = function(playlistId) {
         });
 };
 
-// Supprimer une playlist
+// ===== SUPPRIMER UNE PLAYLIST =====
 window.deletePlaylist = async function(playlistId) {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette playlist ?")) {
         return;
@@ -313,9 +360,8 @@ window.deletePlaylist = async function(playlistId) {
     }
 };
 
-// Afficher une modal avec les détails de la playlist
+// ===== MODAL DE DÉTAIL PLAYLIST =====
 function showPlaylistModal(playlist) {
-    // Créer la modal si elle n'existe pas
     let modal = $("#playlist-modal");
     if (modal.length === 0) {
         modal = $(`
@@ -340,7 +386,6 @@ function showPlaylistModal(playlist) {
         });
     }
     
-    // Remplir la modal
     modal.find("#modal-playlist-title").text(playlist.playlist_name);
     modal.find("#modal-playlist-description").text(playlist.playlist_description || "Aucune description");
     
@@ -357,7 +402,7 @@ function showPlaylistModal(playlist) {
                         <div class="track-artist">${escapeHtml(track.artist_names || "Artiste inconnu")}</div>
                     </div>
                     <button class="btn-remove-track" onclick="removeTrackFromPlaylist(${playlist.playlist_id}, ${track.track_id})">
-                        Supprimer
+                        <img src="images/icones/trash-can.png" alt="Supprimer">
                     </button>
                 </div>
             `);
@@ -370,7 +415,7 @@ function showPlaylistModal(playlist) {
     modal.show();
 }
 
-// Supprimer une track d'une playlist
+// ===== SUPPRIMER UNE TRACK D'UNE PLAYLIST =====
 window.removeTrackFromPlaylist = async function(playlistId, trackId) {
     if (!confirm("Voulez-vous supprimer cette musique de la playlist ?")) {
         return;
@@ -383,9 +428,7 @@ window.removeTrackFromPlaylist = async function(playlistId, trackId) {
         
         if (response.ok) {
             showNotification("Musique supprimée de la playlist", "success");
-            // Recharger la playlist pour mettre à jour la modal
             viewPlaylist(playlistId);
-            // Recharger les playlists pour mettre à jour les aperçus
             loadUserPlaylists(currentUserId);
         } else {
             showNotification("Erreur lors de la suppression", "error");
@@ -396,9 +439,8 @@ window.removeTrackFromPlaylist = async function(playlistId, trackId) {
     }
 };
 
-// Afficher une notification
+// ===== NOTIFICATIONS =====
 function showNotification(message, type = "info") {
-    // Supprimer les anciennes notifications
     $(".notification").remove();
     
     const notification = $(`
@@ -417,7 +459,7 @@ function showNotification(message, type = "info") {
     }, 5000);
 }
 
-// Échapper les caractères HTML
+// ===== UTILITAIRES =====
 function escapeHtml(unsafe) {
     if (!unsafe) return "";
     return unsafe
@@ -428,7 +470,6 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-// Formater la date
 function formatDate(dateString) {
     if (!dateString) return "Date inconnue";
     const date = new Date(dateString);

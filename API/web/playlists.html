@@ -43,24 +43,21 @@
         </nav>
 
         <div class="header-right">
-    
-        <div id="auth-buttons" class="connexion-inscription">
-            <a href="connexion.html?mode=login">Connexion</a>
-            <button>
-                <a href="connexion.html?mode=register">Inscription</a>
-            </button>
-        </div>
+            <div id="auth-buttons" class="connexion-inscription">
+                <a href="connexion.html?mode=login">Connexion</a>
+                <button>
+                    <a href="connexion.html?mode=register">Inscription</a>
+                </button>
+            </div>
 
-        <div id="user-menu" class="user-dropdown hidden">
-            <a href="#" id="user-name-display">Mon Profil ▾</a>
-            
-            <div class="dropdown-content user-dropdown-content">
-                <a href="profil.html">Mon profil</a>
-                <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+            <div id="user-menu" class="user-dropdown hidden">
+                <a href="#" id="user-name-display">Mon Profil ▾</a>
+                <div class="dropdown-content user-dropdown-content">
+                    <a href="profil.html">Mon profil</a>
+                    <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+                </div>
             </div>
         </div>
-
-    </div>
     </header>
 
     <main>
@@ -69,13 +66,36 @@
             <p>Créez et gérez vos playlists personnalisées</p>
         </div>
 
-        <section class="create-playlist-section">
-            <h2>Créer une nouvelle playlist</h2>
+        <section class="my-playlists-section">
+            <div class="playlists-container"></div>
+        </section>
+
+         <div class="page-header">
+            <h1>Un peu de nouveauté ?</h1>
+            <p>Laissez nous vous surprendre avec des playlists générées rien que pour vous</p>
+        </div>
+
+        <section class="generated-playlists-section">
+            <div class="generated-header">
+                <button id="generate-playlist-btn">Générer une playlist</button>
+            </div>
+            <div class="generated-playlists-container"></div>
+        </section>
+    </main>
+
+    <div id="create-playlist-modal" class="create-modal-overlay" style="display:none;">
+        <div class="create-modal-content">
+            <button class="create-modal-close" id="close-create-modal">&times;</button>
             
+            <div class="create-modal-header">
+                <h2>Nouvelle Playlist</h2>
+                <p>Donnez vie à votre sélection musicale</p>
+            </div>
+
             <div class="playlist-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="playlist-name-input">Nom de la playlist *</label>
+                        <label for="playlist-name-input">Nom de la playlist <span class="required">*</span></label>
                         <input type="text" id="playlist-name-input" placeholder="Ex: Mes favoris 2026">
                     </div>
                     <div class="form-group">
@@ -84,10 +104,10 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group full-width">
                     <label for="track-search-input">Rechercher des musiques à ajouter</label>
+                    <p>Commencez à taper pour rechercher (minimum 2 caractères)</p>
                     <input type="text" id="track-search-input" placeholder="Rechercher par titre, artiste ou album...">
-                    <small>Commencez à taper pour rechercher (minimum 2 caractères)</small>
                 </div>
                 
                 <div class="selected-tracks-section">
@@ -97,29 +117,10 @@
                     </div>
                 </div>
                 
-                <button id="create-playlist-button">
-                    <span class="icon">➕</span> Créer la playlist
-                </button>
+                <button id="create-playlist-button">Créer la playlist</button>
             </div>
-        </section>
-
-        <section class="my-playlists-section">
-            <h2>Vos Playlists</h2>
-            <div class="playlists-container">
-            </div>
-        </section>
-
-        <section class="generated-playlists-section">
-            <h2>Concotées rien que pour vous</h2>
-            <div class="generated-header">
-                <button id="generate-playlist-btn">
-                    <span class="icon">✨</span> Générer une playlist
-                </button>
-            </div>
-            <div class="generated-playlists-container">
-            </div>
-        </section>
-    </main>
+        </div>
+    </div>
 
     <footer>
         <div class="titre-footer">
@@ -163,141 +164,5 @@
             <p>© 2026 MuSE Français</p>
         </div>
     </footer>
-
-    <style>
-        .playlists-page {
-            background-color: #fafafa;
-        }
-
-        .page-header {
-            text-align: center;
-            padding: 40px 20px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .page-header h1 {
-            font-family: 'Rammetto One', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: white;
-        }
-
-        .page-header p {
-            font-size: 1.1rem;
-            opacity: 0.95;
-        }
-
-        .playlists-page h2 {
-            font-family: 'Rammetto One', sans-serif;
-            font-size: 1.5rem;
-            margin: 30px 30px 20px;
-            color: var(--noir);
-            position: relative;
-            padding-bottom: 10px;
-        }
-
-        .playlists-page h2::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--orange);
-        }
-
-        .create-playlist-section {
-            background-color: white;
-            border-radius: 20px;
-            margin: 20px 30px;
-            padding: 30px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
-        }
-
-        .playlist-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 20px;
-        }
-
-        .form-group {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            color: var(--noir);
-        }
-
-        .form-group small {
-            color: #888;
-            font-size: 0.8rem;
-        }
-
-        .generated-header {
-            margin: 20px 30px;
-        }
-
-        #generate-playlist-btn {
-            background: linear-gradient(135deg, var(--orange), var(--orange-fonce));
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        #generate-playlist-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(237, 122, 38, 0.4);
-        }
-
-        .generated-playlists-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            padding: 0 30px 30px;
-        }
-
-        #auth-button {
-            background-color: var(--orange);
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.25rem;
-            font-weight: bold;
-            border-radius: 0.313em;
-            border: none;
-            width: 5.5em;
-            height: 1.9em;
-        }
-
-        #auth-button a {
-            color: var(--blanc);
-            text-decoration: none;
-        }
-
-        .active {
-            color: var(--orange) !important;
-        }
-
-        .modal {
-            z-index: 900;
-        }
-    </style>
 </body>
 </html>

@@ -12,6 +12,7 @@
     --orange-clair: rgb(255, 154, 79);
     --orange-fonce: rgb(253, 114, 8);
     --bleu: rgb(49, 158, 146);
+    --rouge: rgb(255, 0, 0);
 
     --api-bg-light: #fff5e6;
     --api-code-bg: #2d3436;
@@ -121,8 +122,8 @@ header nav > a:hover {
 /* Conteneur du menu déroulant */
 header nav .dropdown {
     position: relative;
-    display: flex;       /* Utiliser flex pour l'alignement vertical parfait */
-    align-items: center; /* Centre le lien API par rapport aux autres */
+    display: flex;
+    align-items: center;
     height: auto;
     margin-left: 0;
 }
@@ -134,12 +135,9 @@ header nav .dropdown > a {
     font-size: 1.25rem;
     text-decoration: none;
     cursor: pointer;
-    
-    /* CORRECTION DU DÉCALAGE : On retire le padding vertical */
     padding: 0; 
-    
     display: inline-block;
-    line-height: 1; /* Force la hauteur de ligne pour éviter les écarts */
+    line-height: 1;
 }
 
 /* Contenu du menu (caché par défaut) */
@@ -150,30 +148,19 @@ header nav .dropdown-content {
     min-width: 200px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
     z-index: 100;
-    
-    /* Positionnement : On le descend un peu plus bas pour l'esthétique */
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    
-    /* Style */
     border-radius: 8px;
     border: 1px solid var(--gris-clair);
-    
-    /* Espace visuel entre le titre API et le menu */
     margin-top: 25px; 
-    
-    /* Important pour le pont invisible */
     overflow: visible; 
 }
 
-/* --- LE PONT INVISIBLE (Correction Hover) --- */
-/* Ce bloc crée une zone invisible entre "API" et le menu pour ne pas perdre le focus */
+/* Le pont invisible */
 header nav .dropdown-content::before {
     content: "";
     position: absolute;
-    
-    /* Doit être égal ou supérieur au margin-top (25px) pour combler le vide */
     top: -25px;     
     left: 0;
     width: 100%;
@@ -209,7 +196,7 @@ header nav .dropdown-content a:hover {
     color: var(--orange);
 }
 
-/* Afficher le menu au survol du parent (.dropdown) */
+/* Afficher le menu au survol du parent */
 header nav .dropdown:hover .dropdown-content {
     display: block;
 }
@@ -223,46 +210,39 @@ header nav .dropdown:hover > a {
    MENU UTILISATEUR (HEADER DROITE)
    ========================================= */
 
-/* Conteneur global droite */
 .header-right {
     display: flex;
     align-items: center;
 }
 
-/* Conteneur du dropdown utilisateur */
 .user-dropdown {
     position: relative;
     display: inline-block;
 }
 
-/* --- LE BOUTON "MON PROFIL" (Style identique à Inscription) --- */
 #user-name-display {
     background-color: var(--orange);
     color: var(--blanc);
     font-family: 'Outfit', sans-serif;
-    font-size: 1.25rem; /* Même taille que Inscription */
+    font-size: 1.25rem;
     font-weight: bold;
-    border-radius: 0.313em; /* ~5px */
-    padding: 0 15px; /* Espace sur les côtés */
-    height: 1.9em;   /* Même hauteur que le bouton Inscription */
-    
+    border-radius: 0.313em;
+    padding: 0 15px;
+    height: 1.9em;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px; /* Espace entre le nom et la flèche */
-    
+    gap: 8px;
     text-decoration: none;
     transition: transform 0.2s, background-color 0.2s;
     cursor: pointer;
 }
 
-/* Effet au survol du bouton */
 #user-name-display:hover {
     background-color: var(--orange-fonce);
     transform: scale(1.05);
 }
 
-/* --- LE MENU DÉROULANT (Caché par défaut) --- */
 .user-dropdown-content {
     display: none;
     position: absolute;
@@ -270,28 +250,23 @@ header nav .dropdown:hover > a {
     min-width: 180px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
     z-index: 100;
-    
-    /* Positionnement : On le place sous le bouton, aligné à droite */
     top: 100%;
     right: 0; 
-    
     border-radius: 8px;
     border: 1px solid var(--gris-clair);
-    margin-top: 10px; /* Petit espace sous le bouton */
-    overflow: hidden; /* Pour les coins arrondis */
+    margin-top: 10px;
+    overflow: hidden;
 }
 
-/* Pont invisible pour éviter que le menu se ferme au survol de l'espace */
 .user-dropdown::after {
     content: "";
     position: absolute;
     top: 100%;
     left: 0;
     width: 100%;
-    height: 10px; /* Doit correspondre au margin-top ci-dessus */
+    height: 10px;
 }
 
-/* Liens à l'intérieur du menu */
 .user-dropdown-content a {
     color: var(--noir);
     padding: 12px 16px;
@@ -299,23 +274,20 @@ header nav .dropdown:hover > a {
     display: block;
     font-size: 1rem;
     font-family: 'Outfit', sans-serif;
-    text-align: left; /* Texte aligné à gauche c'est plus propre */
+    text-align: left;
     transition: background 0.2s;
 }
 
-/* Hover sur les liens du menu */
 .user-dropdown-content a:hover {
     background-color: var(--api-bg-light);
     color: var(--orange);
 }
 
-/* Style spécial pour Déconnexion (Rouge au survol) */
 .user-dropdown-content a.logout-link:hover {
     background-color: #fff5f5;
     color: #c0392b;
 }
 
-/* Affichage du menu au survol du parent */
 .user-dropdown:hover .user-dropdown-content {
     display: block;
 }
@@ -327,7 +299,6 @@ footer {
     background-color: var(--noir);
     color: var(--blanc);
     padding: 3.125em;
-
 }
 
 .titre-footer {
@@ -369,11 +340,6 @@ footer {
     text-decoration: none;
     color: var(--blanc);
     transition: color 0.25s ease;
-}
-
-.navigation-footer a {
-    text-decoration: none;
-    color: var(--blanc);
 }
 
 .navigation-footer a:hover {
@@ -418,7 +384,7 @@ footer {
     min-height: 80vh;
 }
 
-.accueil  .equalizer-bg {
+.accueil .equalizer-bg {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -716,7 +682,6 @@ footer {
 
 /* PAGE PRÉFÉRENCES
 ***************************/ 
-/* Container principal pour aligner les 3 colonnes */
 .preferences .preferences-container {
     display: flex;
     justify-content: space-between;
@@ -724,7 +689,6 @@ footer {
     gap: 20px;
 }
 
-/* Style de chaque colonne */
 .preferences .search-section {
     flex: 1;
     display: flex;
@@ -737,7 +701,6 @@ footer {
     margin-bottom: 15px;
 }
 
-/* Barre de recherche avec icône loupe */
 .preferences .search-wrapper {
     position: relative;
     width: 100%;
@@ -798,7 +761,7 @@ footer {
     display: flex;
     justify-content: center;
     gap: 30px;
-    margin: 40px 0; /* Espace au dessus et en dessous */
+    margin: 40px 0;
     width: 100%;
 }
 
@@ -813,7 +776,6 @@ footer {
     transition: all 0.2s;
 }
 
-/* Bouton Réinitialiser (Outline orange) */
 .preferences .btn-reset {
     background-color: white;
     color: black;
@@ -824,7 +786,6 @@ footer {
     background-color: #fff5ed;
 }
 
-/* Bouton Sauvegarder (Plein orange) */
 .preferences .btn-save {
     background-color: #f38630;
     color: black;
@@ -847,31 +808,28 @@ footer {
     color: var(--noir);
     border-radius: 0.75em;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    font-family: 'Outfit', sans-serif; /* Police par défaut pour le corps */
+    font-family: 'Outfit', sans-serif;
 }
 
-/* Titres API : Centrés + Rammetto One */
 .test-api main h1, .test-api section h1 {
     font-family: 'Rammetto One', sans-serif;
     font-size: 2rem;
     color: var(--orange-fonce);
     margin-bottom: 0.5rem;
-    text-align: center; /* CENTRÉ */
+    text-align: center;
 }
 
 .test-api main p, .test-api section p {
     color: var(--gris-fonce);
     margin-bottom: 1.5rem;
     font-size: 1rem;
-    text-align: center; /* CENTRÉ (pour le sous-titre) */
+    text-align: center;
 }
 
-/* On remet l'alignement à gauche pour le contenu technique */
 .test-api main div, .test-api .endpoint-details p {
     text-align: left;
 }
 
-/* ===== Formulaire API (Inputs & Boutons) ===== */
 .test-api main div, .test-api section div {
     margin-bottom: 1rem;
 }
@@ -921,7 +879,6 @@ footer {
     box-shadow: 0 0 0 2px rgba(237, 122, 38, 0.2);
 }
 
-/* ===== Séparation ===== */
 .test-api main hr {
     border: none;
     height: 1px;
@@ -929,13 +886,11 @@ footer {
     margin: 1.5rem 0;
 }
 
-/* ===== Status ===== */
 .test-api #status {
     font-weight: bold;
     color: var(--orange-fonce);
 }
 
-/* ===== Box Résultats (large + scrollable) ===== */
 .test-api #result {
     margin-top: 1rem;
     background-color: var(--api-code-bg);
@@ -950,10 +905,9 @@ footer {
     max-height: 450px;
     width: 100%;
     white-space: pre;
-    text-align: left; /* Toujours à gauche pour le code */
+    text-align: left;
 }
 
-/* Scrollbar custom pour #result */
 .test-api #result::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -966,9 +920,8 @@ footer {
     background: rgb(235, 235, 235);
 }
 
-/* ===== Documentation API (Accordéons) ===== */
 .test-api section h2 {
-    font-family: 'Rammetto One', sans-serif; /* Titres de section en Rammetto */
+    font-family: 'Rammetto One', sans-serif;
     color: var(--noir);
     margin-top: 2rem;
     margin-bottom: 1rem;
@@ -1004,7 +957,6 @@ footer {
     border-radius: 8px;
 }
 
-/* Fix Chrome */
 .test-api section summary::-webkit-details-marker {
     display: none;
 }
@@ -1020,7 +972,6 @@ footer {
     color: var(--orange-fonce);
 }
 
-/* Badges Méthodes (Scopé) */
 .test-api .method-badge {
     background-color: var(--orange);
     color: var(--blanc);
@@ -1032,7 +983,6 @@ footer {
     font-family: monospace;
 }
 
-/* Badges Status HTTP (Scopé) */
 .test-api .status-badge {
     display: inline-block;
     padding: 2px 8px;
@@ -1063,7 +1013,6 @@ footer {
     padding-left: 10px;
 }
 
-/* Contenu détaillé de la doc (Scopé) */
 .test-api .endpoint-details {
     padding: 25px;
     background-color: var(--blanc);
@@ -1074,7 +1023,7 @@ footer {
 .test-api .endpoint-details h4 {
     margin: 20px 0 10px 0;
     color: var(--orange);
-    font-family: 'Outfit', sans-serif; /* Sous-titres en Outfit */
+    font-family: 'Outfit', sans-serif;
     font-size: 0.95rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -1137,7 +1086,6 @@ footer {
     position: static;
 }
 
-/* JSON Display dans la doc (Scopé) */
 .test-api .endpoint-details pre {
     background-color: var(--api-code-bg);
     color: #abb2bf;
@@ -1153,22 +1101,11 @@ footer {
 .test-api .endpoint-details pre .string { color: #2ecc71; }
 .test-api .endpoint-details pre .number { color: #e17055; }
 
-/* Coloration syntaxique pour la BOÎTE DE RÉSULTAT (#result) */
-.test-api #result .key { 
-    color: var(--orange-clair); /* Clés en orange clair */
-}
-.test-api #result .string { 
-    color: rgb(46, 204, 113); /* Texte en vert (couleur hardcodée pour contraste ou définir var(--vert)) */
-}
-.test-api #result .number { 
-    color: var(--orange-fonce); /* Chiffres en orange foncé */
-}
-.test-api #result .boolean { 
-    color: var(--bleu); /* Booléens en bleu */
-}
-.test-api #result .null { 
-    color: var(--gris-clair); 
-}
+.test-api #result .key { color: var(--orange-clair); }
+.test-api #result .string { color: rgb(46, 204, 113); }
+.test-api #result .number { color: var(--orange-fonce); }
+.test-api #result .boolean { color: var(--bleu); }
+.test-api #result .null { color: var(--gris-clair); }
 
 /* PAGE CONTACT
 ***************************/
@@ -1179,13 +1116,14 @@ footer {
 .contact-page main { 
     max-width: 800px;
     margin: 0 auto;
-    padding: 60px 20px; }
+    padding: 60px 20px;
+}
 
 .contact-page .contact-title {
-    font-family: 'Rammetto One', sans-serif; /* Police Titre */
+    font-family: 'Rammetto One', sans-serif;
     text-align: center;
     margin-bottom: 15px;
-    color: var(--orange-fonce); /* Orange au lieu de noir */
+    color: var(--orange-fonce);
     font-size: 2rem;
 }
 
@@ -1199,7 +1137,6 @@ footer {
     font-size: 1.05rem;
 }
 
-/* Le Formulaire (Carte) */
 .contact-page .contact-form {
     max-width: 600px;
     margin: 0 auto 40px auto;
@@ -1228,7 +1165,7 @@ footer {
     padding: 12px 15px;
     border: 2px solid var(--gris-clair);
     border-radius: 6px;
-    font-family: 'Outfit', sans-serif; /* Police des champs */
+    font-family: 'Outfit', sans-serif;
     font-size: 1rem;
     transition: all 0.3s ease;
     box-sizing: border-box;
@@ -1236,7 +1173,6 @@ footer {
     color: var(--noir);
 }
 
-/* Focus spécifique Contact */
 .contact-page .contact-form input:focus,
 .contact-page .contact-form select:focus,
 .contact-page .contact-form textarea:focus {
@@ -1275,7 +1211,6 @@ footer {
     font-family: 'Outfit', sans-serif;
 }
 
-/* Responsive Mobile Contact */
 @media (max-width: 768px) {
     .contact-page .contact-form {
         padding: 25px;
@@ -1287,144 +1222,75 @@ footer {
     }
 }
 
-/* PAGE PLAYLISTS */
-
-body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
-    padding: 30px;
-    margin-bottom: 40px;
+/* PAGE PLAYLISTS
+***************************/
+.playlists-page {
+    background-color: var(--blanc);
 }
 
-/* Formulaire de création de playlist */
-.playlists-page #playlist-name-input, .playlists-page #playlist-description-input, .playlists-page #track-search-input {
-    padding: 12px 15px;
-    border: 2px solid var(--gris-clair);
-    border-radius: 8px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
-    margin: 10px;
-    width: calc(33% - 30px);
-    transition: all 0.3s ease;
+.page-header {
+    text-align: center;
+    padding: 3.125em;
+    background-color: var(--noir);
+    color: var(--blanc);
 }
 
-.playlists-page #playlist-name-input:focus, .playlists-page #playlist-description-input:focus, .playlists-page #track-search-input:focus {
-    outline: none;
-    border-color: var(--orange);
-    box-shadow: 0 0 0 3px rgba(237, 122, 38, 0.1);
-}
-
-.playlists-page #create-playlist-button {
-    background-color: var(--orange);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    font-family: 'Outfit', sans-serif;
-    font-weight: bold;
-    font-size: 1.1rem;
-    margin: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.playlists-page #create-playlist-button:hover {
-    background-color: var(--orange-fonce);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(237, 122, 38, 0.3);
-}
-
-/* Section des tracks sélectionnées */
-.playlists-page .selected-tracks-section {
-    background-color: #f9f9f9;
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px 30px;
-    border-left: 5px solid var(--orange);
-}
-
-.playlists-page .selected-tracks-section h3 {
+.page-header h1 {
     font-family: 'Rammetto One', sans-serif;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.page-header p {
     font-size: 1.1rem;
-    margin-bottom: 15px;
+    opacity: 0.95;
+}
+
+/* Sections */
+.playlists-page .my-playlists-section h2,
+.playlists-page .generated-playlists-section h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.25rem;
     color: var(--noir);
-}
-
-.playlists-page #selected-tracks-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    min-height: 60px;
 }
 
-.playlists-page .selected-track-badge {
-    display: flex;
-    align-items: center;
-    background-color: white;
-    border: 1px solid var(--gris-clair);
-    border-radius: 50px;
-    padding: 5px;
-    padding-right: 15px;
-    gap: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
+.playlists-page section {
+    background-color: var(--blanc);
+    padding: 1.25em 3.125em 0 3.125em;
 }
 
-.playlists-page .selected-track-badge:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    border-color: var(--orange);
+/* Grille des playlists */
+.playlists-page .playlists-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    padding-top: 30px;
+    margin-bottom: 50px;
 }
 
-.playlists-page .track-mini-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.playlists-page .track-name {
-    font-weight: 500;
-    max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.playlists-page .remove-track {
-    color: #999;
-    cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0 5px;
-    transition: color 0.2s ease;
-}
-
-.playlists-page .remove-track:hover {
-    color: #ff4444;
-}
-
-/* Cartes de playlist */
+/* Cartes de playlist existantes */
 .playlists-page .playlist-card {
-    background-color: white;
-    border-radius: 16px;
+    background-color: var(--blanc);
+    border-radius: 0.75em;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
     border: 1px solid var(--gris-clair);
+    width: 250px;
     display: flex;
     flex-direction: column;
 }
 
 .playlists-page .playlist-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    border-color: var(--orange);
+    transform: scale(1.02);
+    border: 1px solid var(--orange);
 }
 
 .playlists-page .playlist-cover-grid {
-    height: 180px;
-    background: linear-gradient(145deg, #f0f0f0, #ffffff);
+    height: 150px;
+    background-color: var(--blanc);
 }
 
 .playlists-page .cover-grid {
@@ -1432,12 +1298,13 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
     height: 100%;
+    width: 100%;
     gap: 2px;
-    background-color: var(--gris-clair);
+    background-color: var(--blanc);
 }
 
 .playlists-page .cover-item {
-    background-color: white;
+    background-color: var(--blanc);
     overflow: hidden;
     position: relative;
 }
@@ -1474,8 +1341,8 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 }
 
 .playlists-page .playlist-info h3 {
-    font-family: 'Rammetto One', sans-serif;
-    font-size: 1.2rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
     margin-bottom: 10px;
     color: var(--noir);
 }
@@ -1521,9 +1388,9 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     transition: all 0.2s ease;
 }
 
-.playlists-page  .btn-view {
+.playlists-page .btn-view {
     background-color: var(--noir);
-    color: white;
+    color: var(--blanc);
 }
 
 .playlists-page .btn-view:hover {
@@ -1532,15 +1399,75 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 }
 
 .playlists-page .btn-delete {
-    background-color: #fff;
-    color: #ff4444;
-    border: 1px solid #ff4444;
+    background-color: var(--blanc);
+    color: var(--rouge);
+    border: 1px solid var(--rouge);
 }
 
 .playlists-page .btn-delete:hover {
-    background-color: #ff4444;
+    background-color: var(--rouge);
     color: white;
     transform: translateY(-2px);
+}
+
+/* Carte "Nouvelle playlist" */
+.playlist-card-new {
+    background-color: var(--blanc);
+    border-radius: 0.75em;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 2px dashed var(--gris-clair);
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.playlist-card-new:hover {
+    border-color: var(--orange);
+    transform: scale(1.02);
+    box-shadow: 0 15px 35px rgba(237, 122, 38, 0.15);
+    background-color: #fff9f4;
+}
+
+.playlist-card-new:hover .new-playlist-plus {
+    background: var(--orange);
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.playlist-card-new:hover .new-playlist-label {
+    color: var(--orange);
+}
+
+.new-playlist-plus {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+    line-height: 1;
+}
+
+.new-playlist-label {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #aaa;
+    transition: color 0.3s ease;
 }
 
 /* État vide */
@@ -1559,7 +1486,299 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     margin-bottom: 10px;
 }
 
-/* Modal */
+/* Section "Conçues pour vous" */
+.playlists-page .generated-header {
+    margin: 20px 30px;
+}
+
+.playlists-page #generate-playlist-btn {
+    background: linear-gradient(135deg, var(--orange), var(--orange-fonce));
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.playlists-page #generate-playlist-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(237, 122, 38, 0.4);
+}
+
+.playlists-page .generated-playlists-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    padding: 0 30px 30px;
+}
+
+/* ===== MODAL DE CRÉATION DE PLAYLIST ===== */
+.playlists-page .create-modal-overlay {
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    animation: fadeInOverlay 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.playlists-page .create-modal-content {
+    background: var(--blanc);
+    border-radius: 24px;
+    padding: 40px;
+    width: 90%;
+    max-width: 720px;
+    max-height: 88vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+    animation: slideUpModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUpModal {
+    from {
+        transform: translateY(40px) scale(0.97);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.playlists-page.create-modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+.playlists-page .create-modal-content::-webkit-scrollbar-thumb {
+    background: var(--gris-clair);
+    border-radius: 10px;
+}
+
+.playlists-page .create-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    background: #f0f0f0;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.playlists-page.create-modal-close:hover {
+    background: var(--orange);
+    color: white;
+    transform: rotate(90deg);
+}
+
+.playlists-page.create-modal-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #f5f5f5;
+}
+
+.playlists-page.create-modal-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.playlists-page .create-modal-header h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.8rem;
+    color: var(--noir);
+    margin-bottom: 6px;
+}
+
+.playlists-page.create-modal-header p {
+    color: #888;
+    font-size: 0.95rem;
+}
+
+/* Formulaire dans la modal */
+.playlists-page.playlist-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.playlists-page.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.playlists-page .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.playlists-page .form-group.full-width {
+    flex: none;
+}
+
+.playlists-page .form-group label {
+    font-weight: 600;
+    color: var(--noir);
+    font-size: 0.9rem;
+}
+
+.playlists-page .form-group label .required {
+    color: var(--orange);
+}
+
+.playlists-page .form-group small {
+    color: #aaa;
+    font-size: 0.78rem;
+}
+
+.playlists-page .playlist-form input[type="text"] {
+    padding: 11px 14px;
+    border: 2px solid #e8e8e8;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background: #fafafa;
+    color: var(--noir);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.playlists-page.playlist-form input[type="text"]:focus {
+    outline: none;
+    border-color: var(--orange);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(237, 122, 38, 0.12);
+}
+
+/* Tracks sélectionnées */
+.playlists-page.selected-tracks-section {
+    background-color: #fafafa;
+    border-radius: 12px;
+    padding: 18px;
+    border: 1px solid #eee;
+    border-left: 4px solid var(--orange);
+}
+
+.playlists-page .selected-tracks-section h3 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    color: var(--noir);
+}
+
+.playlists-page#selected-tracks-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 50px;
+}
+
+.playlists-page .selected-track-badge {
+    display: flex;
+    align-items: center;
+    background-color: var(--blanc);
+    border: 1px solid var(--gris-clair);
+    border-radius: 50px;
+    padding: 4px 12px 4px 4px;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+.playlists-page.selected-track-badge:hover {
+    border-color: var(--orange);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.playlists-page .track-mini-image {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.playlists-page .track-name {
+    font-weight: 500;
+    font-size: 0.85rem;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.playlists-page remove-track {
+    color: #bbb;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 2px;
+    transition: color 0.2s ease;
+}
+
+.playlists-page .remove-track:hover {
+    color: var(--rouge);
+}
+
+.playlists-page .no-selection {
+    color: #bbb;
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 8px 0;
+}
+
+/* Bouton créer */
+.playlists-page #create-playlist-button {
+    background: linear-gradient(135deg, var(--orange), var(--orange-fonce));
+    color: var(--blanc);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: bold;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    align-self: flex-end;
+    min-width: 200px;
+}
+
+.playlists-page #create-playlist-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(237, 122, 38, 0.4);
+}
+
+/* ===== MODAL DE DÉTAIL PLAYLIST ===== */
 .playlists-page .modal {
     display: none;
     position: fixed;
@@ -1578,7 +1797,7 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 }
 
 .playlists-page .modal-content {
-    background-color: white;
+    background-color: var(--blanc);
     margin: 5% auto;
     padding: 30px;
     border-radius: 20px;
@@ -1588,7 +1807,6 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     overflow-y: auto;
     position: relative;
     animation: slideIn 0.3s ease;
-    top: 10em;
 }
 
 @keyframes slideIn {
@@ -1659,45 +1877,62 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     margin-right: 15px;
 }
 
-.modal-track-item .track-details {
+.playlists-page .modal-track-item .track-details {
     flex: 1;
 }
 
-.modal-track-item .track-title {
+.playlists-page .modal-track-item .track-title {
     font-weight: 600;
     margin-bottom: 5px;
-    color: black !important;
+    color: var(--noir) !important;
 }
 
-.modal-track-item .track-artist {
+.playlists-page .modal-track-item .track-artist {
     font-size: 0.9rem;
     color: var(--gris-fonce);
 }
 
-.btn-remove-track {
-    background-color: #fff;
-    color: #ff4444;
-    border: 1px solid #ff4444;
+/* Bouton suppression track */
+.playlists-page .btn-remove-track {
+    background-color: var(--blanc);
+    border: 1px solid var(--rouge);
     padding: 8px 15px;
     border-radius: 6px;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn-remove-track:hover {
-    background-color: #ff4444;
-    color: white;
+.playlists-page .btn-remove-track img {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.playlists-page .btn-remove-track:hover {
+    background-color: var(--rouge);
+    background-image: url('images/icones/trash-can-hover.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px 16px;
+}
+
+.playlists-page .btn-remove-track:hover img {
+    opacity: 0;
 }
 
 /* Notifications */
-.notification {
+.playlists-page .notification {
     position: fixed;
     top: 100px;
     right: 30px;
     padding: 15px 25px;
     border-radius: 12px;
-    color: white;
+    color: var(--blanc);
     font-weight: 500;
     z-index: 3000;
     animation: slideInRight 0.3s ease;
@@ -1707,23 +1942,12 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     gap: 15px;
 }
 
-.notification-success {
-    background-color: #4CAF50;
-}
+.playlists-page .notification-success { background-color: #4CAF50; }
+.playlists-page .notification-error { background-color: var(--rouge); }
+.playlists-page .notification-warning { background-color: #ff9800; }
+.playlists-page .notification-info { background-color: #2196F3; }
 
-.notification-error {
-    background-color: #f44336;
-}
-
-.notification-warning {
-    background-color: #ff9800;
-}
-
-.notification-info {
-    background-color: #2196F3;
-}
-
-.notification-close {
+.playlists-page .notification-close {
     cursor: pointer;
     font-size: 1.2rem;
     margin-left: 10px;
@@ -1740,8 +1964,8 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     }
 }
 
-/* Résultats de recherche */
-.ui-autocomplete {
+/* Résultats de recherche autocomplete */
+.playlists-page .ui-autocomplete {
     z-index: 999999 !important;
     max-height: 400px;
     overflow-y: auto;
@@ -1752,70 +1976,43 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     padding: 10px 0 !important;
 }
 
-.search-result-item {
+.playlists-page .search-result-item {
     display: flex;
     align-items: center;
     padding: 10px 15px;
     gap: 15px;
 }
 
-.search-result-image {
+.playlists-page .search-result-image {
     width: 40px;
     height: 40px;
     border-radius: 8px;
     object-fit: cover;
 }
 
-.search-result-info {
-    flex: 1;
-}
+.playlists-page .search-result-info { flex: 1; }
 
-.search-result-title {
+.playlists-page .search-result-title {
     font-weight: 600;
     color: var(--noir);
     margin-bottom: 3px;
 }
 
-.search-result-artist {
+.playlists-page .search-result-artist {
     font-size: 0.8rem;
     color: var(--gris-fonce);
 }
 
-.ui-menu-item-wrapper {
+.playlists-page .ui-menu-item-wrapper {
     padding: 0 !important;
     border: none !important;
 }
 
-.ui-state-active {
+.playlists-page .ui-state-active {
     background-color: #fff5ed !important;
     border: none !important;
     color: var(--noir) !important;
     margin: 0 !important;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    #playlist-name-input,
-    #playlist-description-input,
-    #track-search-input {
-        width: calc(100% - 30px);
-        margin: 10px 15px;
-    }
-    
-    .playlists-container {
-        grid-template-columns: 1fr;
-        padding: 15px;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 10% auto;
-        padding: 20px;
-    }
-    
-    .selected-tracks-section {
-        margin: 20px 15px;
-    }
 }
 
 /* PAGE AUTHENTIFICATION (connexion.html)
@@ -1850,7 +2047,6 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     margin-bottom: 20px;
 }
 
-/* La Carte Formulaire */
 .auth-card {
     background-color: var(--blanc);
     width: 100%;
@@ -1863,12 +2059,11 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     flex-direction: column;
 }
 
-/* Les Onglets */
 .auth-tabs {
     display: flex;
     background-color: #f9f9f9;
     border-bottom: 1px solid var(--gris-clair);
-    margin: -40px -40px 30px -40px; /* Marges négatives pour coller aux bords */
+    margin: -40px -40px 30px -40px;
     border-radius: 8px 8px 0 0;
     overflow: hidden;
 }
@@ -1897,18 +2092,10 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     border-bottom: 3px solid var(--orange);
 }
 
-/* Le Formulaire (Gestion des espaces via gap) */
 .auth-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
-}
-
-/* Groupe Label + Input */
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
 }
 
 .auth-form p {
@@ -1949,7 +2136,6 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     box-shadow: 0 0 0 4px rgba(237, 122, 38, 0.1);
 }
 
-/* Boutons */
 .auth-btn {
     background-color: var(--orange);
     color: var(--blanc);
@@ -1970,7 +2156,7 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     transform: translateY(-2px);
 }
 
-/* Utilitaires et Messages */
+/* Utilitaires */
 .hidden { display: none !important; }
 
 #auth-message {
