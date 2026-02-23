@@ -355,6 +355,7 @@ def get_artist_tracks(
                 t.track_listens,
                 t.track_favorite,
                 t.track_file,
+                aat.album_id,
                 a.album_title,
                 a.album_image_file
             FROM sae.tracks t
