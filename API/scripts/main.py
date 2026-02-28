@@ -1153,6 +1153,7 @@ def search_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+#Récupère les informations favorites(genres, artistes, musiques) pour un compte utilisateur
 @app.get("/voir_favorite/{user_id}")
 def get_all_favorite(user_id : int):
     conn = get_db_connection()
@@ -1186,7 +1187,6 @@ def get_all_favorite(user_id : int):
         cur.execute(query, (user_id,))
         tracks = cur.fetchall()
         
-        # Compter le total
         count_query = "SELECT COUNT(*) as total FROM sae.favorite"
         cur.execute(count_query)
         total = cur.fetchone()['total']
@@ -1203,6 +1203,7 @@ def get_all_favorite(user_id : int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+#Enregistre les changements sur les informations favorites des utilisateurs ( genres, artistes, musiques)
 @app.post("/save-favorites")
 async def saveFavorite(request : Request):
     conn = get_db_connection()

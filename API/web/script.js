@@ -176,7 +176,6 @@ function Reset() {
 async function chargerPreferencesUtilisateur() {
     const userId = localStorage.getItem("userId");
     try {
-        console.log(`http://127.0.0.1:8000/voir_favorite/${userId}`);
         const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
         const result = await response.json();
         if (result.count !== 0) {
@@ -216,18 +215,18 @@ async function initPage() {
 
     try {
         await Promise.all([
-            chargerGenres(),
-            chargerArtists(),
-            chargerMusiques(),
-            chargerPreferencesUtilisateur()
+            chargerPreferencesUtilisateur(),
+            chargerGenres(),//1.41
+            chargerArtists(),//2.61
+            chargerMusiques()//600
+            //1400
         ]);
 
         console.log("Toutes les ressources sont chargées !");
     } catch (error) {
         console.error("Une des requêtes a échoué", error);
     }
-
-    //console.timeEnd("ChargementParallèle");
+    console.timeEnd("ChargementParallèle");
 }
 
 /****************************************
