@@ -9,6 +9,8 @@ var dotenv = require('dotenv');
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
 const app = express();
+const ADMIN_ROLE = "admin";
+const USER_ROLE = "user";
 
 app.use(express.json());
 app.use(cors({
@@ -42,9 +44,55 @@ const pool = new Pool({
   port: parseInt(process.env.POSTGRES_PORT || "5432")
 });
 
+const AUTH_BYPASS_ROUTES = new Set(["/login", "/logout"]);
+
+async function attachUserRole(req, res, next) {
+  if (!req.session.userId) return next();
+
+  if (req.session.userRole) {
+    req.userRole = req.session.userRole;
+    return next();
+  }
+
+  try {
+    const result = await pool.query(
+      "SELECT user_status FROM sae.users WHERE user_id = $1",
+      [req.session.userId]
+    );
+
+    const role = (result.rows[0]?.user_status || USER_ROLE).toLowerCase();
+    req.session.userRole = role;
+    req.userRole = role;
+    next();
+  } catch (err) {
+    console.error("ERREUR ROLE SESSION :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+}
+
+function enforceMethodPermissions(req, res, next) {
+  if (req.method === "GET") return next();
+
+  if (AUTH_BYPASS_ROUTES.has(req.path)) return next();
+
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Non connecté" });
+  }
+
+  const role = (req.userRole || req.session.userRole || USER_ROLE).toLowerCase();
+  if (role !== ADMIN_ROLE) {
+    return res.status(403).json({ error: "Accès refusé : administrateur requis" });
+  }
+
+  next();
+}
+
 pool.query("SELECT NOW()")
   .then(res => console.log("Postgres connecté :", res.rows[0]))
   .catch(err => console.error("Erreur connexion Postgres :", err));
+
+app.use(attachUserRole);
+app.use(enforceMethodPermissions);
 
 // ======== LOGIN / REGISTER ========
 app.post("/login", async (req, res) => {
@@ -68,10 +116,10 @@ app.post("/login", async (req, res) => {
 
       const newUser = await pool.query(
         `INSERT INTO sae.users 
-          (user_firstname, user_lastname, user_mail, user_password, user_age, user_gender, user_location, user_year_created)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,NOW())
-         RETURNING user_id, user_firstname, user_mail`,
-        [firstName, lastName, email, hashedPassword, age || null, gender || null, location || null]
+          (user_firstname, user_lastname, user_mail, user_password, user_age, user_gender, user_location, user_status, user_year_created)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,NOW())
+         RETURNING user_id, user_firstname, user_mail, user_status`,
+        [firstName, lastName, email, hashedPassword, age || null, gender || null, location || null, USER_ROLE]
       );
 
       user = newUser.rows[0];
@@ -84,6 +132,7 @@ app.post("/login", async (req, res) => {
 
     // Session
     req.session.userId = user.user_id;
+    req.session.userRole = (user.user_status || USER_ROLE).toLowerCase();
 
     console.log("Session après login :", req.session);
 
@@ -101,7 +150,7 @@ app.get("/dashboard", async (req, res) => {
 
   try {
     const user = await pool.query(
-      "SELECT user_id, user_firstname, user_mail FROM sae.users WHERE user_id=$1",
+      "SELECT user_id, user_firstname, user_mail, user_status FROM sae.users WHERE user_id=$1",
       [req.session.userId]
     );
     res.json({ message: `Bienvenue ${user.rows[0].user_firstname}`, user: user.rows[0] });
