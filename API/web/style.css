@@ -2677,3 +2677,12 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     font-weight: bold;
     min-height: 20px;
 }
+
+.titre-centre {
+    text-align: center;
+    padding-top: 1em;
+    font-family: 'Rammetto One', 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    color: var(--noir);
+    margin: 0 0 4px;
+}
