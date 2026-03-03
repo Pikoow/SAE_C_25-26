@@ -15,6 +15,12 @@ $(document).ready(function () {
     // Gestionnaire pour le bouton de création et de génération de playlist
     $("#create-playlist-button").on("click", createPlaylist);
     $("#generate-playlist-btn").on("click", generateAutoPlaylist);
+
+    // Gestionnaire pour le bouton principal "Créer une playlist"
+    $("#open-create-playlist-btn").on("click", openCreateModal);
+
+    // Initialiser la gestion de la modal de création
+    setupCreateModal();
 });
 
 // ===== GESTION DE LA MODAL DE CRÉATION =====
@@ -38,14 +44,21 @@ function setupCreateModal() {
 }
 
 function openCreateModal() {
-    $("#create-playlist-modal").fadeIn(200);
+    // On affiche l'overlay en mode 'flex' pour activer le centrage
+    $("#create-playlist-modal").css("display", "flex").hide().fadeIn(200);
+    
+    // Bloquer le scroll de la page derrière la modal
     $("body").css("overflow", "hidden");
-    // Focus sur le champ nom
+    
+    // Focus automatique sur le champ nom après l'apparition
     setTimeout(() => $("#playlist-name-input").focus(), 250);
 }
 
 function closeCreateModal() {
-    $("#create-playlist-modal").fadeOut(200);
+    $("#create-playlist-modal").fadeOut(200, function() {
+        $(this).css("display", "none");
+    });
+    // Rétablir le scroll de la page
     $("body").css("overflow", "");
 }
 
@@ -102,11 +115,10 @@ function displayPlaylists(playlists) {
         const playlistCard = createPlaylistCard(playlist);
         container.append(playlistCard);
     });
-}
 
     // Ajouter la carte "Nouvelle playlist" EN DERNIER dans la grille
     appendNewPlaylistCard(container);
-
+}
 
 // Ajouter la carte "+ Nouvelle playlist"
 function appendNewPlaylistCard(container) {
