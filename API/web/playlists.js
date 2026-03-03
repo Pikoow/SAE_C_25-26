@@ -6,30 +6,23 @@ let selectedTracks = [];
 
 // Initialisation
 $(document).ready(function () {
-    // Vérifier l'utilisateur connecté
     checkAuthenticatedUser();
-
-    // Configurer l'autocomplete pour la recherche de tracks
     setupTrackSearch();
-
-    // Gestionnaire pour le bouton de création et de génération de playlist
+    setupCreateModal();
     $("#create-playlist-button").on("click", createPlaylist);
     $("#generate-playlist-btn").on("click", generateAutoPlaylist);
 });
 
 // ===== GESTION DE LA MODAL DE CRÉATION =====
 function setupCreateModal() {
-    // Fermer avec le bouton ×
     $("#close-create-modal").on("click", closeCreateModal);
 
-    // Fermer en cliquant sur l'overlay
     $("#create-playlist-modal").on("click", function(e) {
         if ($(e.target).is("#create-playlist-modal")) {
             closeCreateModal();
         }
     });
 
-    // Fermer avec Échap
     $(document).on("keydown", function(e) {
         if (e.key === "Escape" && $("#create-playlist-modal").is(":visible")) {
             closeCreateModal();
@@ -37,15 +30,21 @@ function setupCreateModal() {
     });
 }
 
+// FIX : fadeIn() pose display:block, pas flex → le contenu n'est pas centré.
+// On force display:flex AVANT le fadeIn pour que le centrage fonctionne.
 function openCreateModal() {
-    $("#create-playlist-modal").fadeIn(200);
+    $("#create-playlist-modal")
+        .css("display", "flex")   // force flex pour centrer le contenu
+        .hide()                   // repasse à none instantanément (sans transition)
+        .fadeIn(200);             // anime opacity 0 → 1 en partant de flex
     $("body").css("overflow", "hidden");
-    // Focus sur le champ nom
     setTimeout(() => $("#playlist-name-input").focus(), 250);
 }
 
 function closeCreateModal() {
-    $("#create-playlist-modal").fadeOut(200);
+    $("#create-playlist-modal").fadeOut(200, function () {
+        $(this).css("display", "none"); // nettoyage explicite après l'animation
+    });
     $("body").css("overflow", "");
 }
 
@@ -75,7 +74,6 @@ async function loadUserPlaylists(userId) {
     try {
         const response = await fetch(`${API_BASE_URL}/users/${userId}/playlists/detailed`);
         const data = await response.json();
-
         displayPlaylists(data.playlists || []);
     } catch (error) {
         console.error("Erreur lors du chargement des playlists:", error);
@@ -92,21 +90,19 @@ function displayPlaylists(playlists) {
         container.html(`
             <div class="empty-state">
                 <p>Vous n'avez pas encore de playlist</p>
-                <p>Créez votre première playlist en cliquant sur le bouton ci-contre !</p>
+                <p>Créez votre première playlist en cliquant sur la carte ci-contre !</p>
             </div>
         `);
-        return;
+    } else {
+        playlists.forEach(playlist => {
+            const playlistCard = createPlaylistCard(playlist);
+            container.append(playlistCard);
+        });
     }
 
-    playlists.forEach(playlist => {
-        const playlistCard = createPlaylistCard(playlist);
-        container.append(playlistCard);
-    });
-}
-
-    // Ajouter la carte "Nouvelle playlist" EN DERNIER dans la grille
+    // Toujours ajouter la carte "+" en dernier
     appendNewPlaylistCard(container);
-
+}
 
 // Ajouter la carte "+ Nouvelle playlist"
 function appendNewPlaylistCard(container) {
@@ -157,6 +153,7 @@ function createPlaylistCard(playlist) {
     return card;
 }
 
+// ===== GÉNÉRATION AUTO =====
 async function generateAutoPlaylist() {
     if (!currentUserId) {
         showNotification("Veuillez vous connecter pour générer une playlist.", "error");
@@ -166,7 +163,6 @@ async function generateAutoPlaylist() {
     try {
         showNotification("Génération de votre playlist personnalisée...", "info");
 
-        // 1. Récupérer les favoris
         const favResponse = await fetch(`${API_BASE_URL}/voir_favorite/${currentUserId}`);
         const favData = await favResponse.json();
 
@@ -176,31 +172,26 @@ async function generateAutoPlaylist() {
         }
 
         const favorites = favData.results[0];
-
         const trackSeeds = favorites.ids_tracks ? favorites.ids_tracks.split(',').filter(id => id) : [];
         const artistSeeds = favorites.ids_artists ? favorites.ids_artists.split(',').filter(id => id) : [];
 
         let generatedTrackIds = new Set();
 
-        // 2. Récupérer les recommandations de tracks basées sur les favoris
         if (trackSeeds.length > 0) {
             const trackParams = trackSeeds.map(id => `track_ids=${id}`).join('&');
             const recTracksResp = await fetch(`${API_BASE_URL}/reco/tracks?${trackParams}&limit=15`);
             const recTracksData = await recTracksResp.json();
-            
             if (recTracksData.results) {
                 recTracksData.results.forEach(t => generatedTrackIds.add(t.track_id));
             }
         }
 
-        // 3. Récupérer les recommandations d'artistes basées sur les favoris et leurs top tracks
         if (artistSeeds.length > 0) {
             const artistParams = artistSeeds.map(id => `artist_ids=${id}`).join('&');
             const recArtistsResp = await fetch(`${API_BASE_URL}/reco/artists?${artistParams}&limit=5`);
             const recArtistsData = await recArtistsResp.json();
 
             if (recArtistsData.results) {
-                // Récupérer les top tracks de chaque artiste recommandé
                 for (const artist of recArtistsData.results) {
                     const artistTracksResp = await fetch(`${API_BASE_URL}/artists/${artist.artist_id}/tracks?limit=3`);
                     const artistTracksData = await artistTracksResp.json();
@@ -211,10 +202,7 @@ async function generateAutoPlaylist() {
             }
         }
 
-        // 4. Préparer la liste finale de tracks (unique) et limiter la tailles
         let finalTrackList = Array.from(generatedTrackIds);
-        
-        // Mélanger et limiter à une taille aléatoire entre 10 et 20
         const size = 10;
         finalTrackList = finalTrackList.sort(() => 0.5 - Math.random()).slice(0, size);
 
@@ -223,7 +211,6 @@ async function generateAutoPlaylist() {
             return;
         }
 
-        // 5. Créer la playlist avec les tracks recommandés
         const playlistPayload = {
             name: `Playlist Générée`,
             description: `Générée automatiquement le ${new Date().toLocaleDateString('fr-FR')}.`,
@@ -239,7 +226,7 @@ async function generateAutoPlaylist() {
 
         if (createResp.ok) {
             showNotification("Playlist générée avec succès !", "success");
-            loadUserPlaylists(currentUserId); // Refresh
+            loadUserPlaylists(currentUserId);
         } else {
             const error = await createResp.json();
             throw new Error(error.detail || "Erreur lors de la création");
@@ -251,7 +238,7 @@ async function generateAutoPlaylist() {
     }
 }
 
-// Générer la grille d'images pour la playlist
+// ===== COVERS =====
 function generatePlaylistCovers(tracks) {
     if (tracks.length === 0) {
         return `<div class="no-cover">🎵</div>`;
@@ -265,7 +252,6 @@ function generatePlaylistCovers(tracks) {
         </div>`;
     });
 
-    // Compléter avec des placeholders si moins de 4 images
     for (let i = tracks.length; i < 4; i++) {
         html += `<div class="cover-item">
             <img src="images/no_image_music.png" alt="Aucune image">
@@ -276,7 +262,6 @@ function generatePlaylistCovers(tracks) {
     return html;
 }
 
-// Obtenir l'URL de l'image d'une track
 function getTrackImageUrl(track) {
     if (track.track_image_file) {
         const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
@@ -340,9 +325,8 @@ function addTrackToSelection(trackId, trackTitle, imageUrl) {
         return;
     }
 
-    const track = { id: trackId, title: trackTitle, image: imageUrl };
-    selectedTracks.push(track);
-
+    selectedTracks.push({ id: trackId, title: trackTitle, image: imageUrl });
+    updateSelectedCount();
     displaySelectedTracks();
 }
 
@@ -359,7 +343,7 @@ function displaySelectedTracks() {
         return;
     }
 
-    selectedTracks.forEach((track, index) => {
+    selectedTracks.forEach((track) => {
         const badge = $(`
             <div class="selected-track-badge" data-track-id="${track.id}">
                 <img src="${track.image}" alt="" class="track-mini-image">
@@ -371,7 +355,6 @@ function displaySelectedTracks() {
     });
 }
 
-// Supprimer une track de la sélection
 window.removeTrackFromSelection = function (trackId) {
     selectedTracks = selectedTracks.filter(t => t.id !== trackId);
     updateSelectedCount();
@@ -407,19 +390,14 @@ async function createPlaylist() {
             })
         });
 
-        const data = await response.json();
-
         if (response.ok) {
             showNotification("Playlist créée avec succès !", "success");
-
-            // Réinitialiser le formulaire
             $("#playlist-name-input").val("");
             $("#playlist-description-input").val("");
             selectedTracks = [];
             updateSelectedCount();
             displaySelectedTracks();
-
-            // Recharger les playlists
+            closeCreateModal();
             loadUserPlaylists(currentUserId);
         } else {
             showNotification("Erreur lors de la création", "error");
@@ -430,7 +408,7 @@ async function createPlaylist() {
     }
 }
 
-// Voir une playlist (redirection ou modal)
+// ===== VOIR / SUPPRIMER PLAYLIST =====
 window.viewPlaylist = function (playlistId) {
     fetch(`${API_BASE_URL}/playlists/${playlistId}`)
         .then(response => response.json())
@@ -443,16 +421,11 @@ window.viewPlaylist = function (playlistId) {
         });
 };
 
-// Supprimer une playlist
 window.deletePlaylist = async function (playlistId) {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette playlist ?")) {
-        return;
-    }
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette playlist ?")) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}`, {
-            method: "DELETE"
-        });
+        const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}`, { method: "DELETE" });
 
         if (response.ok) {
             showNotification("Playlist supprimée avec succès", "success");
@@ -468,20 +441,17 @@ window.deletePlaylist = async function (playlistId) {
 
 // ===== MODAL DE DÉTAIL PLAYLIST =====
 function showPlaylistModal(playlist) {
-    // Remove any existing modal
     $("#playlist-modal").remove();
 
     const tracks = playlist.tracks || [];
     const tracksCount = tracks.length;
 
-    // Build header cover grid (2x2 mosaic)
     let coverGridHtml = '';
     for (let i = 0; i < 4; i++) {
         const imgUrl = tracks[i] ? getTrackImageUrl(tracks[i]) : 'images/no_image_music.png';
         coverGridHtml += `<img src="${imgUrl}" alt="" onerror="this.src='images/no_image_music.png'">`;
     }
 
-    // Build track rows
     let tracksHtml = '';
     if (tracksCount > 0) {
         tracks.forEach((track, idx) => {
@@ -553,20 +523,16 @@ function showPlaylistModal(playlist) {
 
     let plCurrentTrackId = null;
     let plProgressInterval = null;
-    // Playback order (indices into tracks[]), set by play-all or shuffle
-    let plPlayOrder = tracks.map((_, i) => i); // default: sequential
-    let plPlayPos = -1; // current position in plPlayOrder
-
-    // Cache fetched track info for queue building
+    let plPlayOrder = tracks.map((_, i) => i);
+    let plPlayPos = -1;
     let plFetchedTracks = {};
     let plPreFetchStarted = false;
 
-    // Pre-fetch all track URLs in background so queue is complete
     function preFetchAllTracks() {
         if (plPreFetchStarted) return;
         plPreFetchStarted = true;
         tracks.forEach(t => {
-            if (plFetchedTracks[t.track_id]) return; // already cached
+            if (plFetchedTracks[t.track_id]) return;
             fetch(`${API_BASE_URL}/tracks/${t.track_id}`)
                 .then(r => r.json())
                 .then(track => {
@@ -576,24 +542,18 @@ function showPlaylistModal(playlist) {
                         artist: track.artist_info?.artist_name || 'Artiste inconnu'
                     };
                 })
-                .catch(() => { }); // silently ignore errors
+                .catch(() => {});
         });
     }
 
     function closeModal() {
         if (plProgressInterval) clearInterval(plProgressInterval);
-        // Transfer current play order to the audio player queue so skip buttons still work
         if (typeof audioPlayer !== 'undefined' && plCurrentTrackId && Object.keys(plFetchedTracks).length > 0) {
             const queueItems = plPlayOrder.map(idx => {
                 const t = tracks[idx];
                 const fetched = plFetchedTracks[t.track_id];
                 if (!fetched) return null;
-                return {
-                    url: fetched.url,
-                    title: fetched.title,
-                    artist: fetched.artist,
-                    trackId: t.track_id
-                };
+                return { url: fetched.url, title: fetched.title, artist: fetched.artist, trackId: t.track_id };
             }).filter(Boolean);
             if (queueItems.length > 0) {
                 audioPlayer.setQueue(queueItems, Math.max(0, plPlayPos));
@@ -615,11 +575,9 @@ function showPlaylistModal(playlist) {
         if (e.key === "Escape") closeModal();
     });
 
-    // Play a specific track by its index in tracks[]
     function playTrackInModal(trackId, rowEl) {
         if (!trackId || typeof audioPlayer === 'undefined') return;
 
-        // Toggle pause if same track
         if (plCurrentTrackId == trackId && audioPlayer.audio && !audioPlayer.audio.paused) {
             audioPlayer.audio.pause();
             clearInterval(plProgressInterval);
@@ -629,15 +587,12 @@ function showPlaylistModal(playlist) {
             return;
         }
 
-        // Reset all rows
         modal.find('.modal-track-item').removeClass('pl-playing');
         modal.find('.pl-play-icon').html('<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>');
         modal.find('.pl-inline-progress-bar').css('width', '0%');
 
-        // Pre-fetch all tracks in background for complete queue
         preFetchAllTracks();
 
-        // Find current position in play order
         const trackIdx = $(rowEl).data('index');
         const posInOrder = plPlayOrder.indexOf(trackIdx);
         if (posInOrder !== -1) plPlayPos = posInOrder;
@@ -649,25 +604,15 @@ function showPlaylistModal(playlist) {
                 const trackTitle = track.track_title;
                 const trackArtist = track.artist_info?.artist_name || 'Artiste inconnu';
 
-                // Cache for queue building on modal close
                 plFetchedTracks[trackId] = { url: trackUrl, title: trackTitle, artist: trackArtist };
 
-                // Set source context
                 audioPlayer.setSource('playlist', playlist.playlist_id, playlist.playlist_name);
+                audioPlayer.playTrack({ url: trackUrl, title: trackTitle, artist: trackArtist, trackId });
 
-                audioPlayer.playTrack({
-                    url: trackUrl,
-                    title: trackTitle,
-                    artist: trackArtist,
-                    trackId
-                });
                 plCurrentTrackId = trackId;
                 $(rowEl).addClass('pl-playing');
-
-                // Show eq bars
                 $(rowEl).find('.pl-play-icon').html('<div class="pl-eq-bars"><span></span><span></span><span></span><span></span></div>');
 
-                // Start progress bar
                 if (plProgressInterval) clearInterval(plProgressInterval);
                 plProgressInterval = setInterval(() => {
                     if (audioPlayer.audio && audioPlayer.audio.duration) {
@@ -676,7 +621,6 @@ function showPlaylistModal(playlist) {
                     }
                 }, 300);
 
-                // Helper to navigate in order
                 function goToOffset(offset) {
                     const newPos = plPlayPos + offset;
                     if (newPos >= 0 && newPos < plPlayOrder.length) {
@@ -693,11 +637,9 @@ function showPlaylistModal(playlist) {
                     }
                 }
 
-                // Set callbacks for auto-next and skip buttons
                 audioPlayer.onTrackEnd = function () { goToOffset(1); };
                 audioPlayer.onNext = function () { goToOffset(1); };
                 audioPlayer.onPrev = function () {
-                    // If >3s in, restart; else go prev
                     if (audioPlayer.audio && audioPlayer.audio.currentTime > 3) {
                         audioPlayer.audio.currentTime = 0;
                     } else {
@@ -708,16 +650,13 @@ function showPlaylistModal(playlist) {
             .catch(err => console.error('Play error:', err));
     }
 
-    // Click on track row (number or row) to play
     modal.find('.modal-track-item').on('click', function (e) {
-        if ($(e.target).closest('.pl-remove-btn').length) return; // skip if remove btn
-        // Reset to sequential order when user clicks manually
+        if ($(e.target).closest('.pl-remove-btn').length) return;
         plPlayOrder = tracks.map((_, i) => i);
         const trackId = $(this).data('track-id');
         playTrackInModal(trackId, this);
     });
 
-    // Remove button
     modal.find('.pl-remove-btn').on('click', function (e) {
         e.stopPropagation();
         const plId = $(this).data('playlist-id');
@@ -737,20 +676,17 @@ function showPlaylistModal(playlist) {
         }
     });
 
-    // Play all (sequential)
     modal.find('.pl-play-all-btn').on('click', function () {
         if (tracks.length > 0) {
-            plPlayOrder = tracks.map((_, i) => i); // reset to sequential
+            plPlayOrder = tracks.map((_, i) => i);
             plPlayPos = 0;
             const firstRow = modal.find('.modal-track-item').first();
             playTrackInModal(tracks[0].track_id, firstRow[0]);
         }
     });
 
-    // Shuffle — Fisher-Yates shuffle all tracks
     modal.find('.pl-shuffle-btn').on('click', function () {
         if (tracks.length > 0) {
-            // Create shuffled order
             const shuffled = tracks.map((_, i) => i);
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -765,16 +701,11 @@ function showPlaylistModal(playlist) {
     });
 }
 
-// Supprimer une track d'une playlist
 window.removeTrackFromPlaylist = async function (playlistId, trackId) {
-    if (!confirm("Voulez-vous supprimer cette musique de la playlist ?")) {
-        return;
-    }
+    if (!confirm("Voulez-vous supprimer cette musique de la playlist ?")) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}/tracks/${trackId}`, {
-            method: "DELETE"
-        });
+        const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}/tracks/${trackId}`, { method: "DELETE" });
 
         if (response.ok) {
             showNotification("Musique supprimée de la playlist", "success");
@@ -830,12 +761,10 @@ function formatDate(dateString) {
     });
 }
 
-// ====== OPEN PLAYER SOURCE HANDLER ======
 window.openPlayerSource = function (type, id, name) {
     if (type === 'playlist' && id) {
         viewPlaylist(id);
     } else if (type === 'album' || type === 'artist') {
-        // Navigate to accueil where album/artist popups live
         window.location.href = 'accueil.html';
     }
 };
