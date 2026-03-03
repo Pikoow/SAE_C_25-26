@@ -773,6 +773,10 @@ class PlaylistCreate(BaseModel):
 class PlaylistUpdateTracks(BaseModel):
     track_ids: List[int]
 
+class PlaylistUpdateInfo(BaseModel):
+    name: str
+    description: Optional[str] = None
+
 # Créer une nouvelle playlist avec ses informations et les musiques sélectionnées
 @app.post("/playlists")
 def create_playlist(data: PlaylistCreate):
@@ -1098,6 +1102,39 @@ def get_user_playlists_detailed(user_id: int):
     except Exception as e:
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+
+# Modifie les informations d'une playlist (nom et description)
+@app.put("/playlists/{playlist_id}")
+def update_playlist_info(playlist_id: int, data: PlaylistUpdateInfo):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        # Vérifier si la playlist existe
+        cur.execute("SELECT playlist_id FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Playlist non trouvée")
+
+        # Mise à jour
+        query = """
+            UPDATE sae.playlist 
+            SET playlist_name = %s, playlist_description = %s 
+            WHERE playlist_id = %s
+        """
+        cur.execute(query, (data.name, data.description, playlist_id))
+        conn.commit()
+        
+        return {"message": "Playlist mise à jour avec succès"}
+    except Exception as e:
+        if conn: conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
 
 # Autocomplete pour la recherche de musiques par titre, artiste ou album
 @app.get("/search/tracks")

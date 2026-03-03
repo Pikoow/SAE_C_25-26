@@ -777,6 +777,38 @@ function showPlaylistModal(playlist) {
     });
 }
 
+async function updatePlaylistDetails(playlistId) {
+    const newName = $("#edit-playlist-name").val().trim(); // ID de votre input de nom
+    const newDescription = $("#edit-playlist-desc").val().trim(); // ID de votre textarea
+
+    if (!newName) {
+        showNotification("Le nom de la playlist ne peut pas être vide", "warning");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: newName,
+                description: newDescription
+            })
+        });
+
+        if (response.ok) {
+            showNotification("Playlist mise à jour !", "success");
+            loadUserPlaylists(currentUserId); // Recharger la liste pour voir les changements
+        } else {
+            const error = await response.json();
+            showNotification("Erreur : " + (error.detail || "Inconnue"), "error");
+        }
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour:", error);
+        showNotification("Erreur de connexion au serveur", "error");
+    }
+}
+
 // Supprimer une track d'une playlist
 window.removeTrackFromPlaylist = async function (playlistId, trackId) {
     if (!confirm("Voulez-vous supprimer cette musique de la playlist ?")) {
