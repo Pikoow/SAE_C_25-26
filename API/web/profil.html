@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mon Profil - MuSE</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="header-ui.js" defer></script>
+    <style>
+      .profile-page {
+        background-color: #f4f4f4;
+        min-height: 100vh;
+      }
+
+      .profile-section {
+        padding: 50px 20px 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+      }
+
+      .profile-title {
+        font-family: 'Rammetto One', sans-serif;
+        color: var(--orange-fonce);
+        font-size: 2rem;
+        text-align: center;
+      }
+
+      .profile-subtitle {
+        font-family: 'Outfit', sans-serif;
+        color: var(--gris-fonce);
+        font-size: 1.05rem;
+        text-align: center;
+        max-width: 600px;
+        line-height: 1.6;
+        margin-top: -10px;
+      }
+
+      /* Avatar */
+      .profile-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background-color: var(--orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Rammetto One', sans-serif;
+        font-size: 2.2rem;
+        color: var(--blanc);
+        flex-shrink: 0;
+        box-shadow: 0 4px 14px rgba(237, 122, 38, 0.35);
+      }
+
+      /* Card profil */
+      .profile-card {
+        background-color: var(--blanc);
+        width: 100%;
+        max-width: 640px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+        border-top: 5px solid var(--orange);
+        overflow: hidden;
+      }
+
+      .profile-card-header {
+        background-color: #f9f9f9;
+        border-bottom: 1px solid var(--gris-clair);
+        padding: 22px 40px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .profile-card-header-info h2 {
+        font-family: 'Rammetto One', sans-serif;
+        font-size: 1.1rem;
+        color: var(--orange);
+        margin-bottom: 3px;
+      }
+
+      .profile-card-header-info p {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        color: var(--gris-fonce);
+      }
+
+      .profile-card-body {
+        padding: 36px 40px 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      /* Form groups */
+      .profile-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .profile-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .profile-form-group label {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: var(--noir);
+      }
+
+      .profile-form-group input,
+      .profile-form-group select {
+        width: 100%;
+        padding: 11px 14px;
+        border: 2px solid var(--gris-clair);
+        border-radius: 6px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.97rem;
+        background-color: #fcfcfc;
+        color: var(--noir);
+        transition: border-color 0.25s, box-shadow 0.25s;
+        box-sizing: border-box;
+      }
+
+      .profile-form-group input:focus,
+      .profile-form-group select:focus {
+        outline: none;
+        border-color: var(--orange);
+        background-color: var(--blanc);
+        box-shadow: 0 0 0 4px rgba(237, 122, 38, 0.1);
+      }
+
+      .profile-form-group input[readonly] {
+        background-color: #f0f0f0;
+        color: #888;
+        cursor: not-allowed;
+        border-color: #ddd;
+      }
+
+      .profile-form-group .field-hint {
+        font-size: 0.78rem;
+        color: #aaa;
+        margin-top: -2px;
+      }
+
+      /* Separator */
+      .profile-separator {
+        border: none;
+        border-top: 1px solid var(--gris-clair);
+        margin: 4px 0;
+      }
+
+      /* Buttons */
+      .profile-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .btn-save-profile {
+        background-color: var(--orange);
+        color: var(--blanc);
+        font-family: 'Outfit', sans-serif;
+        font-weight: bold;
+        padding: 13px 28px;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.25s, transform 0.2s;
+        flex: 1;
+      }
+
+      .btn-save-profile:hover {
+        background-color: var(--orange-fonce);
+        transform: translateY(-2px);
+      }
+
+      .btn-cancel-profile {
+        background-color: var(--blanc);
+        color: var(--noir);
+        font-family: 'Outfit', sans-serif;
+        font-weight: bold;
+        padding: 13px 28px;
+        border: 2px solid var(--gris-clair);
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: border-color 0.25s, color 0.25s, transform 0.2s;
+        flex: 1;
+      }
+
+      .btn-cancel-profile:hover {
+        border-color: var(--orange);
+        color: var(--orange);
+        transform: translateY(-2px);
+      }
+
+      /* Danger zone */
+      .danger-card {
+        background-color: var(--blanc);
+        width: 100%;
+        max-width: 640px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+        border-top: 5px solid #e74c3c;
+        overflow: hidden;
+      }
+
+      .danger-card-header {
+        background-color: #fff5f5;
+        border-bottom: 1px solid #fcc;
+        padding: 18px 40px;
+      }
+
+      .danger-card-header h2 {
+        font-family: 'Rammetto One', sans-serif;
+        font-size: 1rem;
+        color: #e74c3c;
+      }
+
+      .danger-card-body {
+        padding: 28px 40px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .danger-card-body p {
+        font-family: 'Outfit', sans-serif;
+        color: var(--gris-fonce);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        max-width: 380px;
+      }
+
+      .btn-delete-account {
+        background-color: #e74c3c;
+        color: var(--blanc);
+        font-family: 'Outfit', sans-serif;
+        font-weight: bold;
+        padding: 12px 26px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.25s, transform 0.2s;
+      }
+
+      .btn-delete-account:hover {
+        background-color: #c0392b;
+        transform: translateY(-2px);
+      }
+
+      /* Feedback message */
+      #profile-message {
+        text-align: center;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        min-height: 1.2em;
+        font-weight: 500;
+      }
+
+      /* Confirm modal */
+      .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+
+      .confirm-box {
+        background: var(--blanc);
+        border-radius: 10px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        padding: 40px 36px 32px;
+        max-width: 420px;
+        width: 90%;
+        border-top: 5px solid #e74c3c;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        animation: modalIn 0.2s ease;
+      }
+
+      @keyframes modalIn {
+        from { transform: scale(0.92); opacity: 0; }
+        to   { transform: scale(1);    opacity: 1; }
+      }
+
+      .confirm-box h3 {
+        font-family: 'Rammetto One', sans-serif;
+        color: #e74c3c;
+        font-size: 1.15rem;
+      }
+
+      .confirm-box p {
+        font-family: 'Outfit', sans-serif;
+        color: var(--gris-fonce);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .confirm-box .confirm-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 6px;
+      }
+
+      .confirm-box .confirm-actions button {
+        flex: 1;
+        padding: 12px;
+        border-radius: 6px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: bold;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-confirm-delete {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+      }
+      .btn-confirm-delete:hover { background-color: #c0392b; }
+
+      .btn-confirm-cancel {
+        background-color: white;
+        color: var(--noir);
+        border: 2px solid var(--gris-clair);
+      }
+      .btn-confirm-cancel:hover { border-color: var(--orange); color: var(--orange); }
+    </style>
+  </head>
+
+  <body class="profile-page">
+
+    <header>
+      <a href="accueil.html"><h2>MuSE</h2></a>
+      <nav>
+        <a href="accueil.html">Accueil</a>
+        <a href="playlists.html">Playlists</a>
+        <a href="preferences.html">Préférences</a>
+        <div class="dropdown">
+          <a href="#">API ▾</a>
+          <div class="dropdown-content">
+            <a href="api-installation.html">Installation</a>
+            <a href="api-documentation.html">Documentation</a>
+            <a href="api-test.html">Testez l'API</a>
+          </div>
+        </div>
+      </nav>
+      <div class="header-right">
+        <div id="auth-buttons" class="connexion-inscription">
+          <a href="connexion.html?mode=login">Connexion</a>
+          <button><a href="connexion.html?mode=register">Inscription</a></button>
+        </div>
+        <div id="user-menu" class="user-dropdown hidden">
+          <a href="#" id="user-name-display">Mon Profil ▾</a>
+          <div class="dropdown-content user-dropdown-content">
+            <a href="profil.html">Mon profil</a>
+            <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="profile-section">
+
+        <h1 class="profile-title">Mon Profil</h1>
+        <p class="profile-subtitle">Modifiez vos informations personnelles ci-dessous. Votre email ne peut pas être modifié.</p>
+
+        <!-- Card principale -->
+        <div class="profile-card">
+          <div class="profile-card-header">
+            <div class="profile-avatar" id="avatar-initials">?</div>
+            <div class="profile-card-header-info">
+              <h2 id="header-fullname">Chargement...</h2>
+              <p id="header-email">—</p>
+            </div>
+          </div>
+
+          <div class="profile-card-body">
+
+            <div class="profile-form-row">
+              <div class="profile-form-group">
+                <label for="input-firstname">Prénom <span style="color:var(--orange)">*</span></label>
+                <input type="text" id="input-firstname" placeholder="Votre prénom" />
+              </div>
+              <div class="profile-form-group">
+                <label for="input-lastname">Nom <span style="color:var(--orange)">*</span></label>
+                <input type="text" id="input-lastname" placeholder="Votre nom" />
+              </div>
+            </div>
+
+            <div class="profile-form-group">
+              <label for="input-email">Email</label>
+              <input type="email" id="input-email" readonly />
+              <span class="field-hint">L'email ne peut pas être modifié.</span>
+            </div>
+
+            <div class="profile-form-group">
+              <label for="input-password">Nouveau mot de passe</label>
+              <input type="password" id="input-password" placeholder="Laisser vide pour ne pas modifier" />
+            </div>
+
+            <div class="profile-form-row">
+              <div class="profile-form-group">
+                <label for="input-age">Âge</label>
+                <input type="number" id="input-age" min="13" max="120" placeholder="Votre âge" />
+              </div>
+              <div class="profile-form-group">
+                <label for="input-gender">Genre</label>
+                <select id="input-gender">
+                  <option value="" disabled>-- Sélectionnez --</option>
+                  <option value="Homme">Homme</option>
+                  <option value="Femme">Femme</option>
+                  <option value="Non-binaire">Non-binaire</option>
+                  <option value="Autre">Autre</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="profile-form-group">
+              <label for="input-location">Localisation</label>
+              <input type="text" id="input-location" placeholder="Votre localisation" />
+            </div>
+
+            <hr class="profile-separator" />
+
+            <p id="profile-message"></p>
+
+            <div class="profile-actions">
+              <button class="btn-cancel-profile" id="btn-cancel">Annuler</button>
+              <button class="btn-save-profile" id="btn-save">Enregistrer les modifications</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="danger-card">
+          <div class="danger-card-header">
+            <h2>Zone de danger</h2>
+          </div>
+          <div class="danger-card-body">
+            <p>La suppression de votre compte est définitive. Toutes vos playlists et préférences seront perdues et ne pourront pas être récupérées.</p>
+            <button class="btn-delete-account" id="btn-delete-account">Supprimer mon compte</button>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Modal de confirmation suppression -->
+    <div class="confirm-overlay" id="confirm-modal" style="display:none;">
+      <div class="confirm-box">
+        <h3>Supprimer mon compte</h3>
+        <p>Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible et entraînera la perte de toutes vos données.</p>
+        <div class="confirm-actions">
+          <button class="btn-confirm-cancel" id="btn-confirm-cancel">Annuler</button>
+          <button class="btn-confirm-delete" id="btn-confirm-delete">Oui, supprimer</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="titre-footer"><h2>MuSE</h2></div>
+      <div class="navigation-footer">
+        <div><p>Société</p><div><a href="#">À propos de nous</a><a href="#">Offre d'emploi</a></div></div>
+        <div><p>Liens utiles</p><div><a href="contact.html">Nous contacter</a></div></div>
+        <div><p>Communauté</p><div><a href="#">Développeurs</a></div></div>
+        <div><p>Légal</p><div><a href="#">Mentions légales</a></div></div>
+      </div>
+      <div class="barre-separation-footer"></div>
+      <div class="fin-footer">
+        <div class="reseaux-sociaux-footer">
+          <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram" /></a>
+          <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn" /></a>
+          <a href="#"><img src="../images/icones/github.avif" alt="GitHub" /></a>
+          <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook" /></a>
+        </div>
+        <p>© 2026 MuSE Français</p>
+      </div>
+    </footer>
+
+    <script>
+      const AUTH_API_URL = "http://localhost:3000";
+      const API_BASE_URL = "http://127.0.0.1:8000";
+
+      const message      = document.getElementById("profile-message");
+      let originalData   = {};
+      let currentUserId  = null;
+
+      // ===== UTILITAIRES =====
+      function setMessage(text, color) {
+        message.textContent = text;
+        message.style.color = color;
+      }
+
+      function getInitials(firstname, lastname) {
+        return ((firstname?.[0] || "") + (lastname?.[0] || "")).toUpperCase() || "?";
+      }
+
+      // ===== CHARGEMENT DU PROFIL =====
+      async function loadProfile() {
+        try {
+          const res  = await fetch(`${AUTH_API_URL}/dashboard`, { method: "GET", credentials: "include" });
+          const data = await res.json();
+
+          if (data.error) {
+            window.location.href = "connexion.html";
+            return;
+          }
+
+          const user = data.user;
+          currentUserId = user.user_id;
+
+          // Header card
+          document.getElementById("header-fullname").textContent =
+            `${user.user_firstname || ""} ${user.user_lastname || ""}`.trim() || "Utilisateur";
+          document.getElementById("header-email").textContent = user.user_mail || "—";
+          document.getElementById("avatar-initials").textContent =
+            getInitials(user.user_firstname, user.user_lastname);
+
+          // Remplir les champs
+          document.getElementById("input-firstname").value = user.user_firstname || "";
+          document.getElementById("input-lastname").value  = user.user_lastname  || "";
+          document.getElementById("input-email").value     = user.user_mail      || "";
+          document.getElementById("input-age").value       = user.user_age       || "";
+          document.getElementById("input-location").value  = user.user_location  || "";
+
+          const genderSelect = document.getElementById("input-gender");
+          const genderVal    = user.user_gender || "";
+          for (const opt of genderSelect.options) {
+            if (opt.value === genderVal) { opt.selected = true; break; }
+          }
+
+          // Snapshot pour annulation
+          originalData = {
+            firstname: user.user_firstname || "",
+            lastname:  user.user_lastname  || "",
+            age:       user.user_age       || "",
+            gender:    user.user_gender    || "",
+            location:  user.user_location  || "",
+          };
+
+        } catch (err) {
+          console.error("Erreur chargement profil :", err);
+          window.location.href = "connexion.html";
+        }
+      }
+
+      // ===== ANNULER =====
+      document.getElementById("btn-cancel").addEventListener("click", () => {
+        document.getElementById("input-firstname").value = originalData.firstname;
+        document.getElementById("input-lastname").value  = originalData.lastname;
+        document.getElementById("input-age").value       = originalData.age;
+        document.getElementById("input-location").value  = originalData.location;
+        document.getElementById("input-password").value  = "";
+
+        const genderSelect = document.getElementById("input-gender");
+        for (const opt of genderSelect.options) {
+          if (opt.value === originalData.gender) { opt.selected = true; break; }
+        }
+
+        setMessage("Modifications annulées.", "var(--gris-fonce)");
+        setTimeout(() => setMessage("", ""), 2500);
+      });
+
+      // ===== SAUVEGARDER =====
+      document.getElementById("btn-save").addEventListener("click", async () => {
+        const firstname = document.getElementById("input-firstname").value.trim();
+        const lastname  = document.getElementById("input-lastname").value.trim();
+        const password  = document.getElementById("input-password").value;
+        const age       = parseInt(document.getElementById("input-age").value) || null;
+        const gender    = document.getElementById("input-gender").value || null;
+        const location  = document.getElementById("input-location").value.trim() || null;
+
+        if (!firstname || !lastname) {
+          setMessage("Le prénom et le nom sont obligatoires.", "#e74c3c");
+          return;
+        }
+
+        setMessage("Enregistrement en cours...", "var(--orange)");
+
+        const body = { user_firstname: firstname, user_lastname: lastname, user_age: age, user_gender: gender, user_location: location };
+        if (password) body.user_password = password;
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/users/${currentUserId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+
+          if (res.ok) {
+            setMessage("✓ Profil mis à jour avec succès !", "#27ae60");
+
+            // Mettre à jour header et localStorage
+            localStorage.setItem("userName", firstname);
+            document.getElementById("header-fullname").textContent = `${firstname} ${lastname}`.trim();
+            document.getElementById("avatar-initials").textContent = getInitials(firstname, lastname);
+            document.getElementById("input-password").value = "";
+
+            originalData = { firstname, lastname, age: age || "", gender: gender || "", location: location || "" };
+          } else {
+            const err = await res.json();
+            setMessage(err.detail || "Erreur lors de la mise à jour.", "#e74c3c");
+          }
+        } catch (err) {
+          console.error(err);
+          setMessage("Impossible de contacter le serveur.", "#e74c3c");
+        }
+      });
+
+      // ===== SUPPRESSION DU COMPTE =====
+      document.getElementById("btn-delete-account").addEventListener("click", () => {
+        document.getElementById("confirm-modal").style.display = "flex";
+      });
+
+      document.getElementById("btn-confirm-cancel").addEventListener("click", () => {
+        document.getElementById("confirm-modal").style.display = "none";
+      });
+
+      document.getElementById("confirm-modal").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("confirm-modal")) {
+          document.getElementById("confirm-modal").style.display = "none";
+        }
+      });
+
+      document.getElementById("btn-confirm-delete").addEventListener("click", async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/users/${currentUserId}`, { method: "DELETE" });
+
+          if (res.ok) {
+            // Déconnexion côté auth server
+            await fetch(`${AUTH_API_URL}/logout`, { method: "POST", credentials: "include" }).catch(() => {});
+            localStorage.clear();
+            window.location.href = "connexion.html";
+          } else {
+            const err = await res.json();
+            document.getElementById("confirm-modal").style.display = "none";
+            setMessage(err.detail || "Erreur lors de la suppression.", "#e74c3c");
+          }
+        } catch (err) {
+          console.error(err);
+          document.getElementById("confirm-modal").style.display = "none";
+          setMessage("Impossible de contacter le serveur.", "#e74c3c");
+        }
+      });
+
+      // Init
+      loadProfile();
+    </script>
+  </body>
+</html>
