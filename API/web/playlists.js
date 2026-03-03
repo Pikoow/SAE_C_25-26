@@ -109,7 +109,6 @@ function displayPlaylists(playlists) {
     // Toujours ajouter la carte "+" en dernier
     appendNewPlaylistCard(container);
 }
-}
 
 // Ajouter la carte "+ Nouvelle playlist"
 function appendNewPlaylistCard(container) {
