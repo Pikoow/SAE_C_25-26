@@ -2293,3 +2293,339 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     color: var(--noir);
     margin: 0 0 4px;
 }
+
+/* PAGE PROFIL
+***************************/
+
+.profile-page {
+    background-color: #f4f4f4;
+    min-height: 100vh;
+}
+
+.profile-page .profile-section {
+    padding: 50px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.profile-page .profile-title {
+    font-family: 'Rammetto One', sans-serif;
+    color: var(--orange-fonce);
+    font-size: 2rem;
+    text-align: center;
+}
+
+.profile-page .profile-subtitle {
+    font-family: 'Outfit', sans-serif;
+    color: var(--gris-fonce);
+    font-size: 1.05rem;
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.6;
+    margin-top: -10px;
+}
+
+.profile-page .profile-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background-color: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 2.2rem;
+    color: var(--blanc);
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(237, 122, 38, 0.35);
+}
+
+.profile-page .profile-card {
+    background-color: var(--blanc);
+    width: 100%;
+    max-width: 640px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    border-top: 5px solid var(--orange);
+    overflow: hidden;
+}
+
+.profile-page .profile-card-header {
+    background-color: #f9f9f9;
+    border-bottom: 1px solid var(--gris-clair);
+    padding: 22px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.profile-page .profile-card-header-info h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1.1rem;
+    color: var(--orange);
+    margin-bottom: 3px;
+}
+
+.profile-page .profile-card-header-info p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    color: var(--gris-fonce);
+}
+
+.profile-page .profile-card-body {
+    padding: 36px 40px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.profile-page .profile-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.profile-page .profile-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.profile-page .profile-form-group label {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--noir);
+}
+
+.profile-page .profile-form-group input,
+.profile-page .profile-form-group select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--gris-clair);
+    border-radius: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.97rem;
+    background-color: #fcfcfc;
+    color: var(--noir);
+    transition: border-color 0.25s, box-shadow 0.25s;
+    box-sizing: border-box;
+}
+
+.profile-page .profile-form-group input:focus,
+.profile-page .profile-form-group select:focus {
+    outline: none;
+    border-color: var(--orange);
+    background-color: var(--blanc);
+    box-shadow: 0 0 0 4px rgba(237, 122, 38, 0.1);
+}
+
+.profile-page .profile-form-group input[readonly] {
+    background-color: #f0f0f0;
+    color: #888;
+    cursor: not-allowed;
+    border-color: #ddd;
+}
+
+.profile-page .profile-form-group .field-hint {
+    font-size: 0.78rem;
+    color: #aaa;
+    margin-top: -2px;
+}
+
+.profile-page .profile-separator {
+    border: none;
+    border-top: 1px solid var(--gris-clair);
+    margin: 4px 0;
+}
+
+.profile-page .profile-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.profile-page .btn-save-profile {
+    background-color: var(--orange);
+    color: var(--blanc);
+    font-family: 'Outfit', sans-serif;
+    font-weight: bold;
+    padding: 13px 28px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.25s, transform 0.2s;
+    flex: 1;
+}
+
+.profile-page .btn-save-profile:hover {
+    background-color: var(--orange-fonce);
+    transform: translateY(-2px);
+}
+
+.profile-page .btn-cancel-profile {
+    background-color: var(--blanc);
+    color: var(--noir);
+    font-family: 'Outfit', sans-serif;
+    font-weight: bold;
+    padding: 13px 28px;
+    border: 2px solid var(--gris-clair);
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s, transform 0.2s;
+    flex: 1;
+}
+
+.profile-page .btn-cancel-profile:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    transform: translateY(-2px);
+}
+
+.profile-page .danger-card {
+    background-color: var(--blanc);
+    width: 100%;
+    max-width: 640px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    border-top: 5px solid #e74c3c;
+    overflow: hidden;
+}
+
+.profile-page .danger-card-header {
+    background-color: #fff5f5;
+    border-bottom: 1px solid #fcc;
+    padding: 18px 40px;
+}
+
+.profile-page .danger-card-header h2 {
+    font-family: 'Rammetto One', sans-serif;
+    font-size: 1rem;
+    color: #e74c3c;
+}
+
+.profile-page .danger-card-body {
+    padding: 28px 40px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.profile-page .danger-card-body p {
+    font-family: 'Outfit', sans-serif;
+    color: var(--gris-fonce);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 380px;
+}
+
+.profile-page .btn-delete-account {
+    background-color: #e74c3c;
+    color: var(--blanc);
+    font-family: 'Outfit', sans-serif;
+    font-weight: bold;
+    padding: 12px 26px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.25s, transform 0.2s;
+}
+
+.profile-page .btn-delete-account:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+}
+
+.profile-page #profile-message {
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    min-height: 1.2em;
+    font-weight: 500;
+}
+
+.profile-page .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.profile-page .confirm-box {
+    background: var(--blanc);
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    padding: 40px 36px 32px;
+    max-width: 420px;
+    width: 90%;
+    border-top: 5px solid #e74c3c;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+.profile-page .confirm-box h3 {
+    font-family: 'Rammetto One', sans-serif;
+    color: #e74c3c;
+    font-size: 1.15rem;
+}
+
+.profile-page .confirm-box p {
+    font-family: 'Outfit', sans-serif;
+    color: var(--gris-fonce);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.profile-page .confirm-box .confirm-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.profile-page .confirm-box .confirm-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profile-page .btn-confirm-delete {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+}
+
+.profile-page .btn-confirm-delete:hover { background-color: #c0392b; }
+
+.profile-page .btn-confirm-cancel {
+    background-color: white;
+    color: var(--noir);
+    border: 2px solid var(--gris-clair);
+}
+
+.profile-page .btn-confirm-cancel:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+}
