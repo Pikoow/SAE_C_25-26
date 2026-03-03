@@ -134,12 +134,12 @@ function createPlaylistCard(playlist) {
                 <h3>${escapeHtml(playlist.playlist_name)}</h3>
                 <p class="playlist-description">${escapeHtml(playlist.playlist_description || "Aucune description")}</p>
                 <div class="playlist-meta">
-                    <span>${playlist.tracks_count || 0} titres</span>
+                    <span>${playlist.tracks_count || 0} titre(s)</span>
                     <span>Créée le ${formatDate(playlist.created_at)}</span>
                 </div>
                 <div class="playlist-actions">
                     <button class="btn-delete pl-delete-btn" data-pid="${playlist.playlist_id}">
-                        <span class="icon">🗑️</span> Supprimer
+                        Supprimer
                     </button>
                 </div>
             </div>
@@ -173,7 +173,7 @@ async function generateAutoPlaylist() {
         const favData = await favResponse.json();
 
         if (!favData.results || favData.results.length === 0) {
-            showNotification("Ajoutez des favoris pour générer une playlist !", "warning");
+            showNotification("Ajoutez des favoris depuis la page préférences pour générer une playlist !", "warning");
             return;
         }
 
