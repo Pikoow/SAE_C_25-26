@@ -1635,11 +1635,36 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     box-shadow: 0 8px 20px rgba(237, 122, 38, 0.4);
 }
 
-/* =====================================================
-   MODAL DE DÉTAIL PLAYLIST
-   FIX : doublon supprimé, animation sur .show
-   ===================================================== */
+/* Style de l'Overlay (le fond sombre) */
+#create-playlist-modal {
+    display: none; /* Géré par le JavaScript */
+    position: fixed;
+    z-index: 2000; /* Assure d'être au-dessus de tout, même du header */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fond noir semi-transparent */
+    
+    /* Centrage parfait grâce à Flexbox */
+    justify-content: center;
+    align-items: center;
+}
 
+/* Style de la boîte Modal */
+.modal-content {
+    background-color: var(--blanc);
+    padding: 2.5em;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 550px; /* Largeur maximale pour un bel aspect */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    position: relative;
+    max-height: 90vh; /* Empêche de dépasser de l'écran */
+    overflow-y: auto; /* Scroll si le contenu est trop long */
+}
+
+/* ===== MODAL DE DÉTAIL PLAYLIST ===== */
 .playlists-page .modal {
     display: none;
     position: fixed;
@@ -2258,4 +2283,13 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     font-family: 'Outfit', sans-serif;
     font-weight: bold;
     min-height: 20px;
+}
+
+.titre-centre {
+    text-align: center;
+    padding-top: 1em;
+    font-family: 'Rammetto One', 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    color: var(--noir);
+    margin: 0 0 4px;
 }

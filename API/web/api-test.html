@@ -10,42 +10,39 @@
     <body class="test-api">
         
         <header>
-        <a href="accueil.html"><h2>MuSE</h2></a> 
-        <nav>
-            <a href="accueil.html">Accueil</a>
-            <a href="playlists.html">Playlists</a>
-            <a href="preferences.html">Préférences</a>
-                
-            <div class="dropdown">
-                <a href="#">API ▾</a>
-                <div class="dropdown-content">
-                    <a href="api-installation.html">Installation</a>
-                    <a href="api-documentation.html">Documentation</a>
-                    <a href="api-test.html">Testez l'API</a>
+            <a href="accueil.html"><h2>MuSE</h2></a> 
+            <nav>
+                <a href="accueil.html">Accueil</a>
+                <a href="playlists.html">Playlists</a>
+                <a href="preferences.html">Préférences</a>
+                    
+                <div class="dropdown">
+                    <a href="#">API ▾</a>
+                    <div class="dropdown-content">
+                        <a href="api-installation.html">Installation</a>
+                        <a href="api-documentation.html">Documentation</a>
+                        <a href="api-test.html">Testez l'API</a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="header-right">
+                <div id="auth-buttons" class="connexion-inscription">
+                    <a href="connexion.html?mode=login">Connexion</a>
+                    <button>
+                        <a href="connexion.html?mode=register">Inscription</a>
+                    </button>
+                </div>
+
+                <div id="user-menu" class="user-dropdown hidden">
+                    <a href="#" id="user-name-display">Mon Profil ▾</a>
+                    <div class="dropdown-content user-dropdown-content">
+                        <a href="profil.html">Mon profil</a>
+                        <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+                    </div>
                 </div>
             </div>
-        </nav>
-
-        <div class="header-right">
-    
-        <div id="auth-buttons" class="connexion-inscription">
-            <a href="connexion.html?mode=login">Connexion</a>
-            <button>
-                <a href="connexion.html?mode=register">Inscription</a>
-            </button>
-        </div>
-
-        <div id="user-menu" class="user-dropdown hidden">
-            <a href="#" id="user-name-display">Mon Profil ▾</a>
-            
-            <div class="dropdown-content user-dropdown-content">
-                <a href="profil.html">Mon profil</a>
-                <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
-            </div>
-        </div>
-
-    </div>
-    </header>
+        </header>
 
         <main>
             <h1>Testez l'API !</h1>
@@ -60,7 +57,7 @@
             <div>
                 <label>URL : </label>
                 <input type="text" id="urlInput" value="http://127.0.0.1:8000/" size="100">
-                <br>
+                <br><br>
                 <button onclick="sendRequest()">Envoyer la requête</button>
             </div>
 
@@ -94,54 +91,134 @@
     </body>
     
     <script>
-        const BASE_URL = "http://127.0.0.1:8000";
+        const BASE_URL     = "http://127.0.0.1:8000";
+        const AUTH_API_URL = "http://localhost:3000";
 
-        // Liste des endpoints
-        const endpoints = [
-            { label: "Accueil", path: "/" },
-            { label: "Toutes les tracks", path: "/tracks" },
-            { label: "Track par ID (ex: 1)", path: "/tracks/1" },
-            { label: "Recommandations Track (ex: 1)", path: "/tracks/1/reco?limit=5" },
-            { label: "Recommandations Multiples", path: "/recommendations/multi?track_id=1&track_id=2&limit=5" },
-            { label: "Tous les artistes", path: "/artists?limit=50&offset=0" },
-            { label: "Recherche artiste (ex: Muse)", path: "/artists?name=Muse" },
-            { label: "Tracks d'un artiste (ex: 1)", path: "/artists/1/tracks" },
-            { label: "Tous les albums", path: "/albums?limit=50" },
-            { label: "Tracks d'un album (ex: 1)", path: "/albums/1/tracks" },
-            { label: "Tous les genres", path: "/genres" }
+        // ===== AUTHENTIFICATION =====
+        async function checkAuthenticatedUser() {
+            try {
+                const response = await fetch(`${AUTH_API_URL}/dashboard`, {
+                    method: "GET",
+                    credentials: "include"
+                });
+                const data = await response.json();
+                if (data.error) {
+                    window.location.href = "connexion.html";
+                }
+            } catch (err) {
+                console.error("Erreur d'authentification:", err);
+                window.location.href = "connexion.html";
+            }
+        }
+
+        // ===== ENDPOINTS PAR CATÉGORIE =====
+        const endpointCategories = [
+            {
+                label: "Général",
+                endpoints: [
+                    { label: "Accueil",                              method: "GET",    path: "/" }
+                ]
+            },
+            {
+                label: "Tracks",
+                endpoints: [
+                    { label: "Liste des tracks",                     method: "GET",    path: "/tracks?limit=50&offset=0" },
+                    { label: "Track par ID",                         method: "GET",    path: "/tracks/69170" }
+                ]
+            },
+            {
+                label: "Artistes",
+                endpoints: [
+                    { label: "Liste des artistes",                   method: "GET",    path: "/artists?limit=50&offset=0" },
+                    { label: "Artiste par ID",                       method: "GET",    path: "/artists/201" },
+                    { label: "Tracks d'un artiste",                  method: "GET",    path: "/artists/201/tracks?limit=50&offset=0" }
+                ]
+            },
+            {
+                label: "Albums",
+                endpoints: [
+                    { label: "Liste des albums",                     method: "GET",    path: "/albums?limit=50&offset=0" },
+                    { label: "Album par ID",                         method: "GET",    path: "/albums/4862" },
+                    { label: "Tracks d'un album",                    method: "GET",    path: "/albums/4862/tracks?limit=50&offset=0" }
+                ]
+            },
+            {
+                label: "Genres",
+                endpoints: [
+                    { label: "Liste des genres",                     method: "GET",    path: "/genres" },
+                    { label: "Tracks d'un genre",                    method: "GET",    path: "/genres/1/tracks?limit=50&offset=0" }
+                ]
+            },
+            {
+                label: "Recommandations",
+                endpoints: [
+                    { label: "Recommandations de tracks",            method: "GET",    path: "/reco/tracks?track_ids=69170&limit=10" },
+                    { label: "Recommandations d'artistes",           method: "GET",    path: "/reco/artists?artist_ids=201&limit=5" }
+                ]
+            },
+            {
+                label: "Playlists",
+                endpoints: [
+                    { label: "Détails d'une playlist",               method: "GET",    path: "/playlists/1" },
+                    { label: "Playlists d'un user (ancien)",         method: "GET",    path: "/playlist/1" }
+                ]
+            },
+            {
+                label: "Utilisateurs",
+                endpoints: [
+                    { label: "Playlists d'un utilisateur",           method: "GET",    path: "/users/1/playlists" },
+                    { label: "Playlists détaillées d'un utilisateur",method: "GET",    path: "/users/1/playlists/detailed" }
+                ]
+            },
+            {
+                label: "Recherche",
+                endpoints: [
+                    { label: "Recherche de tracks",                  method: "GET",    path: "/search/tracks?query=uprising&limit=10" }
+                ]
+            },
+            {
+                label: "Favoris",
+                endpoints: [
+                    { label: "Voir les favoris",                     method: "GET",    path: "/voir_favorite/1" }
+                ]
+            }
         ];
 
-        const select = document.getElementById('endpointSelect');
-        const input = document.getElementById('urlInput');
-        const statusSpan = document.getElementById('status');
-        const resultPre = document.getElementById('result');
+        // ===== REMPLIR LE SELECT =====
+        const select      = document.getElementById('endpointSelect');
+        const urlInput    = document.getElementById('urlInput');
+        const statusSpan  = document.getElementById('status');
+        const resultPre   = document.getElementById('result');
 
-        // Remplir le select
-        endpoints.forEach(ep => {
-            const option = document.createElement('option');
-            option.value = ep.path;
-            option.text = ep.label;
-            select.appendChild(option);
+        endpointCategories.forEach(cat => {
+            const group = document.createElement('optgroup');
+            group.label = cat.label;
+            cat.endpoints.forEach(ep => {
+                const option = document.createElement('option');
+                option.value          = ep.path;
+                option.text           = `[${ep.method}] ${ep.label}`;
+                option.dataset.method = ep.method;
+                option.dataset.body   = ep.body || "";
+                group.appendChild(option);
+            });
+            select.appendChild(group);
         });
 
         function updateUrl() {
-            input.value = BASE_URL + select.value;
+            const selected = select.options[select.selectedIndex];
+            urlInput.value = BASE_URL + selected.value;
         }
 
-        // --- FONCTION DE COLORATION SYNTAXIQUE ---
+        // ===== COLORATION SYNTAXIQUE =====
         function syntaxHighlight(json) {
-            if (typeof json != 'string') {
+            if (typeof json !== 'string') {
                 json = JSON.stringify(json, undefined, 4);
             }
             json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                var cls = 'number';
+                let cls = 'number';
                 if (/^"/.test(match)) {
-                    if (/:$/.test(match)) {
-                        cls = 'key'; 
-                    } else {
-                        cls = 'string'; 
-                    }
+                    cls = /:$/.test(match) ? 'key' : 'string';
                 } else if (/true|false/.test(match)) {
                     cls = 'boolean';
                 } else if (/null/.test(match)) {
@@ -151,33 +228,38 @@
             });
         }
 
-        // Fonction d'envoi
+        // ===== ENVOI DE LA REQUÊTE =====
         async function sendRequest() {
-            const url = input.value;
+            const url = urlInput.value;
+
             statusSpan.textContent = "Chargement...";
-            statusSpan.className = "";
-            resultPre.textContent = "Chargement..."; 
+            statusSpan.className   = "";
+            resultPre.textContent  = "Chargement...";
 
             try {
                 const response = await fetch(url);
-                
+
                 statusSpan.textContent = response.status + " " + response.statusText;
                 if (response.ok) {
-                    statusSpan.className = "status-badge status-200"; 
+                    statusSpan.className   = "status-badge status-200";
                     statusSpan.style.color = "var(--bleu)";
                 } else {
-                    statusSpan.className = "status-badge status-404";
+                    statusSpan.className   = "status-badge status-404";
                     statusSpan.style.color = "red";
                 }
-                
+
                 const data = await response.json();
                 resultPre.innerHTML = syntaxHighlight(data);
 
             } catch (error) {
                 statusSpan.textContent = "Erreur";
-                statusSpan.className = "status-badge status-500";
-                resultPre.textContent = "Impossible de contacter l'API : " + error;
+                statusSpan.className   = "status-badge status-500";
+                resultPre.textContent  = "Impossible de contacter l'API : " + error;
             }
         }
+
+        // Init
+        checkAuthenticatedUser();
+        updateUrl();
     </script>
 </html>

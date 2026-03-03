@@ -11,6 +11,12 @@ $(document).ready(function () {
     setupCreateModal();
     $("#create-playlist-button").on("click", createPlaylist);
     $("#generate-playlist-btn").on("click", generateAutoPlaylist);
+
+    // Gestionnaire pour le bouton principal "Créer une playlist"
+    $("#open-create-playlist-btn").on("click", openCreateModal);
+
+    // Initialiser la gestion de la modal de création
+    setupCreateModal();
 });
 
 // ===== GESTION DE LA MODAL DE CRÉATION =====
@@ -102,6 +108,7 @@ function displayPlaylists(playlists) {
 
     // Toujours ajouter la carte "+" en dernier
     appendNewPlaylistCard(container);
+}
 }
 
 // Ajouter la carte "+ Nouvelle playlist"

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 import os
 import sys
 import math
+import bcrypt
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'Recommendation'))
 
@@ -28,8 +29,8 @@ app = FastAPI(title="API Muse", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -773,6 +774,10 @@ class PlaylistCreate(BaseModel):
 class PlaylistUpdateTracks(BaseModel):
     track_ids: List[int]
 
+class PlaylistUpdateInfo(BaseModel):
+    name: str
+    description: Optional[str] = None
+
 # Créer une nouvelle playlist avec ses informations et les musiques sélectionnées
 @app.post("/playlists")
 def create_playlist(data: PlaylistCreate):
@@ -1099,6 +1104,39 @@ def get_user_playlists_detailed(user_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Modifie les informations d'une playlist (nom et description)
+@app.put("/playlists/{playlist_id}")
+def update_playlist_info(playlist_id: int, data: PlaylistUpdateInfo):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        # Vérifier si la playlist existe
+        cur.execute("SELECT playlist_id FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Playlist non trouvée")
+
+        # Mise à jour
+        query = """
+            UPDATE sae.playlist 
+            SET playlist_name = %s, playlist_description = %s 
+            WHERE playlist_id = %s
+        """
+        cur.execute(query, (data.name, data.description, playlist_id))
+        conn.commit()
+        
+        return {"message": "Playlist mise à jour avec succès"}
+    except Exception as e:
+        if conn: conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
 # Autocomplete pour la recherche de musiques par titre, artiste ou album
 @app.get("/search/tracks")
 def search_tracks(
@@ -1243,6 +1281,101 @@ async def saveFavorite(request : Request):
     except Exception as e:
         print(f"Erreur : {e}")
         return {"success": False, "error": str(e)}
+
+# ===== GESTION DU PROFIL UTILISATEUR (non documenté) =====
+
+class UpdateUserRequest(BaseModel):
+    user_firstname: Optional[str] = None
+    user_lastname:  Optional[str] = None
+    user_password:  Optional[str] = None
+    user_age:       Optional[int] = None
+    user_gender:    Optional[str] = None
+    user_location:  Optional[str] = None
+
+@app.put("/users/{user_id}")
+def update_user(user_id: int, body: UpdateUserRequest):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        fields = []
+        params = []
+
+        if body.user_firstname is not None:
+            fields.append("user_firstname = %s")
+            params.append(body.user_firstname)
+        if body.user_lastname is not None:
+            fields.append("user_lastname = %s")
+            params.append(body.user_lastname)
+        if body.user_password is not None:
+            fields.append("user_password = %s")
+            hashed = bcrypt.hashpw(body.user_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+            params.append(hashed)
+        if body.user_age is not None:
+            fields.append("user_age = %s")
+            params.append(body.user_age)
+        if body.user_gender is not None:
+            fields.append("user_gender = %s")
+            params.append(body.user_gender)
+        if body.user_location is not None:
+            fields.append("user_location = %s")
+            params.append(body.user_location)
+
+        if not fields:
+            raise HTTPException(status_code=400, detail="Aucun champ à mettre à jour")
+
+        params.append(user_id)
+        query = f"UPDATE sae.users SET {', '.join(fields)} WHERE user_id = %s"
+        cur.execute(query, params)
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": "Profil mis à jour"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        # Suppression des données liées avant de supprimer l'utilisateur
+        cur.execute("DELETE FROM sae.favorite WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM sae.playlist_user WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM sae.users WHERE user_id = %s", (user_id,))
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": "Compte supprimé"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

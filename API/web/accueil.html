@@ -2605,16 +2605,19 @@
                 artistDetails.filter(a => a).forEach(artist => artistsTrack.appendChild(buildCrArtistCard(artist)));
                 duplicateForInfiniteScroll(artistsTrack);
             } catch (err) { console.error('Erreur artistes:', err); }
+        
+            const goConnexion = document.getElementById("goConnexion");
+            if (goConnexion) {
+                goConnexion.addEventListener("click", () => {
+                    window.location.href = "connexion.html";
+                });
+            }    
         });
-
-        const goConnexion = document.getElementById("goConnexion");
-
-    goConnexion.addEventListener("click", () => {
-      window.location.href = "connexion.html"; // redirige vers la page unique login/register
-    });
 
     // Fonction pour récupérer les données du dashboard
     async function getDashboard() {
+        const welcomeEl = document.getElementById("welcome");
+        if (!welcomeEl) return;
         try {
             const res = await fetch("http://localhost:3000/dashboard", {
             method: "GET",
@@ -2637,12 +2640,13 @@
     getDashboard();
 
     <!-- Confetti CDN -->
-        src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
+        //src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
 
         // On attend que la page soit chargée
         document.addEventListener("DOMContentLoaded", function() {
 
             const popup = document.getElementById("avisPopup");
+            if (!popup) return; 
             let avisDejaAffichee = false;
 
             // On cache la popup au chargement
