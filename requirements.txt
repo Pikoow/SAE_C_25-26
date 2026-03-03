@@ -12,3 +12,4 @@ nltk
 fastapi
 uvicorn
 dotenv
+bcrypt

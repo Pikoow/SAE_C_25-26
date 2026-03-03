@@ -150,7 +150,7 @@ app.get("/dashboard", async (req, res) => {
 
   try {
     const user = await pool.query(
-      "SELECT user_id, user_firstname, user_mail, user_status FROM sae.users WHERE user_id=$1",
+      "SELECT user_id, user_firstname, user_lastname, user_mail, user_age, user_gender, user_location, user_status FROM sae.users WHERE user_id=$1",
       [req.session.userId]
     );
     res.json({ message: `Bienvenue ${user.rows[0].user_firstname}`, user: user.rows[0] });
