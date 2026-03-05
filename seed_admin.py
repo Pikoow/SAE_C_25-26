@@ -17,10 +17,10 @@ DB_CONFIG = {
     "port": int(os.getenv("POSTGRES_PORT", 5432))
 }
 
-ADMIN_EMAIL    = "admin@muse.fr"
-ADMIN_PASSWORD = "Admin123!"
-ADMIN_FIRST    = "Super"
-ADMIN_LAST     = "Admin"
+ADMIN_EMAIL    = os.getenv("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+ADMIN_FIRST    = os.getenv("ADMIN_FIRST_NAME")
+ADMIN_LAST     = os.getenv("ADMIN_LAST_NAME")
 
 def main():
     print("=== Création du compte Super Admin ===\n")
