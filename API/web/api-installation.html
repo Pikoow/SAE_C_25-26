@@ -65,12 +65,17 @@
                 <pre style="text-align: left;">pip install -r requirements.txt</pre>
                 
                 <h4>4. Configuration</h4>
-                <p>Créez un fichier <code>.env</code> à la racine du projet avec vos accès BDD :</p>
+                <p>Créez un fichier <code>.env</code> à la racine du projet avec vos accès BDD et les informations de l'administrateur principal:</p>
                 <pre style="text-align: left;">
 POSTGRES_DBNAME=votre nom de db  
 POSTGRES_USER=votre nom de user  
 POSTGRES_PASSWORD=votre password  
-POSTGRES_PORT=votre port</pre>
+POSTGRES_PORT=votre port
+
+ADMIN_EMAIL=email du compte admin
+ADMIN_PASSWORD=mot de passe du compte admin
+ADMIN_FIRST=prénom du compte admin
+ADMIN_LAST=nom de famille du compte admin</pre>
 
                 <h4>5. Mise en place de la base de données</h4>
                 <p>Récuperez les CSV nettoyés via ce lien <a href="https://drive.google.com/drive/folders/1DtQ8-IXiZsam_DDopiSt9yS9ogjt6_sH?usp=drive_link" target="_blank">Google Drive</a> et placez-les dans le dossier <code>Python/script_peuplement</code> du projet.</p>

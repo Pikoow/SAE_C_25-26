@@ -16,7 +16,12 @@ Template :
 `POSTGRES_DBNAME=votre nom de db  
 POSTGRES_USER=votre nom de user  
 POSTGRES_PASSWORD=votre password  
-POSTGRES_PORT=votre port`  
+POSTGRES_PORT=votre port
+
+ADMIN_EMAIL=email du compte admin
+ADMIN_PASSWORD=mot de passe du compte admin
+ADMIN_FIRST=prénom du compte admin
+ADMIN_LAST=nom de famille du compte admin`  
 
 ## 3. Création de la base
 
