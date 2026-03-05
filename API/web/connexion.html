@@ -264,6 +264,7 @@
             // Sauvegarde en localStorage (Session utilisateur)
             localStorage.setItem("userId", result.user.user_id);
             localStorage.setItem("userName", result.user.user_firstname);
+            localStorage.setItem("userRole", result.user.user_status || "user");
 
             // Redirection vers l'accueil après 1.5 secondes
             setTimeout(() => {

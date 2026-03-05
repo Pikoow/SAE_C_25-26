@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Administration - MuSE</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="header-ui.js" defer></script>
+    <style>
+        /* ====== ADMIN PAGE ====== */
+        .admin-page main {
+            min-height: calc(100vh - 200px);
+            background: #f8f8f8;
+            padding: 0;
+        }
+
+        .admin-hero {
+            background: linear-gradient(135deg, var(--gris-fonce) 0%, #1a1a1a 100%);
+            padding: 40px 50px 30px;
+            color: white;
+        }
+
+        .admin-hero h1 {
+            font-family: 'Rammetto One', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        .admin-hero p {
+            color: var(--gris-clair);
+            font-size: 0.95rem;
+        }
+
+        .admin-content {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 30px 50px 60px;
+        }
+
+        /* STATS CARDS */
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .stat-icon.users { background: #eef1ff; color: #4361ee; }
+        .stat-icon.admins { background: #fff3e0; color: var(--orange); }
+        .stat-icon.banned { background: #ffeef0; color: #e74c3c; }
+        .stat-icon.tracks { background: #e8f5e9; color: #27ae60; }
+        .stat-icon.albums { background: #f3e5f5; color: #8e24aa; }
+        .stat-icon.artists { background: #e0f7fa; color: #00bcd4; }
+        .stat-icon.playlists { background: #fff8e1; color: #f9a825; }
+        .stat-icon.genres { background: #fce4ec; color: #e91e63; }
+
+        .stat-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--noir);
+            line-height: 1;
+        }
+
+        .stat-info p {
+            font-size: 0.8rem;
+            color: var(--gris-fonce);
+            opacity: 0.7;
+            margin-top: 2px;
+        }
+
+        /* SECTION TITLES */
+        .admin-section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gris-fonce);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-section-title span {
+            font-size: 1.3rem;
+        }
+
+        /* SEARCH & FILTERS */
+        .admin-toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .admin-search {
+            flex: 1;
+            min-width: 240px;
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .admin-search:focus {
+            border-color: var(--orange);
+        }
+
+        .admin-filter-select {
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .admin-filter-select:focus {
+            border-color: var(--orange);
+        }
+
+        .admin-refresh-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            background: var(--orange);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .admin-refresh-btn:hover {
+            background: var(--orange-fonce);
+            transform: translateY(-1px);
+        }
+
+        /* USERS TABLE */
+        .admin-table-wrap {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            overflow: hidden;
+            margin-bottom: 36px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .admin-table thead th {
+            background: #fafafa;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gris-fonce);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .admin-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .admin-table tbody tr:hover {
+            background: #fef9f5;
+        }
+
+        .admin-table tbody td {
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            color: var(--noir);
+            border-bottom: 1px solid #f5f5f5;
+            vertical-align: middle;
+        }
+
+        .admin-table .user-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-table .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--orange) 0%, var(--orange-clair) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .role-badge.admin {
+            background: #fff3e0;
+            color: var(--orange);
+        }
+
+        .role-badge.user {
+            background: #eef1ff;
+            color: #4361ee;
+        }
+
+        .role-badge.banned {
+            background: #ffeef0;
+            color: #e74c3c;
+        }
+
+        .role-badge.super_admin {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            color: #e65100;
+            border: 1px solid #ffb74d;
+        }
+
+        /* ACTION BUTTONS */
+        .admin-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .admin-action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1.5px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .admin-action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .admin-action-btn:hover {
+            border-color: var(--orange);
+            background: #fff8f0;
+        }
+
+        .admin-action-btn.danger:hover {
+            border-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .admin-action-btn.ban:hover {
+            border-color: #f39c12;
+            background: #fffbf0;
+        }
+
+        .admin-action-btn[title]:hover::after {
+            content: attr(title);
+        }
+
+        /* PAGINATION */
+        .admin-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            background: #fafafa;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+            color: var(--gris-fonce);
+        }
+
+        .admin-pagination-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .admin-page-btn {
+            padding: 6px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .admin-page-btn:hover:not(:disabled) {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+
+        .admin-page-btn:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        /* MODAL */
+        .admin-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .admin-modal-overlay.visible {
+            display: flex;
+        }
+
+        .admin-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 30px 35px;
+            max-width: 440px;
+            width: 92%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .admin-modal h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--noir);
+        }
+
+        .admin-modal p {
+            font-size: 0.9rem;
+            color: var(--gris-fonce);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .admin-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .admin-modal-btn {
+            padding: 10px 24px;
+            border-radius: 10px;
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .admin-modal-btn.cancel {
+            background: #f0f0f0;
+            color: var(--gris-fonce);
+        }
+
+        .admin-modal-btn.cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .admin-modal-btn.danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .admin-modal-btn.danger:hover {
+            background: #c0392b;
+        }
+
+        .admin-modal-btn.primary {
+            background: var(--orange);
+            color: white;
+        }
+
+        .admin-modal-btn.primary:hover {
+            background: var(--orange-fonce);
+        }
+
+        /* USER DETAIL MODAL */
+        .user-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .user-detail-item {
+            background: #f8f8f8;
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+
+        .user-detail-item label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--gris-fonce);
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .user-detail-item span {
+            font-size: 0.9rem;
+            color: var(--noir);
+            font-weight: 500;
+        }
+
+        /* TOAST NOTIFICATION */
+        .admin-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 10000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .admin-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .admin-toast.success { background: #27ae60; }
+        .admin-toast.error { background: #e74c3c; }
+        .admin-toast.info { background: #3498db; }
+
+        /* EMPTY STATE */
+        .admin-empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--gris-fonce);
+            opacity: 0.6;
+        }
+
+        .admin-empty svg {
+            width: 40px;
+            height: 40px;
+            display: block;
+            margin: 0 auto 8px;
+        }
+
+        /* LOADING */
+        .admin-loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gris-fonce);
+        }
+
+        @keyframes adminSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .admin-spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 3px solid #e0e0e0;
+            border-top-color: var(--orange);
+            border-radius: 50%;
+            animation: adminSpin 0.7s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        /* HIDDEN */
+        .hidden { display: none !important; }
+    </style>
+</head>
+
+<body class="admin-page">
+
+    <header>
+        <a href="accueil.html"><h2>MuSE</h2></a>
+        <nav>
+            <a href="accueil.html">Accueil</a>
+            <a href="playlists.html">Playlists</a>
+            <a href="preferences.html">Préférences</a>
+            <div class="dropdown">
+                <a href="#">API ▾</a>
+                <div class="dropdown-content">
+                    <a href="api-installation.html">Installation</a>
+                    <a href="api-documentation.html">Documentation</a>
+                    <a href="api-test.html">Testez l'API</a>
+                </div>
+            </div>
+        </nav>
+        <div class="header-right">
+            <div id="auth-buttons" class="connexion-inscription">
+                <a href="connexion.html?mode=login">Connexion</a>
+                <button><a href="connexion.html?mode=register">Inscription</a></button>
+            </div>
+            <div id="user-menu" class="user-dropdown hidden">
+                <a href="#" id="user-name-display">Mon Profil ▾</a>
+                <div class="dropdown-content user-dropdown-content">
+                    <a href="profil.html">Mon profil</a>
+                    <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Guard : contenu masqué tant que l'admin n'est pas vérifié -->
+        <div id="admin-guard" class="admin-loading" style="min-height:60vh;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+            <div class="admin-spinner"></div>
+            <p>Vérification des droits d'accès...</p>
+        </div>
+
+        <div id="admin-main" class="hidden">
+            <div class="admin-hero">
+                <h1>[ Administration ]</h1>
+                <p>Panneau de gestion &mdash; Utilisateurs, Contenu &amp; Statistiques</p>
+            </div>
+
+            <div class="admin-content">
+
+                <!-- STATISTIQUES -->
+                <h2 class="admin-section-title"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></span> Vue d'ensemble</h2>
+                <div class="admin-stats" id="stats-grid">
+                    <!-- Filled by JS -->
+                </div>
+
+                <!-- GESTION UTILISATEURS -->
+                <h2 class="admin-section-title"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Gestion des utilisateurs</h2>
+
+                <div class="admin-toolbar">
+                    <input type="text" class="admin-search" id="user-search" placeholder="Rechercher par nom, prenom ou email..." />
+                    <select class="admin-filter-select" id="role-filter">
+                        <option value="">Tous les rôles</option>
+                        <option value="user">Utilisateurs</option>
+                        <option value="admin">Administrateurs</option>
+                        <option value="banned">Bannis</option>
+                    </select>
+                    <button class="admin-refresh-btn" id="btn-refresh" onclick="loadUsers()">Actualiser</button>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Utilisateur</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Âge</th>
+                                <th>Localisation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr><td colspan="7" class="admin-loading"><div class="admin-spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="admin-pagination" id="pagination">
+                        <span id="pagination-info">&mdash;</span>
+                        <div class="admin-pagination-btns">
+                            <button class="admin-page-btn" id="btn-prev" onclick="prevPage()" disabled>&lt; Precedent</button>
+                            <button class="admin-page-btn" id="btn-next" onclick="nextPage()">Suivant &gt;</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL: Confirmation -->
+    <div class="admin-modal-overlay" id="modal-confirm">
+        <div class="admin-modal">
+            <h3 id="modal-title">Confirmation</h3>
+            <p id="modal-message">Êtes-vous sûr ?</p>
+            <div class="admin-modal-actions">
+                <button class="admin-modal-btn cancel" onclick="closeModal('modal-confirm')">Annuler</button>
+                <button class="admin-modal-btn danger" id="modal-confirm-btn">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Détails utilisateur -->
+    <div class="admin-modal-overlay" id="modal-detail">
+        <div class="admin-modal" style="max-width:520px;">
+            <h3>Détails de l'utilisateur</h3>
+            <div class="user-detail-grid" id="user-detail-grid"></div>
+            <button class="admin-modal-btn cancel" onclick="closeModal('modal-detail')">Fermer</button>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="admin-toast" id="admin-toast"></div>
+
+    <footer>
+        <div class="titre-footer"><h2>MuSE</h2></div>
+        <div class="navigation-footer">
+            <div><p>Société</p><div><a href="#">À propos de nous</a><a href="#">Offre d'emploi</a></div></div>
+            <div><p>Liens utiles</p><div><a href="contact.html">Nous contacter</a></div></div>
+            <div><p>Communauté</p><div><a href="#">Développeurs</a></div></div>
+            <div><p>Légal</p><div><a href="#">Mentions légales</a></div></div>
+        </div>
+        <div class="barre-separation-footer"></div>
+        <div class="fin-footer">
+            <div class="reseaux-sociaux-footer">
+                <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"></a>
+                <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"></a>
+                <a href="#"><img src="../images/icones/github.avif" alt="GitHub"></a>
+                <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"></a>
+            </div>
+            <p>© 2026 MuSE Français</p>
+        </div>
+    </footer>
+
+    <script>
+        const AUTH_URL = "http://localhost:3000";
+        const API_URL = "http://127.0.0.1:8000";
+
+        let currentOffset = 0;
+        const PAGE_SIZE = 20;
+        let currentTotal = 0;
+        let searchTimeout = null;
+
+        // ============================
+        // GUARD : vérification admin
+        // ============================
+        async function checkAdmin() {
+            try {
+                const res = await fetch(`${AUTH_URL}/admin/check`, { credentials: "include" });
+                const data = await res.json();
+
+                if (!data.isAdmin) {
+                    window.location.href = "accueil.html";
+                    return;
+                }
+
+                document.getElementById("admin-guard").classList.add("hidden");
+                document.getElementById("admin-main").classList.remove("hidden");
+
+                loadStats();
+                loadUsers();
+            } catch (err) {
+                console.error("Admin check error:", err);
+                window.location.href = "accueil.html";
+            }
+        }
+
+        // ============================
+        // STATS
+        // ============================
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/admin/stats`);
+                const data = await res.json();
+
+                const ico = {
+                    users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+                    admins: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+                    banned: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
+                    tracks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+                    albums: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>',
+                    artists: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+                    playlists: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+                    genres: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+                };
+                const stats = [
+                    { key: "users", label: "Utilisateurs", cls: "users" },
+                    { key: "admins", label: "Admins", cls: "admins" },
+                    { key: "banned", label: "Bannis", cls: "banned" },
+                    { key: "tracks", label: "Tracks", cls: "tracks" },
+                    { key: "albums", label: "Albums", cls: "albums" },
+                    { key: "artists", label: "Artistes", cls: "artists" },
+                    { key: "playlists", label: "Playlists", cls: "playlists" },
+                    { key: "genres", label: "Genres", cls: "genres" }
+                ];
+
+                const grid = document.getElementById("stats-grid");
+                grid.innerHTML = stats.map(s => `
+                    <div class="stat-card">
+                        <div class="stat-icon ${s.cls}">${ico[s.key]}</div>
+                        <div class="stat-info">
+                            <h3>${(data[s.key] || 0).toLocaleString()}</h3>
+                            <p>${s.label}</p>
+                        </div>
+                    </div>
+                `).join("");
+            } catch (err) {
+                console.error("Stats error:", err);
+            }
+        }
+
+        // ============================
+        // USERS TABLE
+        // ============================
+        async function loadUsers() {
+            const search = document.getElementById("user-search").value.trim();
+            const role = document.getElementById("role-filter").value;
+            const tbody = document.getElementById("users-tbody");
+
+            tbody.innerHTML = `<tr><td colspan="7" class="admin-loading"><div class="admin-spinner"></div></td></tr>`;
+
+            try {
+                let url = `${API_URL}/admin/users?limit=${PAGE_SIZE}&offset=${currentOffset}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (role) url += `&role=${role}`;
+
+                const res = await fetch(url);
+                const data = await res.json();
+                currentTotal = data.total;
+
+                if (!data.users || data.users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="admin-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Aucun utilisateur trouve</td></tr>`;
+                    updatePagination();
+                    return;
+                }
+
+                tbody.innerHTML = data.users.map(u => {
+                    const initials = ((u.user_firstname?.[0] || "") + (u.user_lastname?.[0] || "")).toUpperCase() || "?";
+                    const roleCls = (u.user_status || "user").toLowerCase();
+                    const roleLabel = roleCls === "super_admin" ? "Super Admin" : roleCls === "admin" ? "Admin" : roleCls === "banned" ? "Banni" : "User";
+                    const isProtected = roleCls === "admin" || roleCls === "super_admin";
+
+                    return `
+                    <tr>
+                        <td style="font-weight:600;opacity:0.5">#${u.user_id}</td>
+                        <td>
+                            <div class="user-name-cell">
+                                <div class="user-avatar">${initials}</div>
+                                <div>
+                                    <div style="font-weight:600">${u.user_firstname || "—"} ${u.user_lastname || ""}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:var(--gris-fonce)">${u.user_mail || "—"}</td>
+                        <td><span class="role-badge ${roleCls}">${roleLabel}</span></td>
+                        <td>${u.user_age || "—"}</td>
+                        <td>${u.user_location || "—"}</td>
+                        <td>
+                            <div class="admin-actions">
+                                <button class="admin-action-btn" title="Details" onclick="showUserDetail(${u.user_id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
+                                ${!isProtected ? `
+                                    <button class="admin-action-btn ban" title="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}" 
+                                            onclick="confirmBan(${u.user_id}, '${u.user_firstname || ""}', ${roleCls !== 'banned'})">
+                                        ${roleCls === "banned" ? '<svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'}
+                                    </button>
+                                    <button class="admin-action-btn" title="Changer role" onclick="confirmRoleChange(${u.user_id}, '${u.user_firstname || ""}', '${roleCls}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></button>
+                                    <button class="admin-action-btn danger" title="Supprimer" onclick="confirmDelete(${u.user_id}, '${u.user_firstname || ""}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                                ` : `<span style="font-size:0.75rem;color:var(--gris-clair);">Protégé</span>`}
+                            </div>
+                        </td>
+                    </tr>`;
+                }).join("");
+
+                updatePagination();
+            } catch (err) {
+                console.error("Users load error:", err);
+                tbody.innerHTML = `<tr><td colspan="7" class="admin-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Erreur de chargement</td></tr>`;
+            }
+        }
+
+        function updatePagination() {
+            const info = document.getElementById("pagination-info");
+            const start = currentTotal === 0 ? 0 : currentOffset + 1;
+            const end = Math.min(currentOffset + PAGE_SIZE, currentTotal);
+            info.textContent = `${start}–${end} sur ${currentTotal}`;
+
+            document.getElementById("btn-prev").disabled = currentOffset === 0;
+            document.getElementById("btn-next").disabled = currentOffset + PAGE_SIZE >= currentTotal;
+        }
+
+        function prevPage() {
+            currentOffset = Math.max(0, currentOffset - PAGE_SIZE);
+            loadUsers();
+        }
+
+        function nextPage() {
+            currentOffset += PAGE_SIZE;
+            loadUsers();
+        }
+
+        // Recherche avec debounce
+        document.getElementById("user-search").addEventListener("input", () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentOffset = 0;
+                loadUsers();
+            }, 400);
+        });
+
+        document.getElementById("role-filter").addEventListener("change", () => {
+            currentOffset = 0;
+            loadUsers();
+        });
+
+        // ============================
+        // USER DETAIL
+        // ============================
+        async function showUserDetail(userId) {
+            try {
+                const res = await fetch(`${API_URL}/admin/users/${userId}`);
+                const u = await res.json();
+
+                const fields = [
+                    { label: "ID", value: u.user_id },
+                    { label: "Rôle", value: (u.user_status || "user").toUpperCase() },
+                    { label: "Prénom", value: u.user_firstname || "—" },
+                    { label: "Nom", value: u.user_lastname || "—" },
+                    { label: "Email", value: u.user_mail || "-" },
+                    { label: "Âge", value: u.user_age || "—" },
+                    { label: "Genre", value: u.user_gender || "—" },
+                    { label: "Localisation", value: u.user_location || "—" },
+                    { label: "Téléphone", value: u.user_phonenumber || "—" },
+                    { label: "Inscription", value: u.user_year_created ? new Date(u.user_year_created).toLocaleDateString("fr-FR") : "—" },
+                    { label: "Playlists", value: u.playlists_count || 0 },
+                    { label: "Favoris", value: u.favorites_count || 0 }
+                ];
+
+                document.getElementById("user-detail-grid").innerHTML = fields.map(f => `
+                    <div class="user-detail-item">
+                        <label>${f.label}</label>
+                        <span>${f.value}</span>
+                    </div>
+                `).join("");
+
+                openModal("modal-detail");
+            } catch (err) {
+                showToast("Erreur lors du chargement des détails", "error");
+            }
+        }
+
+        // ============================
+        // ACTIONS : BAN / ROLE / DELETE
+        // ============================
+        function confirmBan(userId, name, shouldBan) {
+            const action = shouldBan ? "bannir" : "debannir";
+            showConfirm(
+                `${shouldBan ? "Bannir" : "Debannir"} l'utilisateur`,
+                `Voulez-vous ${action} <strong>${name}</strong> ? ${shouldBan ? "L'utilisateur ne pourra plus se connecter." : "L'utilisateur retrouvera l'acces a son compte."}`,
+                shouldBan ? "danger" : "primary",
+                async () => {
+                    try {
+                        const res = await fetch(`${API_URL}/admin/users/${userId}/ban`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ banned: shouldBan })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            showToast(data.message, "success");
+                            loadUsers();
+                            loadStats();
+                        } else {
+                            showToast(data.detail || "Erreur", "error");
+                        }
+                    } catch (err) {
+                        showToast("Erreur serveur", "error");
+                    }
+                }
+            );
+        }
+
+        function confirmRoleChange(userId, name, currentRole) {
+            const newRole = currentRole === "user" || currentRole === "banned" ? "admin" : "user";
+            showConfirm(
+                "Changer le role",
+                `Voulez-vous passer <strong>${name}</strong> de <strong>${currentRole}</strong> à <strong>${newRole}</strong> ?`,
+                "primary",
+                async () => {
+                    try {
+                        const res = await fetch(`${API_URL}/admin/users/${userId}/role`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ role: newRole })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            showToast(data.message, "success");
+                            loadUsers();
+                            loadStats();
+                        } else {
+                            showToast(data.detail || "Erreur", "error");
+                        }
+                    } catch (err) {
+                        showToast("Erreur serveur", "error");
+                    }
+                }
+            );
+        }
+
+        function confirmDelete(userId, name) {
+            showConfirm(
+                "Supprimer l'utilisateur",
+                `Voulez-vous <strong>supprimer definitivement</strong> <strong>${name}</strong> ? Cette action est irreversible. Toutes les donnees associees seront perdues.`,
+                "danger",
+                async () => {
+                    try {
+                        const res = await fetch(`${API_URL}/admin/users/${userId}`, { method: "DELETE" });
+                        const data = await res.json();
+                        if (res.ok) {
+                            showToast(data.message, "success");
+                            loadUsers();
+                            loadStats();
+                        } else {
+                            showToast(data.detail || "Erreur", "error");
+                        }
+                    } catch (err) {
+                        showToast("Erreur serveur", "error");
+                    }
+                }
+            );
+        }
+
+        // ============================
+        // MODALS & TOAST
+        // ============================
+        function showConfirm(title, message, btnType, onConfirm) {
+            document.getElementById("modal-title").innerHTML = title;
+            document.getElementById("modal-message").innerHTML = message;
+
+            const btn = document.getElementById("modal-confirm-btn");
+            btn.className = `admin-modal-btn ${btnType}`;
+            btn.textContent = "Confirmer";
+
+            // Remove old listeners
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            newBtn.addEventListener("click", async () => {
+                closeModal("modal-confirm");
+                await onConfirm();
+            });
+
+            openModal("modal-confirm");
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add("visible");
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove("visible");
+        }
+
+        // Close modals on overlay click
+        document.querySelectorAll(".admin-modal-overlay").forEach(overlay => {
+            overlay.addEventListener("click", (e) => {
+                if (e.target === overlay) overlay.classList.remove("visible");
+            });
+        });
+
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById("admin-toast");
+            toast.textContent = msg;
+            toast.className = `admin-toast ${type} show`;
+            setTimeout(() => toast.classList.remove("show"), 3000);
+        }
+
+        // ============================
+        // LOGOUT
+        // ============================
+        document.addEventListener("DOMContentLoaded", () => {
+            const logoutBtn = document.getElementById("logoutBtn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    try {
+                        await fetch(`${AUTH_URL}/logout`, { method: "POST", credentials: "include" });
+                    } catch (err) {}
+                    localStorage.clear();
+                    window.location.href = "connexion.html";
+                });
+            }
+        });
+
+        // ============================
+        // INIT
+        // ============================
+        checkAdmin();
+    </script>
+</body>
+</html>

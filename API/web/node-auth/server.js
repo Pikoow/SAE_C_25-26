@@ -10,7 +10,12 @@ dotenv.config({ path: path.join(__dirname, "../../../.env") });
 
 const app = express();
 const ADMIN_ROLE = "admin";
+const SUPER_ADMIN_ROLE = "super_admin";
 const USER_ROLE = "user";
+
+function isAdminRole(role) {
+  return role === ADMIN_ROLE || role === SUPER_ADMIN_ROLE;
+}
 
 app.use(express.json());
 app.use(cors({
@@ -24,7 +29,7 @@ app.use(session({
   cookie: { secure: false }
 }));
 
-app.use(express.static(path.join(__dirname, ".."))); 
+app.use(express.static(path.join(__dirname, "..")));
 
 app.get("/", (req, res) => {
   res.redirect("../accueil.html");
@@ -136,7 +141,7 @@ app.post("/login", async (req, res) => {
 
     console.log("Session après login :", req.session);
 
-    res.json({ success: true, message: "Connecté", user });
+    res.json({ success: true, message: "Connecté", user: { ...user, user_status: (user.user_status || USER_ROLE).toLowerCase() } });
 
   } catch (err) {
     console.error("ERREUR LOGIN/REGISTER :", err);
@@ -173,7 +178,25 @@ app.post("/logout", (req, res) => {
   });
 });
 
+// ======== ADMIN CHECK ========
+app.get("/admin/check", async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ isAdmin: false, error: "Non connecté" });
+  }
 
+  try {
+    const result = await pool.query(
+      "SELECT user_status FROM sae.users WHERE user_id = $1",
+      [req.session.userId]
+    );
+
+    const role = (result.rows[0]?.user_status || USER_ROLE).toLowerCase();
+    res.json({ isAdmin: isAdminRole(role), isSuperAdmin: role === SUPER_ADMIN_ROLE, role });
+  } catch (err) {
+    console.error("ERREUR ADMIN CHECK :", err);
+    res.status(500).json({ isAdmin: false, error: "Erreur serveur" });
+  }
+});
 
 
 const PORT = 3000;

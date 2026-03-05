@@ -1377,6 +1377,364 @@ def delete_user(user_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ===== ADMIN ENDPOINTS =====
+
+class UpdateUserRole(BaseModel):
+    role: str  # "admin" ou "user"
+
+class BanUser(BaseModel):
+    banned: bool  # True = bannir, False = débannir
+
+
+# Statistiques globales pour le dashboard admin
+@app.get("/admin/stats")
+def admin_stats():
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.users")
+        total_users = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.users WHERE user_status = 'admin'")
+        total_admins = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.users WHERE user_status = 'super_admin'")
+        total_super_admins = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.users WHERE user_status = 'banned'")
+        total_banned = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.tracks")
+        total_tracks = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.album")
+        total_albums = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.artist")
+        total_artists = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.playlist")
+        total_playlists = cur.fetchone()['total']
+
+        cur.execute("SELECT COUNT(*) as total FROM sae.genre")
+        total_genres = cur.fetchone()['total']
+
+        cur.close()
+        conn.close()
+
+        return {
+            "users": total_users,
+            "admins": total_admins,
+            "super_admins": total_super_admins,
+            "banned": total_banned,
+            "tracks": total_tracks,
+            "albums": total_albums,
+            "artists": total_artists,
+            "playlists": total_playlists,
+            "genres": total_genres
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Liste tous les utilisateurs avec pagination et recherche
+@app.get("/admin/users")
+def admin_list_users(
+    limit: Optional[int] = Query(50, ge=1, le=500),
+    offset: Optional[int] = Query(0, ge=0),
+    search: Optional[str] = Query(None, description="Rechercher par nom, prénom ou email"),
+    role: Optional[str] = Query(None, description="Filtrer par rôle (admin, user, banned)")
+):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        where_clauses = []
+        params = []
+
+        if search:
+            where_clauses.append(
+                "(user_firstname ILIKE %s OR user_lastname ILIKE %s OR user_mail ILIKE %s)"
+            )
+            search_term = f"%{search}%"
+            params.extend([search_term, search_term, search_term])
+
+        if role:
+            where_clauses.append("LOWER(user_status) = %s")
+            params.append(role.lower())
+
+        where_sql = ""
+        if where_clauses:
+            where_sql = "WHERE " + " AND ".join(where_clauses)
+
+        # Compter le total
+        count_query = f"SELECT COUNT(*) as total FROM sae.users {where_sql}"
+        cur.execute(count_query, params)
+        total = cur.fetchone()['total']
+
+        # Récupérer les utilisateurs
+        query = f"""
+            SELECT
+                user_id, user_firstname, user_lastname, user_mail,
+                user_age, user_gender, user_location, user_status,
+                user_year_created
+            FROM sae.users
+            {where_sql}
+            ORDER BY user_id ASC
+            LIMIT %s OFFSET %s
+        """
+        params.extend([limit, offset])
+        cur.execute(query, params)
+        users = cur.fetchall()
+
+        cur.close()
+        conn.close()
+
+        return {
+            "total": total,
+            "count": len(users),
+            "limit": limit,
+            "offset": offset,
+            "users": users
+        }
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Détails d'un utilisateur
+@app.get("/admin/users/{user_id}")
+def admin_get_user(user_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT user_id, user_firstname, user_lastname, user_mail,
+                   user_age, user_gender, user_location, user_status,
+                   user_year_created, user_phonenumber
+            FROM sae.users WHERE user_id = %s
+        """, (user_id,))
+        user = cur.fetchone()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+        # Nombre de playlists
+        cur.execute("""
+            SELECT COUNT(*) as total FROM sae.playlist_user WHERE user_id = %s
+        """, (user_id,))
+        user['playlists_count'] = cur.fetchone()['total']
+
+        # Favoris
+        cur.execute("""
+            SELECT COUNT(*) as total FROM sae.favorite WHERE user_id = %s
+        """, (user_id,))
+        user['favorites_count'] = cur.fetchone()['total']
+
+        cur.close()
+        conn.close()
+
+        return user
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Changer le rôle d'un utilisateur
+@app.put("/admin/users/{user_id}/role")
+def admin_update_role(user_id: int, body: UpdateUserRole):
+    if body.role not in ("admin", "user"):
+        raise HTTPException(status_code=400, detail="Rôle invalide. Utiliser 'admin' ou 'user'.")
+
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        # Verifier le role actuel de la cible
+        cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (user_id,))
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        if row['user_status'] == 'super_admin':
+            raise HTTPException(status_code=403, detail="Impossible de modifier le rôle du super administrateur")
+
+        cur.execute(
+            "UPDATE sae.users SET user_status = %s WHERE user_id = %s",
+            (body.role, user_id)
+        )
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": f"Rôle mis à jour en '{body.role}'"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Bannir / Débannir un utilisateur
+@app.put("/admin/users/{user_id}/ban")
+def admin_ban_user(user_id: int, body: BanUser):
+    new_status = "banned" if body.banned else "user"
+
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        # Empêcher de bannir un admin
+        cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (user_id,))
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        if row['user_status'] in ('admin', 'super_admin') and body.banned:
+            raise HTTPException(status_code=403, detail="Impossible de bannir un administrateur")
+
+        cur.execute(
+            "UPDATE sae.users SET user_status = %s WHERE user_id = %s",
+            (new_status, user_id)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        action = "banni" if body.banned else "débanni"
+        return {"success": True, "message": f"Utilisateur {action}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Supprimer un utilisateur (admin)
+@app.delete("/admin/users/{user_id}")
+def admin_delete_user(user_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        # Empêcher de supprimer un admin
+        cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (user_id,))
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        if row['user_status'] in ('admin', 'super_admin'):
+            raise HTTPException(status_code=403, detail="Impossible de supprimer un administrateur")
+
+        # Supprimer les données liées
+        cur.execute("DELETE FROM sae.favorite WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM sae.playlist_user WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM sae.users_track WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM sae.users WHERE user_id = %s", (user_id,))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": "Utilisateur supprimé"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Supprimer une track (modération)
+@app.delete("/admin/tracks/{track_id}")
+def admin_delete_track(track_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        # Supprimer dans les tables liées
+        cur.execute("DELETE FROM sae.playlist_track WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.users_track WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.track_genre WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.license WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.song_social_score WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.song_rank WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.audio WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.temporal_features WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.artist_album_track WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.artist_track_publisher WHERE track_id = %s", (track_id,))
+        cur.execute("DELETE FROM sae.tracks WHERE track_id = %s", (track_id,))
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Track non trouvée")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": "Track supprimée"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Supprimer une playlist (modération)
+@app.delete("/admin/playlists/{playlist_id}")
+def admin_delete_playlist(playlist_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("DELETE FROM sae.playlist_track WHERE playlist_id = %s", (playlist_id,))
+        cur.execute("DELETE FROM sae.playlist_user WHERE playlist_id = %s", (playlist_id,))
+        cur.execute("DELETE FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Playlist non trouvée")
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": "Playlist supprimée"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
     # Lance le serveur sur le port 8000
