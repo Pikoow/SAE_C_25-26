@@ -254,13 +254,13 @@ function generatePlaylistCovers(tracks) {
     tracks.slice(0, 4).forEach(track => {
         let imageUrl = getTrackImageUrl(track);
         html += `<div class="cover-item">
-            <img src="${imageUrl}" alt="${escapeHtml(track.track_title)}" onerror="this.src='images/no_image_music.png'">
+            <img src="${imageUrl}" alt="${escapeHtml(track.track_title)}" onerror="this.src='images/no_image_music.avif'">
         </div>`;
     });
 
     for (let i = tracks.length; i < 4; i++) {
         html += `<div class="cover-item">
-            <img src="images/no_image_music.png" alt="Aucune image">
+            <img src="images/no_image_music.avif" alt="Aucune image">
         </div>`;
     }
 
@@ -276,7 +276,7 @@ function getTrackImageUrl(track) {
             return `https://freemusicarchive.org/image/?file=images%2Falbums%2F${filename}&width=290&height=290&type=album`;
         }
     }
-    return 'images/no_image_music.png';
+    return 'images/no_image_music.avif';
 }
 
 // ===== RECHERCHE DE TRACKS (AUTOCOMPLETE) =====
@@ -454,8 +454,8 @@ function showPlaylistModal(playlist) {
 
     let coverGridHtml = '';
     for (let i = 0; i < 4; i++) {
-        const imgUrl = tracks[i] ? getTrackImageUrl(tracks[i]) : 'images/no_image_music.png';
-        coverGridHtml += `<img src="${imgUrl}" alt="" onerror="this.src='images/no_image_music.png'">`;
+        const imgUrl = tracks[i] ? getTrackImageUrl(tracks[i]) : 'images/no_image_music.avif';
+        coverGridHtml += `<img src="${imgUrl}" alt="" onerror="this.src='images/no_image_music.avif'">`;
     }
 
     let tracksHtml = '';
@@ -473,7 +473,7 @@ function showPlaylistModal(playlist) {
                             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </span>
                     </div>
-                    <img src="${getTrackImageUrl(track)}" alt="" class="track-image" onerror="this.src='images/no_image_music.png'">
+                    <img src="${getTrackImageUrl(track)}" alt="" class="track-image" onerror="this.src='images/no_image_music.avif'">
                     <div class="track-details">
                         <div class="track-title">${escapeHtml(track.track_title)}</div>
                         <div class="track-artist">${escapeHtml(track.artist_names || "Artiste inconnu")}</div>

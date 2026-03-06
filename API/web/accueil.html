@@ -1357,7 +1357,7 @@
             <div class="album-popup-card">
                 <div class="album-popup-header">
                     <button class="ap-back-btn" id="apBackBtn" title="Retour à l'artiste">&larr;</button>
-                    <img id="apAlbumImg" src="images/no_image_music.png" alt="Album">
+                    <img id="apAlbumImg" src="images/no_image_music.avif" alt="Album">
                     <div class="album-popup-meta">
                         <h2 id="apAlbumTitle">Chargement...</h2>
                         <p class="ap-artist" id="apAlbumArtist"></p>
@@ -1379,7 +1379,7 @@
         <div class="artist-popup-overlay" id="artistPopupOverlay">
             <div class="artist-popup-card">
                 <div class="artist-popup-header">
-                    <img id="artpImg" src="images/no_image_artist.png" alt="Artiste">
+                    <img id="artpImg" src="images/no_image_artist.avif" alt="Artiste">
                     <div class="artp-meta">
                         <h2 id="artpName">Chargement...</h2>
                         <p id="artpStats"></p>
@@ -1502,7 +1502,7 @@
                     const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                     filename = match ? match[1] : track.track_image_file;
                 }
-                let imageUrl = "images/no_image_music.png";
+                let imageUrl = "images/no_image_music.avif";
                 if (filename) {
                     imageUrl = "https://freemusicarchive.org/image/?file=images%2Falbums%2F" + filename + "&width=290&height=290&type=album";
                 }
@@ -1510,7 +1510,7 @@
                 trackCard.classList.add("track-card");
                 trackCard.dataset.trackId = track.track_id;
                 trackCard.innerHTML = `
-                    <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.png'">
+                    <img src="${imageUrl}" alt="${track.track_title}" class="track-cover" onerror="this.src='images/no_image_music.avif'">
                     <div class="track-info">
                         <h3>${track.track_title}</h3>
                         <p>${track.artist_names?.split(",")[0] || "Artiste inconnu"}</p>
@@ -1918,7 +1918,7 @@
                 const match = track.track_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                 filename = match ? match[1] : track.track_image_file;
             }
-            let imageUrl = 'images/no_image_music.png';
+            let imageUrl = 'images/no_image_music.avif';
             if (filename) imageUrl = 'https://freemusicarchive.org/image/?file=images%2Falbums%2F' + filename + '&width=290&height=290&type=album';
             const artistName = track.artist_names?.split(',')[0] || track.artist_info?.artist_name || 'Artiste inconnu';
             const card = document.createElement('div');
@@ -1926,7 +1926,7 @@
             card.dataset.trackId = track.track_id;
             card.innerHTML = `
                 <div class="cr-card-img-wrapper">
-                    <img src="${imageUrl}" alt="${crEscHtml(track.track_title)}" class="cr-card-img" onerror="this.src='images/no_image_music.png'">
+                    <img src="${imageUrl}" alt="${crEscHtml(track.track_title)}" class="cr-card-img" onerror="this.src='images/no_image_music.avif'">
                     <div class="cr-card-overlay">
                         <button class="cr-play-btn" title="Écouter" data-track-id="${track.track_id}">
                             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -1948,7 +1948,7 @@
                 const match = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                 filename = match ? match[1] : album.album_image_file;
             }
-            let imageUrl = 'images/no_image_music.png';
+            let imageUrl = 'images/no_image_album.avif';
             if (filename && filename !== 'album.jpg') imageUrl = 'https://freemusicarchive.org/image/?file=images%2Falbums%2F' + filename + '&width=290&height=290&type=album';
             const artistName = album.artists ? album.artists.split(',')[0].trim() : 'Artiste inconnu';
             const card = document.createElement('div');
@@ -1956,7 +1956,7 @@
             card.dataset.albumId = album.album_id;
             card.innerHTML = `
                 <div class="cr-card-img-wrapper">
-                    <img src="${imageUrl}" alt="${crEscHtml(album.album_title)}" class="cr-card-img" onerror="this.src='images/no_image_music.png'">
+                    <img src="${imageUrl}" alt="${crEscHtml(album.album_title)}" class="cr-card-img" onerror="this.src='images/no_image_album.avif'">
                     <div class="cr-card-overlay"></div>
                 </div>
                 <div class="cr-card-info">
@@ -1973,14 +1973,14 @@
                 const match = artist.artist_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                 filename = match ? match[1] : artist.artist_image_file;
             }
-            let imageUrl = 'images/no_image_artist.png';
+            let imageUrl = 'images/no_image_artist.avif';
             if (filename) imageUrl = 'https://freemusicarchive.org/image/?file=images%2Fartists%2F' + filename + '&width=290&height=290&type=artist';
             const card = document.createElement('div');
             card.className = 'cr-card artist-style cr-artist-card';
             card.dataset.artistId = artist.artist_id;
             card.innerHTML = `
                 <div class="cr-card-img-wrapper">
-                    <img src="${imageUrl}" alt="${crEscHtml(artist.artist_name)}" class="cr-card-img" onerror="this.src='images/no_image_artist.png'">
+                    <img src="${imageUrl}" alt="${crEscHtml(artist.artist_name)}" class="cr-card-img" onerror="this.src='images/no_image_artist.avif'">
                     <div class="cr-card-overlay"></div>
                 </div>
                 <div class="cr-card-info">
@@ -2041,7 +2041,7 @@
 
             // Get image from the card
             const cardImg = cardEl.querySelector('.cr-card-img');
-            imgEl.src = cardImg ? cardImg.src : 'images/no_image_music.png';
+            imgEl.src = cardImg ? cardImg.src : 'images/no_image_album.avif';
             titleEl.textContent = 'Chargement...';
             artistEl.textContent = '';
             countEl.textContent = '';
@@ -2177,7 +2177,7 @@
             const bodyEl = document.getElementById('artpBody');
 
             const cardImg = cardEl.querySelector('.cr-card-img');
-            imgEl.src = cardImg ? cardImg.src : 'images/no_image_artist.png';
+            imgEl.src = cardImg ? cardImg.src : 'images/no_image_artist.avif';
             nameEl.textContent = 'Chargement...';
             statsEl.textContent = '';
             bodyEl.innerHTML = '<div class="ap-loading">Chargement...</div>';
@@ -2227,14 +2227,14 @@
                             const m = album.album_image_file.match(/([^/]+\.(jpg|png|jpeg))$/i);
                             fn = m ? m[1] : album.album_image_file;
                         }
-                        let imgUrl = 'images/no_image_music.png';
+                        let imgUrl = 'images/no_image_album.avif';
                         if (fn && fn !== 'album.jpg') imgUrl = 'https://freemusicarchive.org/image/?file=images%2Falbums%2F' + fn + '&width=290&height=290&type=album';
 
                         const ac = document.createElement('div');
                         ac.className = 'artp-album-card';
                         ac.dataset.albumId = album.album_id;
                         ac.innerHTML = `
-                            <img src="${imgUrl}" alt="${crEscHtml(album.album_title)}" onerror="this.src='images/no_image_music.png'">
+                            <img src="${imgUrl}" alt="${crEscHtml(album.album_title)}" onerror="this.src='images/no_image_album.avif'">
                             <p class="artp-album-title">${crEscHtml(album.album_title)}</p>
                             <p class="artp-album-count">${album.tracks.length} morceaux</p>
                         `;
@@ -2691,12 +2691,12 @@
             if (type === 'album' && id) {
                 // Open album popup
                 const dummyCard = document.createElement('div');
-                dummyCard.innerHTML = '<img class="cr-card-img" src="images/no_image_music.png">';
+                dummyCard.innerHTML = '<img class="cr-card-img" src="images/no_image_album.avif">';
                 openAlbumPopup(id, dummyCard);
             } else if (type === 'artist' && id) {
                 // Open artist popup
                 const dummyCard = document.createElement('div');
-                dummyCard.innerHTML = '<img class="cr-card-img" src="images/no_image_artist.png">';
+                dummyCard.innerHTML = '<img class="cr-card-img" src="images/no_image_artist.avif">';
                 openArtistPopup(id, dummyCard);
             } else if (type === 'playlist') {
                 // Navigate to playlists page
