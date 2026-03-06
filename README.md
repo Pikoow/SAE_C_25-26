@@ -45,7 +45,8 @@ Lancer le script `seed_admin.py`.
 
 ## 5. Lancement de l'API
 
-Lancez le script : `python API/scripts/main.py`.
+Lancez le script : `python API/scripts/main.py`.  
+Cela peut prendre un temps plus au moins important.
 
 ## 6. Lancement du server node
 
