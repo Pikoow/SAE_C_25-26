@@ -82,11 +82,15 @@ ADMIN_LAST=nom de famille du compte admin</pre>
                 <p>Exécutez le script de peuplement à la racine du projet pour créer les tables et insérer les données :</p>
                 <pre style="text-align: left;">python setup_db.py</pre>
 
-                <h4>6. Lancer le serveur API</h4>
+                <h4>6. Création de l'admin</h4>
+                <p>Une fois la base de données configurée, lancez le script :</p>
+                <pre style="text-align: left;">python seed_admin.py</pre>
+            
+                <h4>7. Lancer le serveur API</h4>
                 <p>Une fois la base de données configurée, lancez le serveur API avec :</p>
                 <pre style="text-align: left;">python API/scripts/main.py</pre>
 
-                <h4>7. Accéder au site</h4>
+                <h4>8. Accéder au site</h4>
                 <p>Dans un terminal différent, lancez le serveur node avec :</p>
                 <pre style="text-align: left;">node API/web/node-auth/server.js</pre>
                 <p>Ouvrez votre navigateur et accédez à <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> pour voir le site en action.</p>

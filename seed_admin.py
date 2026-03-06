@@ -19,8 +19,8 @@ DB_CONFIG = {
 
 ADMIN_EMAIL    = os.getenv("ADMIN_EMAIL")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
-ADMIN_FIRST    = os.getenv("ADMIN_FIRST_NAME")
-ADMIN_LAST     = os.getenv("ADMIN_LAST_NAME")
+ADMIN_FIRST    = os.getenv("ADMIN_FIRST")
+ADMIN_LAST     = os.getenv("ADMIN_LAST")
 
 def main():
     print("=== Création du compte Super Admin ===\n")
