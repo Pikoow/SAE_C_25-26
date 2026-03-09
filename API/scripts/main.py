@@ -21,6 +21,28 @@ from fastapi.middleware.cors import CORSMiddleware
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     initialize_artist_system()
+    # Auto-migration: add position column to playlist_track if missing
+    try:
+        conn = get_db_connection()
+        if conn:
+            cur = conn.cursor()
+            cur.execute("ALTER TABLE sae.playlist_track ADD COLUMN IF NOT EXISTS position INT DEFAULT 0;")
+            # Backfill position for existing rows that have position=0
+            cur.execute("""
+                WITH numbered AS (
+                    SELECT ctid, ROW_NUMBER() OVER (PARTITION BY playlist_id ORDER BY track_id) - 1 AS pos
+                    FROM sae.playlist_track
+                    WHERE position = 0
+                )
+                UPDATE sae.playlist_track SET position = numbered.pos
+                FROM numbered WHERE sae.playlist_track.ctid = numbered.ctid AND sae.playlist_track.position = 0;
+            """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            print("Migration: playlist_track.position OK")
+    except Exception as e:
+        print(f"Migration warning: {e}")
     yield
 
 app = FastAPI(title="API Muse", lifespan=lifespan)
@@ -814,11 +836,11 @@ def create_playlist(data: PlaylistCreate):
         # 4. Ajouter les musiques sélectionnées à la playlist
         tracks_added = 0
         if data.track_ids and len(data.track_ids) > 0:
-            for track_id in data.track_ids:
+            for idx, track_id in enumerate(data.track_ids):
                 try:
                     cur.execute(
-                        "INSERT INTO sae.playlist_track (playlist_id, track_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",
-                        (playlist_id, track_id)
+                        "INSERT INTO sae.playlist_track (playlist_id, track_id, position) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+                        (playlist_id, track_id, idx)
                     )
                     tracks_added += 1
                 except Exception as e:
@@ -896,7 +918,7 @@ def get_playlist_by_id(playlist_id: int):
             WHERE pt.playlist_id = %s
             GROUP BY t.track_id, t.track_title, t.track_duration, t.track_genre_top, 
                      t.track_listens, t.track_file, t.track_image_file
-            ORDER BY MIN(pt.track_id)  -- Changement ici : utilisation d'une fonction d'agrégat au lieu de pt.track_id directement
+            ORDER BY MIN(pt.position)
         """
         cur.execute(tracks_query, (playlist_id,))
         tracks = cur.fetchall()
@@ -984,8 +1006,8 @@ def update_tracks_in_playlist(playlist_id: int, data: PlaylistUpdateTracks):
         cur = conn.cursor()
         # On vide la playlist actuelle pour simplifier la mise à jour
         cur.execute("DELETE FROM sae.playlist_track WHERE playlist_id = %s", (playlist_id,))
-        for t_id in data.track_ids:
-            cur.execute("INSERT INTO sae.playlist_track (playlist_id, track_id) VALUES (%s, %s)", (playlist_id, t_id))
+        for idx, t_id in enumerate(data.track_ids):
+            cur.execute("INSERT INTO sae.playlist_track (playlist_id, track_id, position) VALUES (%s, %s, %s)", (playlist_id, t_id, idx))
         conn.commit()
         return {"message": "Liste de lecture mise à jour"}
     finally:
