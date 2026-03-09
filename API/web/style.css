@@ -2711,3 +2711,4 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     border-color: var(--orange);
     color: var(--orange);
 }
+

@@ -271,47 +271,90 @@
         /* ACTION BUTTONS */
         .admin-actions {
             display: flex;
-            gap: 6px;
+            gap: 8px;
         }
 
+        /* STYLE DE BASE DU BOUTON */
         .admin-action-btn {
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            border: 1.5px solid #e0e0e0;
+            border: 1.5px solid #eee;
             background: white;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            transition: all 0.2s;
+            position: relative; /* Indispensable pour positionner le tooltip */
+            transition: all 0.2s ease;
+            color: #666;
         }
 
-        .admin-action-btn svg {
-            width: 16px;
-            height: 16px;
+        /* LE TOOLTIP (LE PETIT TEXTE QUI FLOTTE) */
+        .admin-action-btn::after {
+            content: attr(data-tooltip); /* On utilise data-tooltip au lieu de title */
+            position: absolute;
+            bottom: 125%; /* Apparaît au-dessus du bouton */
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: var(--gris-fonce);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 10;
         }
 
+        /* LA PETITE POINTE DU TOOLTIP */
+        .admin-action-btn::before {
+            content: '';
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            border: 6px solid transparent;
+            border-top-color: var(--gris-fonce);
+            opacity: 0;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        /* AFFICHAGE AU SURVOL */
+        .admin-action-btn:hover::after,
+        .admin-action-btn:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* COULEURS AU SURVOL SELON L'ACTION */
         .admin-action-btn:hover {
+            color: var(--orange);
             border-color: var(--orange);
             background: #fff8f0;
         }
 
         .admin-action-btn.danger:hover {
+            color: #e74c3c;
             border-color: #e74c3c;
             background: #fff5f5;
         }
 
         .admin-action-btn.ban:hover {
+            color: #f39c12;
             border-color: #f39c12;
             background: #fffbf0;
         }
 
-        .admin-action-btn[title]:hover::after {
-            content: attr(title);
+        .admin-action-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
         }
-
         /* PAGINATION */
         .admin-pagination {
             display: flex;
@@ -800,14 +843,14 @@
                         <td>${u.user_location || "—"}</td>
                         <td>
                             <div class="admin-actions">
-                                <button class="admin-action-btn" title="Details" onclick="showUserDetail(${u.user_id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
+                                <button class="admin-action-btn" data-tooltip="Détails" onclick="showUserDetail(${u.user_id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
                                 ${!isProtected ? `
-                                    <button class="admin-action-btn ban" title="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}" 
+                                    <button class="admin-action-btn ban" data-tooltip="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}" 
                                             onclick="confirmBan(${u.user_id}, '${u.user_firstname || ""}', ${roleCls !== 'banned'})">
                                         ${roleCls === "banned" ? '<svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'}
                                     </button>
-                                    <button class="admin-action-btn" title="Changer role" onclick="confirmRoleChange(${u.user_id}, '${u.user_firstname || ""}', '${roleCls}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></button>
-                                    <button class="admin-action-btn danger" title="Supprimer" onclick="confirmDelete(${u.user_id}, '${u.user_firstname || ""}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                                    <button class="admin-action-btn" data-tooltip="Changer rôle" onclick="confirmRoleChange(${u.user_id}, '${u.user_firstname || ""}', '${roleCls}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></button>
+                                    <button class="admin-action-btn danger" data-tooltip="Supprimer" onclick="confirmDelete(${u.user_id}, '${u.user_firstname || ""}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                                 ` : `<span style="font-size:0.75rem;color:var(--gris-clair);">Protégé</span>`}
                             </div>
                         </td>
