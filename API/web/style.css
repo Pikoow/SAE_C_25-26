@@ -2066,6 +2066,36 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     transform: scale(1.15);
 }
 
+/* ---- Drag & Drop Reorder ---- */
+.playlists-page .pl-drag-handle {
+    font-size: 1.2rem;
+    color: #ccc;
+    cursor: grab;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.playlists-page .pl-drag-handle:active { cursor: grabbing; }
+.playlists-page .modal-track-item:hover .pl-drag-handle { color: var(--orange); }
+
+.playlists-page .modal-track-item.pl-dragging {
+    opacity: 0.35;
+    background: rgba(237, 122, 38, 0.05);
+    box-shadow: none;
+}
+
+.playlists-page .pl-drop-indicator {
+    height: 3px;
+    background: var(--orange);
+    border-radius: 2px;
+    margin: 0 16px;
+    transition: opacity 0.15s;
+    box-shadow: 0 0 6px rgba(237, 122, 38, 0.5);
+}
+
 .playlists-page .pl-inline-progress {
     position: absolute;
     bottom: 0;

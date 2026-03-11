@@ -23,13 +23,13 @@ $(document).ready(function () {
 function setupCreateModal() {
     $("#close-create-modal").on("click", closeCreateModal);
 
-    $("#create-playlist-modal").on("click", function(e) {
+    $("#create-playlist-modal").on("click", function (e) {
         if ($(e.target).is("#create-playlist-modal")) {
             closeCreateModal();
         }
     });
 
-    $(document).on("keydown", function(e) {
+    $(document).on("keydown", function (e) {
         if (e.key === "Escape" && $("#create-playlist-modal").is(":visible")) {
             closeCreateModal();
         }
@@ -466,7 +466,8 @@ function showPlaylistModal(playlist) {
             const dur = `${mins}:${secs.toString().padStart(2, '0')}`;
 
             tracksHtml += `
-                <div class="modal-track-item" data-track-id="${track.track_id}" data-index="${idx}">
+                <div class="modal-track-item" data-track-id="${track.track_id}" data-index="${idx}" draggable="true">
+                    <div class="pl-drag-handle" title="Glisser pour réorganiser">≡</div>
                     <div class="pl-track-num">
                         <span class="pl-num-text">${idx + 1}</span>
                         <span class="pl-play-icon">
@@ -548,7 +549,7 @@ function showPlaylistModal(playlist) {
                         artist: track.artist_info?.artist_name || 'Artiste inconnu'
                     };
                 })
-                .catch(() => {});
+                .catch(() => { });
         });
     }
 
@@ -705,6 +706,111 @@ function showPlaylistModal(playlist) {
             playTrackInModal(tracks[firstIdx].track_id, firstRow[0]);
         }
     });
+
+    // ====== DRAG AND DROP REORDER ======
+    const tracksList = modal.find('.modal-tracks-list')[0];
+    let draggedEl = null;
+
+    tracksList.addEventListener('dragstart', function (e) {
+        const item = e.target.closest('.modal-track-item');
+        if (!item) return;
+        draggedEl = item;
+        item.classList.add('pl-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', '');
+    });
+
+    tracksList.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const afterEl = getDragAfterElement(tracksList, e.clientY);
+        if (!draggedEl) return;
+        // Remove old indicator
+        tracksList.querySelectorAll('.pl-drop-indicator').forEach(el => el.remove());
+        const indicator = document.createElement('div');
+        indicator.className = 'pl-drop-indicator';
+        if (afterEl) {
+            tracksList.insertBefore(indicator, afterEl);
+        } else {
+            tracksList.appendChild(indicator);
+        }
+    });
+
+    tracksList.addEventListener('dragleave', function (e) {
+        if (!tracksList.contains(e.relatedTarget)) {
+            tracksList.querySelectorAll('.pl-drop-indicator').forEach(el => el.remove());
+        }
+    });
+
+    tracksList.addEventListener('drop', function (e) {
+        e.preventDefault();
+        tracksList.querySelectorAll('.pl-drop-indicator').forEach(el => el.remove());
+        if (!draggedEl) return;
+        const afterEl = getDragAfterElement(tracksList, e.clientY);
+        if (afterEl) {
+            tracksList.insertBefore(draggedEl, afterEl);
+        } else {
+            tracksList.appendChild(draggedEl);
+        }
+        draggedEl.classList.remove('pl-dragging');
+        draggedEl = null;
+        // Update numbers, data-index, and save
+        updateTrackOrderAfterDrag();
+    });
+
+    tracksList.addEventListener('dragend', function () {
+        tracksList.querySelectorAll('.pl-drop-indicator').forEach(el => el.remove());
+        if (draggedEl) {
+            draggedEl.classList.remove('pl-dragging');
+            draggedEl = null;
+        }
+    });
+
+    function getDragAfterElement(container, y) {
+        const items = [...container.querySelectorAll('.modal-track-item:not(.pl-dragging)')];
+        let closest = null;
+        let closestOffset = Number.NEGATIVE_INFINITY;
+        items.forEach(child => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closestOffset) {
+                closestOffset = offset;
+                closest = child;
+            }
+        });
+        return closest;
+    }
+
+    function updateTrackOrderAfterDrag() {
+        const items = tracksList.querySelectorAll('.modal-track-item');
+        const newTrackIds = [];
+        items.forEach((item, idx) => {
+            item.setAttribute('data-index', idx);
+            const numEl = item.querySelector('.pl-num-text');
+            if (numEl) numEl.textContent = idx + 1;
+            newTrackIds.push(parseInt(item.getAttribute('data-track-id')));
+        });
+
+        // Reorder tracks array to match new order
+        const trackMap = {};
+        tracks.forEach(t => { trackMap[t.track_id] = t; });
+        tracks.length = 0;
+        newTrackIds.forEach(id => { if (trackMap[id]) tracks.push(trackMap[id]); });
+
+        // Reset play order to sequential with new order
+        plPlayOrder = tracks.map((_, i) => i);
+
+        // Save to API
+        fetch(`${API_BASE_URL}/playlists/${playlist.playlist_id}/tracks`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ track_ids: newTrackIds })
+        }).then(res => {
+            if (res.ok) {
+                showNotification('Ordre mis à jour', 'success');
+            }
+        }).catch(() => { });
+    }
 }
 
 window.removeTrackFromPlaylist = async function (playlistId, trackId) {
