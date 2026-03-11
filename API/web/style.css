@@ -1285,7 +1285,6 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     grid-template-rows: repeat(2, 1fr);
     height: 100%;
     width: 100%;
-    gap: 2px;
     background-color: var(--blanc);
 }
 
@@ -1317,7 +1316,13 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     font-size: 3rem;
 }
 
-.playlists-page .playlist-info { padding: 20px; flex: 1; }
+/* Added flexbox properties to allow pushing children to the bottom */
+.playlists-page .playlist-info { 
+    padding: 20px; 
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+}
 
 .playlists-page .playlist-info h3 {
     font-family: 'Outfit', sans-serif;
@@ -1340,12 +1345,13 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 
 .playlists-page .playlist-meta {
     display: flex;
+    /* Replaced flex: 1 with margin-top: auto to push this and the button to the bottom */
+    margin-top: auto; 
     justify-content: space-between;
     color: #888;
     font-size: 0.8rem;
     margin-bottom: 20px;
     padding-bottom: 15px;
-    border-bottom: 1px solid var(--gris-clair);
 }
 
 .playlists-page .playlist-actions { display: flex; gap: 10px; }
@@ -1439,12 +1445,6 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     background: linear-gradient(145deg, #f8f9fa, #ffffff);
     border-radius: 20px;
     color: var(--gris-fonce);
-}
-
-.playlists-page .empty-state p:first-child {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 10px;
 }
 
 .playlists-page .create-modal-overlay,

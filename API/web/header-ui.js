@@ -11,6 +11,7 @@ function updateHeaderDisplay() {
 
     // 2. Sélectionner les éléments
     const authButtons = document.getElementById("auth-buttons");
+    const authButtonsDisplay = document.getElementById("auth-buttons-display");
     const userMenu = document.getElementById("user-menu");
     const userNameDisplay = document.getElementById("user-name-display");
 
@@ -18,11 +19,12 @@ function updateHeaderDisplay() {
     if (userId) {
         // --- MODE CONNECTÉ ---
         if (authButtons) authButtons.classList.add("hidden");
+        if (authButtonsDisplay) authButtonsDisplay.classList.add("hidden");
         if (userMenu) userMenu.classList.remove("hidden");
 
         // Mettre le prénom dans le bouton
         if (userName && userNameDisplay) {
-            userNameDisplay.innerHTML = `${userName} ▾`;
+            userNameDisplay.innerHTML = `${userName} &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span>`;
         }
 
         // --- ADMIN LINK ---
@@ -43,6 +45,7 @@ function updateHeaderDisplay() {
     } else {
         // --- MODE DÉCONNECTÉ ---
         if (authButtons) authButtons.classList.remove("hidden");
+        if (authButtonsDisplay) authButtonsDisplay.classList.remove("hidden");
         if (userMenu) userMenu.classList.add("hidden");
     }
 }

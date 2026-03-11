@@ -1,4 +1,4 @@
-.carrousel {
+.carousel {
     height: 100%;
     width: 100%;
     position: relative;
@@ -7,23 +7,23 @@
     padding: 0 3.125em 0 5em;
 }
 
-.carrousel-slide {
+.carousel-slide {
     position: relative;
     height: 25%;
     width: 25%; 
     opacity: 0.3;
 }
 
-.carrousel-slide.active {
+.carousel-slide.active {
     opacity: 1;
 }
 
-.carrousel-slide img {
+.carousel-slide img {
     height: 100%;
     width: 100%;
 }
 
-.carrousel button {
+.carousel button {
     position:absolute;
     height: 3rem;
     width: 3rem;
@@ -35,7 +35,7 @@
     top: 50%;
 }
 
-.carrousel-container {
+.carousel-container {
     height: 290px;
     width: 100%;
     position: relative;
@@ -43,7 +43,7 @@
     flex-wrap: nowrap;
 }
 
-.carrousel li {
+.carousel li {
     list-style: none;
 }
 
@@ -55,7 +55,7 @@
     right:5px;
 }
 
-.album-card-carrousel {
+.album-card-carousel {
     overflow: hidden;
     position: relative;
     opacity: 0.3;
@@ -64,17 +64,17 @@
     flex-shrink: 0;
 }
 
-.album-card-carrousel.active {
+.album-card-carousel.active {
     opacity: 1;
     transform: scale(1);
 }
 
-.no-animation .album-card-carrousel {
+.no-animation .album-card-carousel {
     transition: none !important;
 }
 
 
-.accueil .album-card-carrousel {
+.accueil .album-card-carousel {
     background-color: var(--blanc);
     padding: 15px;
     border-radius: 10px;
@@ -82,18 +82,18 @@
     text-align: center;
     position: relative
 }
-.accueil .album-card-carrousel img {
+.accueil .album-card-carousel img {
     margin-top: 10px;
     border-radius: 8px;
 }
-.accueil .album-card-carrousel {
+.accueil .album-card-carousel {
     background-color: var(--blanc);
     padding: 15px;
     border-radius: 12px;
     text-align: center;
     color: var(--noir);
 }
-.accueil .album-card-carrousel:hover {
+.accueil .album-card-carousel:hover {
     transform: scale(1.05);
 }
 .accueil .album-cover {
@@ -103,14 +103,14 @@
     margin-bottom: 10px;
 }
 
-.accueil #albums-container-carrousel {
+.accueil #albums-container-carousel {
     display: flex;
     flex-wrap: nowrap;
     gap: 1em;
     padding: 0 5.125em 3.125em 3.125em;
 }
 
-.accueil .album-card-carrousel {
+.accueil .album-card-carousel {
 
     gap: 1.2em;
     width: 25em;

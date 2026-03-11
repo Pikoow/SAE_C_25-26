@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <title>Mon Profil - MuSE</title>
+    <title>Profil - MuSE</title>
     <link rel="stylesheet" href="style.css" />
     <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
@@ -18,7 +18,7 @@
         <a href="playlists.html">Playlists</a>
         <a href="preferences.html">Préférences</a>
         <div class="dropdown">
-          <a href="#">API ▾</a>
+          <a href="#">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
           <div class="dropdown-content">
             <a href="api-installation.html">Installation</a>
             <a href="api-documentation.html">Documentation</a>
@@ -32,7 +32,7 @@
           <button><a href="connexion.html?mode=register">Inscription</a></button>
         </div>
         <div id="user-menu" class="user-dropdown hidden">
-          <a href="#" id="user-name-display">Mon Profil ▾</a>
+          <a href="#" id="user-name-display">Mon Profil &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
           <div class="dropdown-content user-dropdown-content">
             <a href="profil.html">Mon profil</a>
             <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
@@ -102,8 +102,6 @@
               <label for="input-location">Localisation</label>
               <input type="text" id="input-location" placeholder="Votre localisation" />
             </div>
-
-            <hr class="profile-separator" />
 
             <p id="profile-message"></p>
 

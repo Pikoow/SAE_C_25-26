@@ -865,11 +865,11 @@ def transform_user_row(csv_row):
     age_src = csv_row.get("🎉 Dans quelle tranche d’âge vous situez-vous ?", "") or csv_row.get("🎉 Dans quelle tranche d’âge vous situez-vous ? ", "")
     out["user_age"] = parse_age_from_range(age_src)
     out["user_year_created"] = date.today().isoformat()
-    out["user_location"] = safe_strip(csv_row.get("📍 D'où ecoutez-vous ?", ""))
+    out["user_location"] = safe_strip(csv_row.get("📍 D'où écoutez-vous ?", ""))
     out["user_listening_duration"] = parse_duration_to_minutes(csv_row.get("⌚️ Environ combien de temps par jour consacrez-vous aux plateformes de streaming ? (Si vous avez repondu \"Non\" à la première question vous pouvez passer celle-ci)", ""))
     out["user_average_duration"] = parse_average_duration_pref(csv_row.get("🕰️ Quelle duree de musique preferez-vous ?", ""))
     out["user_status"] = safe_strip(csv_row.get("💼 Quelle est votre situation ?", ""))
-    out["user_favorite_genre"] = safe_strip(csv_row.get("🕺🔥 Quel genre de musique ecoutez-vous ?", ""))
+    out["user_favorite_genre"] = safe_strip(csv_row.get("🕺🔥 Quel genre de musique écoutez-vous ?", ""))
     out["user_favorite_language"] = normalize_favorite_language(csv_row.get("🗣️🎵 Avez-vous des preferences pour la langue de la musique ?", ""))
     
     platforms_raw = csv_row.get("💬 Si oui, lesquelles utilisez-vous ? (vous pouvez en selectionner plusieurs)", "") or csv_row.get("💻 Parmi ces plateformes de streaming, laquelle / lesquelles utilisez-vous ? (Si vous avez repondu \"Non\" à la première question vous pouvez passer celle-ci)","")
@@ -879,7 +879,7 @@ def transform_user_row(csv_row):
         platforms_list = []
     out["user_favorite_platforms"] = json.dumps(platforms_list, ensure_ascii=False) if platforms_list else None
 
-    out["user_favorite_hour"] = normalize_favorite_hour(csv_row.get("🕙 Sur quels creneaux horaires ecoutez-vous de la musique ?", ""))
+    out["user_favorite_hour"] = normalize_favorite_hour(csv_row.get("🕙 Sur quels creneaux horaires écoutez-vous de la musique ?", ""))
     out["user_gender"] = safe_strip(csv_row.get("♀️♂️⚧️ À quel genre vous identifiez-vous ?", ""))
     out["user_job"] = normalize_job(csv_row.get("🔍 Dans quelle domaine travaillez-vous ?", ""))
 

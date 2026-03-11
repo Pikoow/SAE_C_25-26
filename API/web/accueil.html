@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Accueil</title>
+    <title>Accueil - MuSE</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -1271,7 +1271,7 @@
             <a href="preferences.html">Préférences</a>
                 
             <div class="dropdown">
-                <a href="#">API ▾</a>
+                <a href="#">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
                 <div class="dropdown-content">
                     <a href="api-installation.html">Installation</a>
                     <a href="api-documentation.html">Documentation</a>
@@ -1290,7 +1290,7 @@
         </div>
 
         <div id="user-menu" class="user-dropdown hidden">
-            <a href="#" id="user-name-display">Mon Profil ▾</a>
+            <a href="#" id="user-name-display">Mon Profil &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
             
             <div class="dropdown-content user-dropdown-content">
                 <a href="profil.html">Mon profil</a>
@@ -1310,7 +1310,7 @@
     <!-- Contenu -->
     <h1>Découvre, Ressens, Partage</h1>
     <h2>MuSE te connecte aux albums, artistes et playlists qui te correspondent. Explore une nouvelle façon d'écouter la musique.</h2>
-    <div class="btns">
+    <div id="auth-buttons-display" class="btns">
         <a href="connexion.html" class="btn-login">Connexion</a>
         <a href="connexion.html" class="btn-signup">Inscription</a>
     </div>
@@ -1323,7 +1323,7 @@
                 <span class="section-subtitle">Survolez pour explorer</span>
             </div>
             <div class="carousel-wrapper">
-                <div class="carousel-track" id="albums-track" style="--scroll-duration: 45s;"></div>
+                <div class="carousel-track" id="albums-track" style="--scroll-duration: 50s;"></div>
             </div>
         </section>
 
@@ -1345,7 +1345,7 @@
                 <span class="section-subtitle">Des talents à suivre</span>
             </div>
             <div class="carousel-wrapper">
-                <div class="carousel-track" id="artists-track" style="--scroll-duration: 40s;"></div>
+                <div class="carousel-track" id="artists-track" style="--scroll-duration: 50s;"></div>
             </div>
         </section>
 
@@ -1393,7 +1393,7 @@
         </div>
         <div class="exit-popup-overlay" id="exitPopupOverlay">
             <div class="exit-popup" id="exitPopup">
-                <h1>Avant de partir, ecoutez ca !</h1>
+                <h1>Avant de partir, écoutez ca !</h1>
                 <p class="exit-popup-subtitle">Ces morceaux pourraient vous plaire &mdash; cliquez pour ecouter un extrait</p>
                 <div class="exit-popup-tracks" id="popup-tracks-container"></div>
                 <div class="exit-popup-buttons">

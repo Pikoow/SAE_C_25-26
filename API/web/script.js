@@ -235,15 +235,15 @@ async function initPage() {
 
 
 
-// const carrousel_buttons = document.querySelectorAll(".carrousel-button");
-// const carrousel_slides = document.querySelectorAll(".carrousel-slide");
-// // console.log(carrousel_buttons,carrousel_slides)
+// const carousel_buttons = document.querySelectorAll(".carousel-button");
+// const carousel_slides = document.querySelectorAll(".carousel-slide");
+// // console.log(carousel_buttons,carousel_slides)
 // let currentIndex = 3
-// carrousel_buttons.forEach((carrBut) => {
+// carousel_buttons.forEach((carrBut) => {
 //     carrBut.addEventListener('click', (e) => {
         
 //         const direction = e.target.id === 'next' ? 1 : -1;
-//         const total = carrousel_slides.length;
+//         const total = carousel_slides.length;
 
 //         currentIndex = (currentIndex + direction + total) % total;
 
@@ -252,27 +252,27 @@ async function initPage() {
 
 //         console.log(new_left, currentIndex, new_right);
 
-//         carrousel_slides.forEach(slide =>
+//         carousel_slides.forEach(slide =>
 //             slide.classList.remove("active")
 //         );
 
-//         carrousel_slides[currentIndex].classList.add("active");
-//         carrousel_slides[new_left].classList.add("active");
-//         carrousel_slides[new_right].classList.add("active");
+//         carousel_slides[currentIndex].classList.add("active");
+//         carousel_slides[new_left].classList.add("active");
+//         carousel_slides[new_right].classList.add("active");
 //     })
 // })
 
 
 
-const carrousel_buttons_artist = document.querySelectorAll(".carrousel-button-artist");
-const carrousel_slides_artist = document.querySelectorAll(".artist-card-carrousel");
-// console.log(carrousel_buttons,carrousel_slides)
+const carousel_buttons_artist = document.querySelectorAll(".carousel-button-artist");
+const carousel_slides_artist = document.querySelectorAll(".artist-card-carousel");
+// console.log(carousel_buttons,carousel_slides)
 let artist_index = 0
-carrousel_buttons_artist.forEach((carrBut) => {
+carousel_buttons_artist.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
         const direction = e.target.id === 'next-artist' ? 1 : -1;
-        const total = carrousel_slides.length;
+        const total = carousel_slides.length;
 
         artist_index = (artist_index + direction + total) % total;
 
@@ -281,25 +281,25 @@ carrousel_buttons_artist.forEach((carrBut) => {
 
         console.log(new_left, artist_index, new_right);
 
-        carrousel_slides.forEach(slide =>
+        carousel_slides.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carrousel_slides[artist_index].classList.add("active");
-        carrousel_slides[new_left].classList.add("active");
-        carrousel_slides[new_right].classList.add("active");
+        carousel_slides[artist_index].classList.add("active");
+        carousel_slides[new_left].classList.add("active");
+        carousel_slides[new_right].classList.add("active");
     })
 })
 
-const carrousel_buttons_track = document.querySelectorAll(".carrousel-button-track");
-const carrousel_slides_track = document.querySelectorAll(".track-card");
-// console.log(carrousel_buttons,carrousel_slides)
+const carousel_buttons_track = document.querySelectorAll(".carousel-button-track");
+const carousel_slides_track = document.querySelectorAll(".track-card");
+// console.log(carousel_buttons,carousel_slides)
 let track_index = 0
-carrousel_buttons_track.forEach((carrBut) => {
+carousel_buttons_track.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
         const direction = e.target.id === 'next-track' ? 1 : -1;
-        const total = carrousel_slides.length;
+        const total = carousel_slides.length;
 
         track_index = (track_index + direction + total) % total;
 
@@ -308,12 +308,12 @@ carrousel_buttons_track.forEach((carrBut) => {
 
         console.log(new_left, currentIndex, new_right); 
 
-        carrousel_slides.forEach(slide =>
+        carousel_slides.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carrousel_slides[track_index].classList.add("active");
-        carrousel_slides[new_left].classList.add("active");
-        carrousel_slides[new_right].classList.add("active");
+        carousel_slides[track_index].classList.add("active");
+        carousel_slides[new_left].classList.add("active");
+        carousel_slides[new_right].classList.add("active");
     })
 })
