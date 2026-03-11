@@ -680,7 +680,7 @@ footer {
     border: 2px solid #000;
     border-radius: 12px;
     font-size: 1rem;
-    background-image: url('../images/loupe.avif');
+    background-image: url('../images/loupe.svg');
     background-repeat: no-repeat;
     background-position: 15px center;
     background-size: 20px 20px;
@@ -708,6 +708,7 @@ footer {
     background-color: #f38630;
     color: white;
     padding: 8px 15px;
+    margin: 10px;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
