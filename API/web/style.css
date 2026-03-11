@@ -2132,6 +2132,88 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 .playlists-page .pl-empty-state .pl-empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
 .playlists-page .pl-empty-state p { font-size: 0.9rem; margin: 0; }
 
+/* Custom playlist cover image */
+.playlists-page .playlist-custom-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.playlists-page .playlist-custom-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.playlists-page .playlist-card:hover .playlist-custom-cover img {
+    transform: scale(1.05);
+}
+
+/* Custom cover in modal header */
+.playlists-page .pl-custom-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Image upload section in modal */
+.playlists-page .pl-image-upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 30px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+.playlists-page .pl-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--blanc);
+    border: 1px solid var(--gris-clair);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gris-fonce);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.playlists-page .pl-upload-btn:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: #fff7f0;
+}
+
+.playlists-page .pl-upload-btn svg {
+    flex-shrink: 0;
+}
+
+.playlists-page .pl-remove-image-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    color: var(--rouge);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.playlists-page .pl-remove-image-btn:hover {
+    background: #fff5f5;
+}
+
 /* Notifications */
 .playlists-page .notification {
     position: fixed;

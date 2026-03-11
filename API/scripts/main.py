@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, UploadFile, File
+from fastapi.staticfiles import StaticFiles
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from typing import Optional, List
@@ -6,6 +7,8 @@ from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 import os
+import shutil
+import uuid
 import sys
 import math
 import bcrypt
@@ -37,15 +40,22 @@ async def lifespan(app: FastAPI):
                 UPDATE sae.playlist_track SET position = numbered.pos
                 FROM numbered WHERE sae.playlist_track.ctid = numbered.ctid AND sae.playlist_track.position = 0;
             """)
+            # Migration: add playlist_image column
+            cur.execute("ALTER TABLE sae.playlist ADD COLUMN IF NOT EXISTS playlist_image TEXT;")
             conn.commit()
             cur.close()
             conn.close()
-            print("Migration: playlist_track.position OK")
+            print("Migration: playlist_track.position + playlist.playlist_image OK")
     except Exception as e:
         print(f"Migration warning: {e}")
     yield
 
 app = FastAPI(title="API Muse", lifespan=lifespan)
+
+# Servir les fichiers uploadés (images de playlists)
+UPLOADS_DIR = os.path.join(os.path.dirname(__file__), '..', 'web', 'uploads')
+os.makedirs(os.path.join(UPLOADS_DIR, 'playlists'), exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 
 # Erreur page web Cors
 app.add_middleware(
@@ -884,6 +894,7 @@ def get_playlist_by_id(playlist_id: int):
                 p.playlist_id,
                 p.playlist_name,
                 p.playlist_description,
+                p.playlist_image,
                 p.created_at,
                 pu.user_id
             FROM sae.playlist p
@@ -1082,14 +1093,15 @@ def get_user_playlists_detailed(user_id: int):
             SELECT 
                 p.playlist_id, 
                 p.playlist_name, 
-                p.playlist_description, 
+                p.playlist_description,
+                p.playlist_image,
                 p.created_at,
                 COUNT(DISTINCT pt.track_id) as tracks_count
             FROM sae.playlist p
             JOIN sae.playlist_user pu ON p.playlist_id = pu.playlist_id
             LEFT JOIN sae.playlist_track pt ON p.playlist_id = pt.playlist_id
             WHERE pu.user_id = %s
-            GROUP BY p.playlist_id, p.playlist_name, p.playlist_description, p.created_at
+            GROUP BY p.playlist_id, p.playlist_name, p.playlist_description, p.playlist_image, p.created_at
             ORDER BY p.created_at DESC
         """
         
@@ -1151,6 +1163,102 @@ def update_playlist_info(playlist_id: int, data: PlaylistUpdateInfo):
         conn.commit()
         
         return {"message": "Playlist mise à jour avec succès"}
+    except Exception as e:
+        if conn: conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+# Upload d'une image personnalisée pour une playlist
+@app.post("/playlists/{playlist_id}/image")
+async def upload_playlist_image(playlist_id: int, file: UploadFile = File(...)):
+    # Vérifier le type de fichier
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/avif"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Type de fichier non supporté. Utilisez JPG, PNG, WebP ou AVIF.")
+    
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        # Vérifier que la playlist existe
+        cur.execute("SELECT playlist_id, playlist_image FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+        playlist = cur.fetchone()
+        if not playlist:
+            raise HTTPException(status_code=404, detail="Playlist non trouvée")
+        
+        # Supprimer l'ancienne image si elle existe
+        if playlist['playlist_image']:
+            old_path = os.path.join(UPLOADS_DIR, 'playlists', playlist['playlist_image'])
+            if os.path.exists(old_path):
+                os.remove(old_path)
+        
+        # Générer un nom de fichier unique
+        ext = os.path.splitext(file.filename)[1] or '.jpg'
+        filename = f"{playlist_id}_{uuid.uuid4().hex[:8]}{ext}"
+        filepath = os.path.join(UPLOADS_DIR, 'playlists', filename)
+        
+        # Sauvegarder le fichier
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Mettre à jour la base de données
+        cur.execute(
+            "UPDATE sae.playlist SET playlist_image = %s WHERE playlist_id = %s",
+            (filename, playlist_id)
+        )
+        conn.commit()
+        
+        return {
+            "message": "Image mise à jour avec succès",
+            "playlist_image": filename
+        }
+    except HTTPException:
+        if conn: conn.rollback()
+        raise
+    except Exception as e:
+        if conn: conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+# Supprimer l'image personnalisée d'une playlist (revient à la mosaïque par défaut)
+@app.delete("/playlists/{playlist_id}/image")
+def delete_playlist_image(playlist_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    
+    try:
+        cur = conn.cursor()
+        
+        cur.execute("SELECT playlist_id, playlist_image FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+        playlist = cur.fetchone()
+        if not playlist:
+            raise HTTPException(status_code=404, detail="Playlist non trouvée")
+        
+        if playlist['playlist_image']:
+            old_path = os.path.join(UPLOADS_DIR, 'playlists', playlist['playlist_image'])
+            if os.path.exists(old_path):
+                os.remove(old_path)
+            
+            cur.execute(
+                "UPDATE sae.playlist SET playlist_image = NULL WHERE playlist_id = %s",
+                (playlist_id,)
+            )
+            conn.commit()
+        
+        return {"message": "Image supprimée avec succès"}
+    except HTTPException:
+        if conn: conn.rollback()
+        raise
     except Exception as e:
         if conn: conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))

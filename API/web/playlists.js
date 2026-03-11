@@ -125,11 +125,13 @@ function appendNewPlaylistCard(container) {
 
 // ===== CARTE DE PLAYLIST =====
 function createPlaylistCard(playlist) {
+    const coverHtml = playlist.playlist_image
+        ? `<div class="playlist-custom-cover"><img src="uploads/playlists/${playlist.playlist_image}" alt="${escapeHtml(playlist.playlist_name)}" onerror="this.parentElement.innerHTML='${generatePlaylistCovers(playlist.preview_tracks || []).replace(/'/g, "\\'").replace(/"/g, '&quot;')}'"></div>`
+        : `<div class="playlist-cover-grid">${generatePlaylistCovers(playlist.preview_tracks || [])}</div>`;
+
     const card = $(`
         <div class="playlist-card" data-playlist-id="${playlist.playlist_id}">
-            <div class="playlist-cover-grid">
-                ${generatePlaylistCovers(playlist.preview_tracks || [])}
-            </div>
+            ${coverHtml}
             <div class="playlist-info">
                 <h3>${escapeHtml(playlist.playlist_name)}</h3>
                 <p class="playlist-description">${escapeHtml(playlist.playlist_description || "Aucune description")}</p>
@@ -453,9 +455,13 @@ function showPlaylistModal(playlist) {
     const tracksCount = tracks.length;
 
     let coverGridHtml = '';
-    for (let i = 0; i < 4; i++) {
-        const imgUrl = tracks[i] ? getTrackImageUrl(tracks[i]) : 'images/no_image_music.avif';
-        coverGridHtml += `<img src="${imgUrl}" alt="" onerror="this.src='images/no_image_music.avif'">`;
+    if (playlist.playlist_image) {
+        coverGridHtml = `<img src="uploads/playlists/${playlist.playlist_image}" alt="" class="pl-custom-cover-img" onerror="this.style.display='none'">`;
+    } else {
+        for (let i = 0; i < 4; i++) {
+            const imgUrl = tracks[i] ? getTrackImageUrl(tracks[i]) : 'images/no_image_music.avif';
+            coverGridHtml += `<img src="${imgUrl}" alt="" onerror="this.src='images/no_image_music.avif'">`;
+        }
     }
 
     let tracksHtml = '';
@@ -508,6 +514,14 @@ function showPlaylistModal(playlist) {
                         <p class="modal-tracks-count">${tracksCount} morceaux</p>
                     </div>
                     <span class="close-modal">&times;</span>
+                </div>
+                <div class="pl-image-upload-wrapper">
+                    <label class="pl-upload-btn" title="Changer l'image de la playlist">
+                        <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" class="pl-upload-input" style="display:none">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm0 6a2 2 0 110-4 2 2 0 010 4z"/><path d="M20 4h-3.17L15 2H9L7.17 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z"/></svg>
+                        Changer l'image
+                    </label>
+                    ${playlist.playlist_image ? `<button class="pl-remove-image-btn" title="Supprimer l'image personnalisée">✕ Retirer l'image</button>` : ''}
                 </div>
                 ${tracksCount > 0 ? `
                 <div class="pl-actions-bar">
@@ -580,6 +594,50 @@ function showPlaylistModal(playlist) {
     });
     $(document).on("keydown.playlistModal", function (e) {
         if (e.key === "Escape") closeModal();
+    });
+
+    // ====== UPLOAD IMAGE DE PLAYLIST ======
+    modal.find('.pl-upload-input').on('change', async function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            showNotification("Upload de l'image en cours...", "info");
+            const res = await fetch(`${API_BASE_URL}/playlists/${playlist.playlist_id}/image`, {
+                method: 'POST',
+                body: formData
+            });
+            if (res.ok) {
+                showNotification("Image mise à jour !", "success");
+                // Recharger la modal et les cartes
+                closeModal();
+                loadUserPlaylists(currentUserId);
+                viewPlaylist(playlist.playlist_id);
+            } else {
+                const err = await res.json();
+                showNotification(err.detail || "Erreur lors de l'upload", "error");
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            showNotification("Erreur lors de l'upload de l'image", "error");
+        }
+    });
+
+    modal.find('.pl-remove-image-btn').on('click', async function () {
+        try {
+            const res = await fetch(`${API_BASE_URL}/playlists/${playlist.playlist_id}/image`, { method: 'DELETE' });
+            if (res.ok) {
+                showNotification("Image retirée", "success");
+                closeModal();
+                loadUserPlaylists(currentUserId);
+                viewPlaylist(playlist.playlist_id);
+            }
+        } catch (err) {
+            showNotification("Erreur lors de la suppression", "error");
+        }
     });
 
     function playTrackInModal(trackId, rowEl) {
