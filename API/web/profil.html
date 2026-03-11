@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <title>Profil - MuSE</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
     <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
-
   </head>
 
   <body class="profile-page">
@@ -29,7 +29,7 @@
       <div class="header-right">
         <div id="auth-buttons" class="connexion-inscription">
           <a href="connexion.html?mode=login">Connexion</a>
-          <button><a href="connexion.html?mode=register">Inscription</a></button>
+          <button title="Inscription"><a href="connexion.html?mode=register">Inscription</a></button>
         </div>
         <div id="user-menu" class="user-dropdown hidden">
           <a href="#" id="user-name-display">Mon Profil &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
@@ -106,8 +106,8 @@
             <p id="profile-message"></p>
 
             <div class="profile-actions">
-              <button class="btn-cancel-profile" id="btn-cancel">Annuler</button>
-              <button class="btn-save-profile" id="btn-save">Enregistrer les modifications</button>
+              <button class="btn-cancel-profile" id="btn-cancel" title="Annuler">Annuler</button>
+              <button class="btn-save-profile" id="btn-save" title="Enregistrer les modifications">Enregistrer les modifications</button>
             </div>
 
           </div>
@@ -120,7 +120,7 @@
           </div>
           <div class="danger-card-body">
             <p>La suppression de votre compte est définitive. Toutes vos playlists et préférences seront perdues et ne pourront pas être récupérées.</p>
-            <button class="btn-delete-account" id="btn-delete-account">Supprimer mon compte</button>
+            <button class="btn-delete-account" id="btn-delete-account" title="Supprimer mon compte">Supprimer mon compte</button>
           </div>
         </div>
 
@@ -133,8 +133,8 @@
         <h3>Supprimer mon compte</h3>
         <p>Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible et entraînera la perte de toutes vos données.</p>
         <div class="confirm-actions">
-          <button class="btn-confirm-cancel" id="btn-confirm-cancel">Annuler</button>
-          <button class="btn-confirm-delete" id="btn-confirm-delete">Oui, supprimer</button>
+          <button class="btn-confirm-cancel" id="btn-confirm-cancel" title="Annuler">Annuler</button>
+          <button class="btn-confirm-delete" id="btn-confirm-delete" title="Oui, supprimer">Oui, supprimer</button>
         </div>
       </div>
     </div>

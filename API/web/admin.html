@@ -5,6 +5,7 @@
     <title>Administration - MuSE</title>
     <link rel="stylesheet" href="style.css">
     <script src="header-ui.js" defer></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
     <style>
         /* ====== ADMIN PAGE ====== */
         .admin-page main {
@@ -597,7 +598,7 @@
         <div class="header-right">
             <div id="auth-buttons" class="connexion-inscription">
                 <a href="connexion.html?mode=login">Connexion</a>
-                <button><a href="connexion.html?mode=register">Inscription</a></button>
+                <button title="Inscription"><a href="connexion.html?mode=register">Inscription</a></button>
             </div>
             <div id="user-menu" class="user-dropdown hidden">
                 <a href="#" id="user-name-display">Mon Profil <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
@@ -641,7 +642,7 @@
                         <option value="admin">Administrateurs</option>
                         <option value="banned">Bannis</option>
                     </select>
-                    <button class="admin-refresh-btn" id="btn-refresh" onclick="loadUsers()">Actualiser</button>
+                    <button class="admin-refresh-btn" id="btn-refresh" onclick="loadUsers()" title="Actualiser">Actualiser</button>
                 </div>
 
                 <div class="admin-table-wrap">
@@ -665,8 +666,8 @@
                     <div class="admin-pagination" id="pagination">
                         <span id="pagination-info">&mdash;</span>
                         <div class="admin-pagination-btns">
-                            <button class="admin-page-btn" id="btn-prev" onclick="prevPage()" disabled>&lt; Precedent</button>
-                            <button class="admin-page-btn" id="btn-next" onclick="nextPage()">Suivant &gt;</button>
+                            <button class="admin-page-btn" id="btn-prev" onclick="prevPage()" disabled title="Précédent">&lt; Precedent</button>
+                            <button class="admin-page-btn" id="btn-next" onclick="nextPage()" title="Suivant">Suivant &gt;</button>
                         </div>
                     </div>
                 </div>
@@ -680,8 +681,8 @@
             <h3 id="modal-title">Confirmation</h3>
             <p id="modal-message">Êtes-vous sûr ?</p>
             <div class="admin-modal-actions">
-                <button class="admin-modal-btn cancel" onclick="closeModal('modal-confirm')">Annuler</button>
-                <button class="admin-modal-btn danger" id="modal-confirm-btn">Confirmer</button>
+                <button class="admin-modal-btn cancel" onclick="closeModal('modal-confirm')" title="Annuler">Annuler</button>
+                <button class="admin-modal-btn danger" id="modal-confirm-btn" title="Confirmer">Confirmer</button>
             </div>
         </div>
     </div>
@@ -691,7 +692,7 @@
         <div class="admin-modal" style="max-width:520px;">
             <h3>Détails de l'utilisateur</h3>
             <div class="user-detail-grid" id="user-detail-grid"></div>
-            <button class="admin-modal-btn cancel" onclick="closeModal('modal-detail')">Fermer</button>
+            <button class="admin-modal-btn cancel" onclick="closeModal('modal-detail')" title="Fermer">Fermer</button>
         </div>
     </div>
 
@@ -843,14 +844,14 @@
                         <td>${u.user_location || "—"}</td>
                         <td>
                             <div class="admin-actions">
-                                <button class="admin-action-btn" data-tooltip="Détails" onclick="showUserDetail(${u.user_id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
+                                <button class="admin-action-btn" data-tooltip="Détails" onclick="showUserDetail(${u.user_id})" title="Détails"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
                                 ${!isProtected ? `
-                                    <button class="admin-action-btn ban" data-tooltip="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}" 
+                                    <button class="admin-action-btn ban" data-tooltip="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}" title="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}"
                                             onclick="confirmBan(${u.user_id}, '${u.user_firstname || ""}', ${roleCls !== 'banned'})">
                                         ${roleCls === "banned" ? '<svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>'}
                                     </button>
-                                    <button class="admin-action-btn" data-tooltip="Changer rôle" onclick="confirmRoleChange(${u.user_id}, '${u.user_firstname || ""}', '${roleCls}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></button>
-                                    <button class="admin-action-btn danger" data-tooltip="Supprimer" onclick="confirmDelete(${u.user_id}, '${u.user_firstname || ""}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                                    <button class="admin-action-btn" data-tooltip="Changer rôle" onclick="confirmRoleChange(${u.user_id}, '${u.user_firstname || ""}', '${roleCls}')" title="Changer rôle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></button>
+                                    <button class="admin-action-btn danger" data-tooltip="Supprimer" onclick="confirmDelete(${u.user_id}, '${u.user_firstname || ""}')" title="Supprimer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                                 ` : `<span style="font-size:0.75rem;color:var(--gris-clair);">Protégé</span>`}
                             </div>
                         </td>

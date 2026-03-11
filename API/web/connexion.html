@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Connexion / Inscription - MuSE</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
   </head>
 
   <body class="auth-page"> 
@@ -26,7 +27,7 @@
         </nav>
         <div class="connexion-inscription">
           <a href="connexion.html?mode=login">Connexion</a>
-          <button>
+          <button title="Inscription">
               <a href="connexion.html?mode=register">Inscription</a>
           </button>
       </div>
@@ -45,10 +46,10 @@
       <div class="auth-card">
         
         <div class="auth-tabs">
-          <button class="auth-tab-btn active" id="tab-login" onclick="switchMode('login')">
+          <button class="auth-tab-btn active" id="tab-login" onclick="switchMode('login')" title="Connexion">
             Connexion
           </button>
-          <button class="auth-tab-btn" id="tab-register" onclick="switchMode('register')">
+          <button class="auth-tab-btn" id="tab-register" onclick="switchMode('register')" title="Inscription">
             Inscription
           </button>
         </div>
@@ -101,10 +102,10 @@
             </div>
           </div>
 
-          <button type="submit" id="loginBtn" class="auth-btn">
+          <button type="submit" id="loginBtn" class="auth-btn" title="Se connecter">
             Se connecter
           </button>
-          <button type="submit" id="registerBtn" class="auth-btn hidden">
+          <button type="submit" id="registerBtn" class="auth-btn hidden" title="Créer mon compte">
             Créer mon compte
           </button>
           

@@ -14,12 +14,23 @@ class AudioPlayer {
         this.onPrev = null; // callback for skip prev
         this.source = null; // { type: 'playlist'|'album'|'artist', id, name }
 
+        // Preview limit for non-logged-in users
+        this.isLoggedIn = this.checkUserLoginStatus();
+        this.previewTimeout = null;
+        this.previewDuration = 30; // 30 seconds
+
         this.createPlayerUI();
         this.setupEventListeners();
         this.restoreState();
 
         // Save state before leaving page
         window.addEventListener('beforeunload', () => this.saveState());
+    }
+
+    checkUserLoginStatus() {
+        // Check if user is logged in by checking localStorage (same as header-ui.js)
+        const userId = localStorage.getItem("userId");
+        return !!userId; // Return true if userId exists, false otherwise
     }
 
     createPlayerUI() {
@@ -33,7 +44,7 @@ class AudioPlayer {
             </div>
             
             <div class="player-center">
-                <button id="stop-btn" class="stop-btn" disabled>
+                <button id="stop-btn" class="stop-btn" disabled title="Arrêter">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                         <rect x="6" y="6" width="12" height="12"/>
                     </svg>
@@ -43,7 +54,7 @@ class AudioPlayer {
                         <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
                     </svg>
                 </button>
-                <button id="play-pause-btn" class="play-btn" disabled>
+                <button id="play-pause-btn" class="play-btn" disabled title="Lire/Pause">
                     <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8 5v14l11-7z"/>
                     </svg>
@@ -634,6 +645,32 @@ class AudioPlayer {
         this.play();
     }
 
+    setupPreviewLimit() {
+        // Clear any existing timeout
+        if (this.previewTimeout) {
+            clearTimeout(this.previewTimeout);
+            this.previewTimeout = null;
+        }
+
+        // Check login status dynamically (in case user logged in/out after player creation)
+        this.isLoggedIn = this.checkUserLoginStatus();
+
+        // Only apply limit to non-logged-in users
+        if (!this.isLoggedIn) {
+            this.previewTimeout = setTimeout(() => {
+                this.pause();
+                this.showLoginPrompt();
+            }, this.previewDuration * 1000);
+        }
+    }
+
+    showLoginPrompt() {
+        const overlay = document.getElementById('loginPromptOverlay');
+        if (overlay) {
+            overlay.classList.add('visible');
+        }
+    }
+
     setSource(type, id, name) {
         if (!type) {
             this.source = null;
@@ -656,11 +693,19 @@ class AudioPlayer {
             this.audio.play();
             this.playPauseBtn.disabled = false;
             this.stopBtn.disabled = false;
+            
+            // Set up preview limit when starting playback
+            this.setupPreviewLimit();
         }
     }
 
     pause() {
         this.audio.pause();
+        // Clear preview timeout when user manually pauses
+        if (this.previewTimeout) {
+            clearTimeout(this.previewTimeout);
+            this.previewTimeout = null;
+        }
     }
 
     stop() {
@@ -671,6 +716,11 @@ class AudioPlayer {
         this.timeCurrent.textContent = '0:00';
         this.isPlaying = false;
         this.updatePlayPauseButton();
+        // Clear preview timeout when user manually stops
+        if (this.previewTimeout) {
+            clearTimeout(this.previewTimeout);
+            this.previewTimeout = null;
+        }
     }
 
     updateProgress() {
@@ -742,7 +792,7 @@ class AudioPlayer {
                     <p class="ppd-title">Aucune playlist</p>
                     <div class="ppd-quick-create">
                         <input type="text" id="playerQuickName" placeholder="Nom de la playlist" maxlength="50">
-                        <button id="playerQuickCreateBtn">✨ Créer et ajouter</button>
+                        <button id="playerQuickCreateBtn" title="Créer et ajouter">✨ Créer et ajouter</button>
                     </div>
                 `;
                 setTimeout(() => {
@@ -782,7 +832,7 @@ class AudioPlayer {
                         <p class="ppd-title">Nouvelle playlist</p>
                         <div class="ppd-quick-create">
                             <input type="text" id="playerQuickName" placeholder="Nom de la playlist" maxlength="50">
-                            <button id="playerQuickCreateBtn">✨ Créer et ajouter</button>
+                            <button id="playerQuickCreateBtn" title="Créer et ajouter">✨ Créer et ajouter</button>
                         </div>
                     `;
                     setTimeout(() => {

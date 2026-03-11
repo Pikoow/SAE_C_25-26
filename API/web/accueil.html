@@ -11,6 +11,7 @@
     <script src="audio-player.js"></script>
     <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
     <!-- Pop-up Exit Intent - À insérer n'importe où dans votre page -->
 <style>
     .exit-popup-overlay {
@@ -1284,7 +1285,7 @@
     
         <div id="auth-buttons" class="connexion-inscription">
             <a href="connexion.html?mode=login">Connexion</a>
-            <button>
+            <button title="Inscription">
                 <a href="connexion.html?mode=register">Inscription</a>
             </button>
         </div>
@@ -1367,7 +1368,7 @@
                             Ajouter tout
                         </button>
                     </div>
-                    <button class="album-popup-close" id="apCloseBtn">&times;</button>
+                    <button class="album-popup-close" id="apCloseBtn" title="Fermer">&times;</button>
                 </div>
                 <div class="album-popup-tracks" id="apTracksList">
                     <div class="ap-loading">Chargement des morceaux...</div>
@@ -1384,7 +1385,7 @@
                         <h2 id="artpName">Chargement...</h2>
                         <p id="artpStats"></p>
                     </div>
-                    <button class="artist-popup-close" id="artpCloseBtn">&times;</button>
+                    <button class="artist-popup-close" id="artpCloseBtn" title="Fermer">&times;</button>
                 </div>
                 <div class="artist-popup-body" id="artpBody">
                     <div class="ap-loading">Chargement...</div>
@@ -1397,9 +1398,9 @@
                 <p class="exit-popup-subtitle">Ces morceaux pourraient vous plaire &mdash; cliquez pour ecouter un extrait</p>
                 <div class="exit-popup-tracks" id="popup-tracks-container"></div>
                 <div class="exit-popup-buttons">
-                    <button class="exit-popup-btn exit-popup-btn-stop" id="popupStopBtn" onclick="exitPopupStopMusic()"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>Arreter la musique</button>
-                    <button class="exit-popup-btn exit-popup-btn-explore" onclick="exitPopupExplore()"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Explorer plus de musiques</button>
-                    <button class="exit-popup-btn exit-popup-btn-close" onclick="exitPopupDismiss()">Non merci</button>
+                    <button class="exit-popup-btn exit-popup-btn-stop" id="popupStopBtn" onclick="exitPopupStopMusic()" title="Arrêter la musique"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>Arreter la musique</button>
+                    <button class="exit-popup-btn exit-popup-btn-explore" onclick="exitPopupExplore()" title="Explorer plus de musiques"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Explorer plus de musiques</button>
+                    <button class="exit-popup-btn exit-popup-btn-close" onclick="exitPopupDismiss()" title="Non merci">Non merci</button>
                 </div>
             </div>
         </div>
@@ -1716,7 +1717,7 @@
                             <p class="pdd-title">Aucune playlist</p>
                             <div class="pdd-quick-create">
                                 <input type="text" id="pddQuickName" placeholder="Nom de la playlist" maxlength="50">
-                                <button id="pddQuickCreateBtn" onclick="popupQuickCreatePlaylist(${userId}, ${trackId})">✨ Créer et ajouter</button>
+                                <button id="pddQuickCreateBtn" onclick="popupQuickCreatePlaylist(${userId}, ${trackId})" title="Créer et ajouter">✨ Créer et ajouter</button>
                             </div>
                         `;
                         // Focus auto sur l'input
@@ -1761,7 +1762,7 @@
                                 <p class="pdd-title">Nouvelle playlist</p>
                                 <div class="pdd-quick-create">
                                     <input type="text" id="pddQuickName" placeholder="Nom de la playlist" maxlength="50">
-                                    <button id="pddQuickCreateBtn" onclick="popupQuickCreatePlaylist(${uId}, ${tId})">✨ Créer et ajouter</button>
+                                    <button id="pddQuickCreateBtn" onclick="popupQuickCreatePlaylist(${uId}, ${tId})" title="Créer et ajouter">✨ Créer et ajouter</button>
                                 </div>
                             `;
                             setTimeout(() => {
@@ -2362,7 +2363,7 @@
                 const playlists = await plRes.json();
 
                 if (!playlists || playlists.length === 0) {
-                    dd.innerHTML = `<p class="crd-title">Aucune playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBtn">Créer et ajouter</button></div>`;
+                    dd.innerHTML = `<p class="crd-title">Aucune playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBtn" title="Créer et ajouter">Créer et ajouter</button></div>`;
                     setTimeout(() => {
                         const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
                         const btn = document.getElementById('crdQuickCreateBtn'); if (btn) btn.addEventListener('click', () => crQuickCreate(userId, trackId));
@@ -2383,7 +2384,7 @@
                 if (newBtn) {
                     newBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        dd.innerHTML = `<p class="crd-title">Nouvelle playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBtn">Créer et ajouter</button></div>`;
+                        dd.innerHTML = `<p class="crd-title">Nouvelle playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBtn" title="Créer et ajouter">Créer et ajouter</button></div>`;
                         setTimeout(() => {
                             const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
                             const btn = document.getElementById('crdQuickCreateBtn'); if (btn) btn.addEventListener('click', () => crQuickCreate(userId, trackId));
@@ -2458,7 +2459,7 @@
                 const playlists = await plRes.json();
 
                 if (!playlists || playlists.length === 0) {
-                    dd.innerHTML = `<p class="crd-title">Aucune playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBulkBtn">Créer et tout ajouter</button></div>`;
+                    dd.innerHTML = `<p class="crd-title">Aucune playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBulkBtn" title="Créer et tout ajouter">Créer et tout ajouter</button></div>`;
                     setTimeout(() => {
                         const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
                         const btn = document.getElementById('crdQuickCreateBulkBtn'); if (btn) btn.addEventListener('click', () => crQuickCreateBulk(userId, trackIds));
@@ -2479,7 +2480,7 @@
                 if (newBtn) {
                     newBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        dd.innerHTML = `<p class="crd-title">Nouvelle playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBulkBtn">Créer et tout ajouter</button></div>`;
+                        dd.innerHTML = `<p class="crd-title">Nouvelle playlist</p><div class="crd-quick-create"><input type="text" id="crdQuickName" placeholder="Nom de la playlist" maxlength="50"><button id="crdQuickCreateBulkBtn" title="Créer et tout ajouter">Créer et tout ajouter</button></div>`;
                         setTimeout(() => {
                             const inp = document.getElementById('crdQuickName'); if (inp) inp.focus();
                             const btn = document.getElementById('crdQuickCreateBulkBtn'); if (btn) btn.addEventListener('click', () => crQuickCreateBulk(userId, trackIds));
@@ -2704,7 +2705,29 @@
             }
         };
 
+        // Function to close login prompt modal
+        window.closeLoginPrompt = function() {
+            const overlay = document.getElementById('loginPromptOverlay');
+            if (overlay) {
+                overlay.classList.remove('visible');
+            }
+        };
+
   </script>
+
+  <!-- Login Prompt Modal for Music Preview Limit -->
+  <div id="loginPromptOverlay" class="login-prompt-overlay">
+    <div class="login-prompt-modal">
+      <span class="modal-icon">🎵</span>
+      <h3>Écoutez en illimité !</h3>
+      <p>Vous avez atteint la limite de 30 secondes d'écoute gratuite.<br>
+      Créez un compte ou connectez-vous pour profiter de toute la musique sans restriction.</p>
+      <div class="modal-buttons">
+        <button class="btn-primary" onclick="window.location.href='connexion.html'">Se connecter</button>
+        <button class="btn-secondary" onclick="closeLoginPrompt()">Plus tard</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

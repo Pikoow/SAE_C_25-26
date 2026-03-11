@@ -138,7 +138,7 @@ function createPlaylistCard(playlist) {
                     <span>Créée le ${formatDate(playlist.created_at)}</span>
                 </div>
                 <div class="playlist-actions">
-                    <button class="btn-delete pl-delete-btn" data-pid="${playlist.playlist_id}">
+                    <button class="btn-delete pl-delete-btn" data-pid="${playlist.playlist_id}" title="Supprimer">
                         Supprimer
                     </button>
                 </div>
