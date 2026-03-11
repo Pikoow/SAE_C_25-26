@@ -5,6 +5,7 @@
   <title>Préférences - MuSE</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
   <script src="node-auth/js/app.js"></script>
@@ -47,7 +48,7 @@
     
         <div id="auth-buttons" class="connexion-inscription">
             <a href="connexion.html?mode=login">Connexion</a>
-            <button>
+            <button title="Inscription">
                 <a href="connexion.html?mode=register">Inscription</a>
             </button>
         </div>
@@ -99,8 +100,8 @@
     </section>
     </main>
     <div class="actions-container">
-        <button id="btn-reset" class="btn-reset" onclick="Reset()">Réinitialiser</button>
-        <button id="btn-save" class="btn-save" onclick="Sauvegarde()">Sauvegarder</button>
+        <button id="btn-reset" class="btn-reset" onclick="Reset()" title="Réinitialiser">Réinitialiser</button>
+        <button id="btn-save" class="btn-save" onclick="Sauvegarde()" title="Sauvegarder">Sauvegarder</button>
     </div>
     <script src="script.js"></script>
   <footer>
