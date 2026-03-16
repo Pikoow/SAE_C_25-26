@@ -63,6 +63,26 @@ header h2 {
     flex: 0 0 auto;
 }
 
+/* Brand (logo + site name) - ensure horizontal alignment */
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand h2 {
+    margin: 0;
+    line-height: 1;
+    display: inline-block;
+}
+
+.brand img {
+    display: block;
+    height: 28px;
+}
+
 header nav {
     margin-left: 0;
     flex: 1;

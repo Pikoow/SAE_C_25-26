@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Mes Playlists - MuSE</title>
+    <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -12,7 +13,6 @@
     <script src="audio-player.js"></script>
     <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
-    <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
     <script>
         $(document).ready(function() {
             const userId = localStorage.getItem("userId");
@@ -36,7 +36,7 @@
 </head>
 <body class="playlists-page">
     <header>
-        <a href="accueil.html"><h2>MuSE</h2></a> 
+        <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a> 
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
