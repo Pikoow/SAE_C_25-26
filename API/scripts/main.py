@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query, Request, UploadFile, File
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -50,12 +51,157 @@ async def lifespan(app: FastAPI):
         print(f"Migration warning: {e}")
     yield
 
-app = FastAPI(title="API Muse", lifespan=lifespan)
+tags_metadata = [
+    {"name": "Général",          "description": "Endpoint racine de l'API."},
+    {"name": "Tracks",           "description": "Accès aux musiques : liste, détails complets (audio features, album, artiste associés)."},
+    {"name": "Artistes",         "description": "Accès aux artistes : liste, profil complet, discographie."},
+    {"name": "Albums",           "description": "Accès aux albums : liste, détails, tracklist complète."},
+    {"name": "Genres",           "description": "Liste des genres musicaux et leurs musiques associées."},
+    {"name": "Recommandations",  "description": "Moteur de recommandations basé sur la similarité entre musiques et artistes (item-based)."},
+    {"name": "Playlists",        "description": "Création, consultation, modification et suppression de playlists utilisateur."},
+    {"name": "Utilisateurs",     "description": "Consultation et gestion du profil utilisateur (playlists, mise à jour, suppression)."},
+    {"name": "Recherche",        "description": "Recherche textuelle de musiques par titre, artiste ou album."},
+    {"name": "Favoris",          "description": "Consultation et enregistrement des favoris (tracks, artistes, genres) d'un utilisateur."},
+    {"name": "Admin",            "description": "⚙️ Endpoints d'administration — statistiques globales, gestion des utilisateurs, modération du contenu."},
+]
+
+app = FastAPI(
+    title="API MuSE",
+    description="API pour accéder à la base de données musicale MuSE, gérer des playlists et obtenir des recommandations personnalisées.",
+    version="1.0.0",
+    lifespan=lifespan,
+    openapi_tags=tags_metadata,
+    docs_url=None,
+)
+
+# Servir les fichiers statiques (images, CSS, JS)
+web_dir = os.path.join(os.path.dirname(__file__), '..', 'web')
+app.mount("/static", StaticFiles(directory=web_dir), name="static")
 
 # Servir les fichiers uploadés (images de playlists)
 UPLOADS_DIR = os.path.join(os.path.dirname(__file__), '..', 'web', 'uploads')
 os.makedirs(os.path.join(UPLOADS_DIR, 'playlists'), exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
+
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_docs():
+    return HTMLResponse('''
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Documentation - API MuSE</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/logos/muse.png">
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Rammetto+One&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Outfit", sans-serif; color: #000; font-size: 0.875rem; }
+        .swagger-ui .topbar { display: none; }
+
+        /* === HEADER === */
+        header { background-color: #fff; border-bottom: 5px solid #ED7A26; display: flex; align-items: center; justify-content: space-between; padding: 1.5em 3em; position: sticky; top: 0; z-index: 1000; }
+        header>a { text-decoration: none; }
+        header h2 { font-family: "Rammetto One", sans-serif; font-size: 1.875rem; color: #000; }
+        header nav { flex: 1; display: flex; justify-content: center; gap: 2em; }
+        header nav>a { color: #000; font-weight: bold; font-size: 1.25rem; text-decoration: none; }
+        header nav>a:hover { color: #ED7A26; }
+        .connexion-inscription>a { font-size: 1.25rem; font-weight: bold; color: #000; text-decoration: none; padding-right: 1em; }
+        .connexion-inscription>a:hover { color: #ED7A26; }
+        .connexion-inscription button { background-color: #ED7A26; font-family: "Outfit", sans-serif; font-size: 1.25rem; font-weight: bold; border-radius: 0.313em; border: none; width: 7em; height: 1.9em; cursor: pointer; transition: transform 0.2s; }
+        .connexion-inscription button:hover { transform: scale(1.05); }
+        .connexion-inscription button>a { color: #fff; text-decoration: none; }
+        header nav .dropdown { position: relative; display: flex; align-items: center; }
+        header nav .dropdown>a { color: #000; font-weight: bold; font-size: 1.25rem; text-decoration: none; cursor: pointer; }
+        header nav .dropdown-content { display: none; position: absolute; background-color: #fff; min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 100; top: 100%; left: 50%; transform: translateX(-50%); border-radius: 8px; border: 1px solid #c8c8c8; margin-top: 25px; overflow: visible; }
+        header nav .dropdown-content::before { content: ""; position: absolute; top: -25px; left: 0; width: 100%; height: 25px; background: transparent; }
+        header nav .dropdown-content a { color: #000; padding: 12px 16px; text-decoration: none; display: block; font-size: 1rem; text-align: center; transition: background 0.2s; font-weight: normal; }
+        header nav .dropdown-content a:first-child { border-radius: 8px 8px 0 0; }
+        header nav .dropdown-content a:last-child { border-radius: 0 0 8px 8px; }
+        header nav .dropdown-content a:hover { background-color: #fff5e6; color: #ED7A26; }
+        header nav .dropdown:hover .dropdown-content { display: block; }
+        header nav .dropdown:hover>a { color: #ED7A26; }
+
+        /* === FOOTER === */
+        footer { background-color: #000; color: #fff; padding: 3.125em; }
+        .titre-footer { display: flex; justify-content: center; }
+        .titre-footer h2 { font-family: "Rammetto One", sans-serif; font-size: 1.875rem; }
+        .navigation-footer { display: flex; justify-content: center; margin: 2em 0; flex-wrap: wrap; gap: 6em; }
+        .navigation-footer>div { display: flex; flex-direction: column; gap: 0.625em; }
+        .navigation-footer>div>p { font-weight: bold; margin-bottom: 0.5em; }
+        .navigation-footer>div>div { display: flex; flex-direction: column; gap: 0.5em; }
+        .navigation-footer a { text-decoration: none; color: #fff; transition: color 0.25s ease; }
+        .navigation-footer a:hover { color: #ED7A26; }
+        .barre-separation-footer { width: 100%; height: 1px; background-color: #fff; margin-bottom: 1.25em; }
+        .fin-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .reseaux-sociaux-footer img { width: 1.25em; height: 1.25em; margin-right: 0.625em; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/static/accueil.html"><h2>MuSE</h2></a>
+        <nav>
+            <a href="/static/accueil.html">Accueil</a>
+            <a href="/static/playlists.html">Playlists</a>
+            <a href="/static/preferences.html">Préférences</a>
+            <div class="dropdown">
+                <a href="#">API &nbsp;<span style="display:inline-block;transform:translateY(-1px)">\u25be</span></a>
+                <div class="dropdown-content">
+                    <a href="/static/api-installation.html">Installation</a>
+                    <a href="/docs">Doc. Swagger</a>
+                    <a href="/static/api-documentation.html">Doc Legacy</a>
+                    <a href="/static/api-test.html">Testez l\'API</a>
+                </div>
+            </div>
+        </nav>
+        <div class="header-right">
+            <div class="connexion-inscription">
+                <a href="/static/connexion.html?mode=login">Connexion</a>
+                <button><a href="/static/connexion.html?mode=register">Inscription</a></button>
+            </div>
+        </div>
+    </header>
+
+    <div id="swagger-ui"></div>
+
+    <footer>
+        <div class="titre-footer"><h2>MuSE</h2></div>
+        <div class="navigation-footer">
+            <div><p>Société</p><div><a href="#">À propos de nous</a><a href="#">Offre d\'emploi</a></div></div>
+            <div><p>Liens utiles</p><div><a href="/static/contact.html">Nous contacter</a></div></div>
+            <div><p>Communauté</p><div><a href="#">Développeurs</a></div></div>
+            <div><p>Légal</p><div><a href="#">Mentions légales</a></div></div>
+        </div>
+        <div class="barre-separation-footer"></div>
+        <div class="fin-footer">
+            <div class="reseaux-sociaux-footer">
+                <a href="#"><img src="/static/images/icones/instagram.avif" alt="Instagram"/></a>
+                <a href="#"><img src="/static/images/icones/linkedin.avif" alt="LinkedIn"/></a>
+                <a href="#"><img src="/static/images/icones/github.avif" alt="GitHub"/></a>
+                <a href="#"><img src="/static/images/icones/facebook.avif" alt="Facebook"/></a>
+            </div>
+            <p>&copy; 2026 MuSE Français</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        const userRole = localStorage.getItem("userRole");
+        const isAdmin = (userRole === "admin" || userRole === "super_admin");
+        SwaggerUIBundle({
+            url: "/openapi.json",
+            dom_id: "#swagger-ui",
+            presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+            layout: "BaseLayout",
+            deepLinking: true,
+            defaultModelsExpandDepth: -1,
+            supportedSubmitMethods: isAdmin ? ["get","post","put","delete","patch"] : []
+        });
+    </script>
+</body>
+</html>
+    ''')
 
 # Erreur page web Cors
 app.add_middleware(
@@ -92,12 +238,12 @@ def get_db_connection():
         print(f"Erreur de connexion : {e}")
         return None
 
-@app.get("/")
+@app.get("/", tags=["Général"], summary="Accueil de l'API")
 def read_root():
     return {"message": "Bienvenue sur l'API de Muse!"}
 
 # Récuérer toutes les tracks avec leurs informations
-@app.get("/tracks")
+@app.get("/tracks", tags=["Tracks"], summary="Liste de toutes les musiques")
 def get_all_tracks(
     limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
@@ -146,7 +292,7 @@ def get_all_tracks(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère une musique spécifique par son ID avec toutes ses informations
-@app.get("/tracks/{track_id}")
+@app.get("/tracks/{track_id}", tags=["Tracks"], summary="Détails complets d'une musique")
 def get_track_by_id(track_id: int):
     conn = get_db_connection()
     if not conn:
@@ -262,7 +408,7 @@ def get_track_by_id(track_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère tout les artistes avec leurs informations
-@app.get("/artists")
+@app.get("/artists", tags=["Artistes"], summary="Liste de tous les artistes")
 def get_artists(
     limit: Optional[int] = Query(50, ge=1, le=100000, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
@@ -312,7 +458,7 @@ def get_artists(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère un artiste spécifique par son ID avec toutes ses informations
-@app.get("/artists/{artist_id}")
+@app.get("/artists/{artist_id}", tags=["Artistes"], summary="Détails complets d'un artiste")
 def get_artist_by_id(artist_id: int):
     conn = get_db_connection()
     if not conn:
@@ -355,7 +501,7 @@ def get_artist_by_id(artist_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère toutes les musiques d'un artiste spécifique par son ID
-@app.get("/artists/{artist_id}/tracks")
+@app.get("/artists/{artist_id}/tracks", tags=["Artistes"], summary="Musiques d'un artiste")
 def get_artist_tracks(
     artist_id: int,
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
@@ -430,7 +576,7 @@ def get_artist_tracks(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère tout les albums avec leurs informations
-@app.get("/albums")
+@app.get("/albums", tags=["Albums"], summary="Liste de tous les albums")
 def get_albums(
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination"),
@@ -494,7 +640,7 @@ def get_albums(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère un album spécifique par son ID avec toutes ses informations
-@app.get("/albums/{album_id}")
+@app.get("/albums/{album_id}", tags=["Albums"], summary="Détails complets d'un album")
 def get_album_by_id(album_id: int):
     conn = get_db_connection()
     if not conn:
@@ -537,7 +683,7 @@ def get_album_by_id(album_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère toutes les musiques d'un album spécifique par son ID
-@app.get("/albums/{album_id}/tracks")
+@app.get("/albums/{album_id}/tracks", tags=["Albums"], summary="Musiques d'un album")
 def get_album_tracks(
     album_id: int,
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
@@ -629,7 +775,7 @@ def get_album_tracks(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère une liste de recommandations de musiques similaires à une ou plusieurs musiques d'entrée
-@app.get("/reco/tracks")
+@app.get("/reco/tracks", tags=["Recommandations"], summary="Recommandations de musiques similaires")
 def recommend_tracks(
     track_ids: List[int] = Query(..., description="One or more track IDs to base recommendations on"),
     limit: int = Query(10, ge=1, le=50)
@@ -652,7 +798,7 @@ def recommend_tracks(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère une liste de recommandations d'artistes similaires à une ou plusieurs artistes d'entrée
-@app.get("/reco/artists")
+@app.get("/reco/artists", tags=["Recommandations"], summary="Recommandations d'artistes similaires")
 def get_artist_recommendations(
     artist_ids: List[int] = Query(..., description="One or more artist IDs to base recommendations on"),
     limit: int = Query(5, ge=1, le=50)
@@ -681,7 +827,7 @@ def get_artist_recommendations(
         raise HTTPException(status_code=500, detail=f"Erreur reco: {str(e)}")
 
 # Récupère tout les genres avec leurs informations
-@app.get("/genres")
+@app.get("/genres", tags=["Genres"], summary="Liste de tous les genres")
 def get_all_genres(
     limit: Optional[int] = Query(500, ge=1, le=500, description="Nombre maximum de résultats"),
     offset: Optional[int] = Query(0, ge=0, description="Décalage pour la pagination")
@@ -726,7 +872,7 @@ def get_all_genres(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère toutes les musiques d'un genre spécifique par son ID
-@app.get("/genres/{genre_id}/tracks")
+@app.get("/genres/{genre_id}/tracks", tags=["Genres"], summary="Musiques d'un genre")
 def get_genre_tracks(
     genre_id: int,
     limit: Optional[int] = Query(50, ge=1, le=500, description="Nombre maximum de résultats"),
@@ -811,7 +957,7 @@ class PlaylistUpdateInfo(BaseModel):
     description: Optional[str] = None
 
 # Créer une nouvelle playlist avec ses informations et les musiques sélectionnées
-@app.post("/playlists")
+@app.post("/playlists", tags=["Playlists"], summary="Créer une nouvelle playlist")
 def create_playlist(data: PlaylistCreate):
     conn = get_db_connection()
     if not conn:
@@ -879,7 +1025,7 @@ def create_playlist(data: PlaylistCreate):
             conn.close()
 
 # Récupère une playlist spécifique avec toutes ses tracks
-@app.get("/playlists/{playlist_id}")
+@app.get("/playlists/{playlist_id}", tags=["Playlists"], summary="Détails complets d'une playlist")
 def get_playlist_by_id(playlist_id: int):
     conn = get_db_connection()
     if not conn:
@@ -948,7 +1094,7 @@ def get_playlist_by_id(playlist_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Supprimer une playlist et toutes ses associations (playlist_track, playlist_user)
-@app.delete("/playlists/{playlist_id}")
+@app.delete("/playlists/{playlist_id}", tags=["Playlists"], summary="Supprimer une playlist")
 def delete_playlist(playlist_id: int):
     conn = get_db_connection()
     if not conn:
@@ -977,7 +1123,7 @@ def delete_playlist(playlist_id: int):
         conn.close()
 
 # Récupère les playlists d'un utilisateur spécifique par son ID
-@app.get("/playlist/{user_id}")
+@app.get("/playlist/{user_id}", tags=["Playlists"], summary="Playlists d'un utilisateur", deprecated=True)
 def get_playlist_for_user(
     user_id: int,
     limit: Optional[int] = Query(20, ge=1, le=100, description="Nombre maximum de résultats"),
@@ -1010,7 +1156,7 @@ def get_playlist_for_user(
         conn.close()
 
 # Met à jour les tracks d'une playlist (remplace toutes les tracks actuelles par une nouvelle liste)
-@app.post("/playlists/{playlist_id}/tracks")
+@app.post("/playlists/{playlist_id}/tracks", tags=["Playlists"], summary="Remplacer les musiques d'une playlist")
 def update_tracks_in_playlist(playlist_id: int, data: PlaylistUpdateTracks):
     conn = get_db_connection()
     try:
@@ -1025,7 +1171,7 @@ def update_tracks_in_playlist(playlist_id: int, data: PlaylistUpdateTracks):
         conn.close()
 
 # Supprimer une track spécifique d'une playlist
-@app.delete("/playlists/{playlist_id}/tracks/{track_id}")
+@app.delete("/playlists/{playlist_id}/tracks/{track_id}", tags=["Playlists"], summary="Supprimer une musique d'une playlist")
 def remove_track_from_playlist(playlist_id: int, track_id: int):
     conn = get_db_connection()
     if not conn:
@@ -1063,7 +1209,7 @@ def remove_track_from_playlist(playlist_id: int, track_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Récupère les playlists d'un utilisateur sans les détails des tracks
-@app.get("/users/{user_id}/playlists")
+@app.get("/users/{user_id}/playlists", tags=["Utilisateurs"], summary="Playlists d'un utilisateur")
 def get_user_playlists(user_id: int):
     conn = get_db_connection()
     try:
@@ -1080,7 +1226,7 @@ def get_user_playlists(user_id: int):
         conn.close()
 
 # Récupère les playlists d'un utilisateur avec leurs détails
-@app.get("/users/{user_id}/playlists/detailed")
+@app.get("/users/{user_id}/playlists/detailed", tags=["Utilisateurs"], summary="Playlists détaillées d'un utilisateur")
 def get_user_playlists_detailed(user_id: int):
     conn = get_db_connection()
     if not conn:
@@ -1139,7 +1285,7 @@ def get_user_playlists_detailed(user_id: int):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Modifie les informations d'une playlist (nom et description)
-@app.put("/playlists/{playlist_id}")
+@app.put("/playlists/{playlist_id}", tags=["Playlists"], summary="Modifier les informations d'une playlist")
 def update_playlist_info(playlist_id: int, data: PlaylistUpdateInfo):
     conn = get_db_connection()
     if not conn:
@@ -1172,7 +1318,7 @@ def update_playlist_info(playlist_id: int, data: PlaylistUpdateInfo):
             conn.close()
 
 # Upload d'une image personnalisée pour une playlist
-@app.post("/playlists/{playlist_id}/image")
+@app.post("/playlists/{playlist_id}/image", tags=["Playlists"], summary="Uploader une image de playlist")
 async def upload_playlist_image(playlist_id: int, file: UploadFile = File(...)):
     # Vérifier le type de fichier
     allowed_types = ["image/jpeg", "image/png", "image/webp", "image/avif"]
@@ -1230,7 +1376,7 @@ async def upload_playlist_image(playlist_id: int, file: UploadFile = File(...)):
             conn.close()
 
 # Supprimer l'image personnalisée d'une playlist (revient à la mosaïque par défaut)
-@app.delete("/playlists/{playlist_id}/image")
+@app.delete("/playlists/{playlist_id}/image", tags=["Playlists"], summary="Supprimer l'image d'une playlist")
 def delete_playlist_image(playlist_id: int):
     conn = get_db_connection()
     if not conn:
@@ -1268,7 +1414,7 @@ def delete_playlist_image(playlist_id: int):
             conn.close()
 
 # Autocomplete pour la recherche de musiques par titre, artiste ou album
-@app.get("/search/tracks")
+@app.get("/search/tracks", tags=["Recherche"], summary="Rechercher des musiques")
 def search_tracks(
     query: str = Query(..., description="Terme de recherche"),
     limit: Optional[int] = Query(10, ge=1, le=50, description="Nombre maximum de résultats")
@@ -1321,7 +1467,7 @@ def search_tracks(
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/voir_favorite/{user_id}")
+@app.get("/voir_favorite/{user_id}", tags=["Favoris"], summary="Favoris d'un utilisateur")
 def get_all_favorite(user_id : int):
     conn = get_db_connection()
     if not conn:
@@ -1371,7 +1517,7 @@ def get_all_favorite(user_id : int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/save-favorites")
+@app.post("/save-favorites", tags=["Favoris"], summary="Enregistrer les favoris d'un utilisateur")
 async def saveFavorite(request : Request):
     conn = get_db_connection()
 
@@ -1422,7 +1568,7 @@ class UpdateUserRequest(BaseModel):
     user_gender:    Optional[str] = None
     user_location:  Optional[str] = None
 
-@app.put("/users/{user_id}")
+@app.put("/users/{user_id}", tags=["Utilisateurs"], summary="Modifier le profil d'un utilisateur")
 def update_user(user_id: int, body: UpdateUserRequest):
     conn = get_db_connection()
     if not conn:
@@ -1477,7 +1623,7 @@ def update_user(user_id: int, body: UpdateUserRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.delete("/users/{user_id}")
+@app.delete("/users/{user_id}", tags=["Utilisateurs"], summary="Supprimer un utilisateur")
 def delete_user(user_id: int):
     conn = get_db_connection()
     if not conn:
@@ -1517,7 +1663,7 @@ class BanUser(BaseModel):
 
 
 # Statistiques globales pour le dashboard admin
-@app.get("/admin/stats")
+@app.get("/admin/stats", tags=["Admin"], summary="Statistiques globales")
 def admin_stats():
     conn = get_db_connection()
     if not conn:
@@ -1573,7 +1719,7 @@ def admin_stats():
 
 
 # Liste tous les utilisateurs avec pagination et recherche
-@app.get("/admin/users")
+@app.get("/admin/users", tags=["Admin"], summary="Liste de tous les utilisateurs")
 def admin_list_users(
     limit: Optional[int] = Query(50, ge=1, le=500),
     offset: Optional[int] = Query(0, ge=0),
@@ -1641,7 +1787,7 @@ def admin_list_users(
 
 
 # Détails d'un utilisateur
-@app.get("/admin/users/{user_id}")
+@app.get("/admin/users/{user_id}", tags=["Admin"], summary="Détails d'un utilisateur")
 def admin_get_user(user_id: int):
     conn = get_db_connection()
     if not conn:
@@ -1685,7 +1831,7 @@ def admin_get_user(user_id: int):
 
 
 # Changer le rôle d'un utilisateur
-@app.put("/admin/users/{user_id}/role")
+@app.put("/admin/users/{user_id}/role", tags=["Admin"], summary="Changer le rôle d'un utilisateur")
 def admin_update_role(user_id: int, body: UpdateUserRole):
     if body.role not in ("admin", "user"):
         raise HTTPException(status_code=400, detail="Rôle invalide. Utiliser 'admin' ou 'user'.")
@@ -1726,7 +1872,7 @@ def admin_update_role(user_id: int, body: UpdateUserRole):
 
 
 # Bannir / Débannir un utilisateur
-@app.put("/admin/users/{user_id}/ban")
+@app.put("/admin/users/{user_id}/ban", tags=["Admin"], summary="Bannir ou débannir un utilisateur")
 def admin_ban_user(user_id: int, body: BanUser):
     new_status = "banned" if body.banned else "user"
 
@@ -1763,7 +1909,7 @@ def admin_ban_user(user_id: int, body: BanUser):
 
 
 # Supprimer un utilisateur (admin)
-@app.delete("/admin/users/{user_id}")
+@app.delete("/admin/users/{user_id}", tags=["Admin"], summary="Supprimer un utilisateur")
 def admin_delete_user(user_id: int):
     conn = get_db_connection()
     if not conn:
@@ -1799,7 +1945,7 @@ def admin_delete_user(user_id: int):
 
 
 # Supprimer une track (modération)
-@app.delete("/admin/tracks/{track_id}")
+@app.delete("/admin/tracks/{track_id}", tags=["Admin"], summary="Supprimer une musique (modération)")
 def admin_delete_track(track_id: int):
     conn = get_db_connection()
     if not conn:
@@ -1837,7 +1983,7 @@ def admin_delete_track(track_id: int):
 
 
 # Supprimer une playlist (modération)
-@app.delete("/admin/playlists/{playlist_id}")
+@app.delete("/admin/playlists/{playlist_id}", tags=["Admin"], summary="Supprimer une playlist (modération)")
 def admin_delete_playlist(playlist_id: int):
     conn = get_db_connection()
     if not conn:
