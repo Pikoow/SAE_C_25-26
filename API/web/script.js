@@ -174,32 +174,28 @@ function Reset() {
 
 //Fonction pour remplir avec les anciennes données de user
 async function chargerPreferencesUtilisateur() {
-    const userId = localStorage.getItem("userId");
-    try {
-        const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
-        const result = await response.json();
-        if (result.count !== 0) {
-            const data = result.results;
-            const mappings = [
-                { data: data[0].user_favorite_genre, container: 'selected-genres-list' },
-                { data: data[0].user_favorite_artist, container: 'selected-artists-list' },
-                { data: data[0].user_favorite_tracks, container: 'selected-tracks-list' }
-            ];
-            mappings.forEach(map => {
-                if (map.data) {
-                    const items = map.data.split(',');
-                    
-                    items.forEach((item, index) => {
-                        const cleanName = item.trim();
-                        if (cleanName !== "") {
-                            ajouterElementSelectionne(cleanName, map.container, `load-${index}`);
-                        }
-                    });
-                }
-            });
-        }
-    } catch (error) {
-        console.error("Erreur lors du chargement des préférences :", error);
+    const userId = localStorage.getItem("userId") || 1;
+    const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
+    const result = await response.json();
+    if (result.count !== 0) {
+        const data = result.results;
+        const mappings = [
+            { data: data[0].user_favorite_genre, container: 'selected-genres-list' },
+            { data: data[0].user_favorite_artist, container: 'selected-artists-list' },
+            { data: data[0].user_favorite_tracks, container: 'selected-tracks-list' }
+        ];
+        mappings.forEach(map => {
+            if (map.data) {
+                const items = map.data.split(',');
+                
+                items.forEach((item, index) => {
+                    const cleanName = item.trim();
+                    if (cleanName !== "") {
+                        ajouterElementSelectionne(cleanName, map.container, `load-${index}`);
+                    }
+                });
+            }
+        });
     }
 }
 
@@ -213,20 +209,15 @@ $(document).ready(function() {
 async function initPage() {
     console.time("ChargementParallèle");
 
-    try {
-        await Promise.all([
-            chargerPreferencesUtilisateur(),
-            chargerGenres(),//1.41
-            chargerArtists(),//2.61
-            chargerMusiques()//600
-            //1400
-        ]);
+    await Promise.all([
+        chargerPreferencesUtilisateur(),
+        chargerGenres(),//1.41
+        chargerArtists(),//2.61
+        chargerMusiques()//600
+        //1400
+    ]);
 
-        console.log("Toutes les ressources sont chargées !");
-    } catch (error) {
-        console.error("Une des requêtes a échoué", error);
-    }
-    console.timeEnd("ChargementParallèle");
+    // console.log("Toutes les ressources sont chargées !");
 }
 
 /****************************************
