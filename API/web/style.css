@@ -700,7 +700,7 @@ footer {
     border: 2px solid #000;
     border-radius: 12px;
     font-size: 1rem;
-    background-image: url('../images/loupe.svg');
+    background-image: url('../images/loupe.png');
     background-repeat: no-repeat;
     background-position: 15px center;
     background-size: 20px 20px;
@@ -1174,7 +1174,7 @@ footer {
 /* =====================================================
    PAGE PLAYLISTS
 ===================================================== */
-.playlists-page .playlists-header {
+.playlists-page .playlists-header ,.preferences .preferences-header {
     position: relative;
     background-color: var(--noir);
     overflow: hidden;
@@ -1184,7 +1184,7 @@ footer {
     justify-content: center;
 }
 
-.playlists-page .playlists-header::before {
+.playlists-page .playlists-header::before ,.preferences .preferences-header::before{
     content: '';
     position: absolute;
     bottom: -120px;
@@ -1207,7 +1207,7 @@ footer {
     gap: 0;
 }
 
-.playlists-page .playlists-header h1 {
+.playlists-page .playlists-header h1 ,.preferences .preferences-header h1{
     font-family: 'Rammetto One', sans-serif;
     font-size: 3.125rem;
     color: var(--blanc);
@@ -1215,7 +1215,7 @@ footer {
     letter-spacing: -1px;
 }
 
-.playlists-page .playlists-header p {
+.playlists-page .playlists-header p ,.preferences .preferences-header p{
     font-family: 'Outfit', sans-serif;
     font-size: 1rem;
     color: var(--gris-clair);
