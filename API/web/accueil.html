@@ -1460,16 +1460,13 @@
                 const bar = document.createElement('div');
                 bar.classList.add('eq-bar');
 
-                const hMin     = Math.floor(Math.random() * 60)  + 15;   // 15–75 px
-                const hMax     = Math.floor(Math.random() * 220) + 80;   // 80–300 px
-                const duration = (Math.random() * 4 + 2.5).toFixed(2); // 0.4–1.6 s
-                const delay    = (Math.random() * 2.0).toFixed(2);       // 0–2 s
+                const scaleMin = (Math.random() * 0.1 + 0.2).toFixed(2); // 0.2 à 0.3
+                const duration = (Math.random() * 2 + 2.5).toFixed(2);   // 2.5 à 4.5 s
+                const delay = (Math.random() * 1.0).toFixed(2);          // 0 à 1s
 
-                bar.style.setProperty('--h-min', hMin + 'px');
-                bar.style.setProperty('--h-max', hMax + 'px');
+                bar.style.setProperty('--scale-min', scaleMin);
                 bar.style.setProperty('--duration', duration + 's');
                 bar.style.animationDelay = `-${delay}s`;
-                bar.style.height = hMax + 'px';
 
                 container.appendChild(bar);
             }

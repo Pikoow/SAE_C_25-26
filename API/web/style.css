@@ -406,6 +406,7 @@ footer {
     bottom: 0;
     left: 0;
     width: 100%;
+    height: 150px;           /* container fixe */
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -413,7 +414,8 @@ footer {
     padding: 0 10px;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.50;
+    opacity: 0.5;
+    overflow: hidden;        /* empêche débordement */
 }
 
 .accueil .eq-bar {
@@ -421,13 +423,15 @@ footer {
     width: 16px;
     border-radius: 3px 3px 0 0;
     background-color: var(--orange);
-    animation: eqBounce var(--duration) ease-in-out infinite alternate;
+    height: 100%;             /* toute la hauteur du container */
     transform-origin: bottom;
+    transform: scaleY(0.3);  /* valeur minimale */
+    animation: eqBounce var(--duration) ease-in-out infinite alternate;
 }
 
 @keyframes eqBounce {
-    0% { height: var(--h-min); }
-    100% { height: var(--h-max); }
+    0%   { transform: scaleY(var(--scale-min)); }
+    100% { transform: scaleY(1); }
 }
 
 .accueil .hero>*:not(.equalizer-bg) {
