@@ -1661,6 +1661,15 @@ class UpdateUserRole(BaseModel):
 class BanUser(BaseModel):
     banned: bool  # True = bannir, False = débannir
 
+class AdminUpdateProfile(BaseModel):
+    user_firstname: Optional[str] = None
+    user_lastname: Optional[str] = None
+    user_mail: Optional[str] = None
+    user_age: Optional[int] = None
+    user_gender: Optional[str] = None
+    user_location: Optional[str] = None
+    user_phonenumber: Optional[str] = None
+
 
 # Statistiques globales pour le dashboard admin
 @app.get("/admin/stats", tags=["Admin"], summary="Statistiques globales")
@@ -1927,6 +1936,76 @@ def admin_ban_user(user_id: int, body: BanUser, requester_id: Optional[int] = Qu
 
         action = "banni" if body.banned else "débanni"
         return {"success": True, "message": f"Utilisateur {action}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Modifier le profil d'un utilisateur (admin) — mot de passe exclu
+@app.put("/admin/users/{user_id}/profile", tags=["Admin"], summary="Modifier le profil d'un utilisateur (admin)")
+def admin_update_profile(user_id: int, body: AdminUpdateProfile, requester_id: Optional[int] = Query(None)):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        # Vérifier que l'utilisateur existe et son role
+        cur.execute("SELECT user_id, user_status FROM sae.users WHERE user_id = %s", (user_id,))
+        target = cur.fetchone()
+        if not target:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+        # Un admin ne peut pas modifier le profil d'un autre admin (seul super_admin peut)
+        if target['user_status'] in ('admin', 'super_admin'):
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut modifier le profil d'un admin")
+
+        fields = []
+        params = []
+
+        if body.user_firstname is not None:
+            fields.append("user_firstname = %s")
+            params.append(body.user_firstname)
+        if body.user_lastname is not None:
+            fields.append("user_lastname = %s")
+            params.append(body.user_lastname)
+        if body.user_mail is not None:
+            fields.append("user_mail = %s")
+            params.append(body.user_mail)
+        if body.user_age is not None:
+            fields.append("user_age = %s")
+            params.append(body.user_age)
+        if body.user_gender is not None:
+            fields.append("user_gender = %s")
+            params.append(body.user_gender)
+        if body.user_location is not None:
+            fields.append("user_location = %s")
+            params.append(body.user_location)
+        if body.user_phonenumber is not None:
+            fields.append("user_phonenumber = %s")
+            params.append(body.user_phonenumber)
+
+        if not fields:
+            raise HTTPException(status_code=400, detail="Aucun champ à mettre à jour")
+
+        params.append(user_id)
+        query = f"UPDATE sae.users SET {', '.join(fields)} WHERE user_id = %s"
+        cur.execute(query, params)
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": "Profil utilisateur mis à jour"}
     except HTTPException:
         raise
     except Exception as e:
