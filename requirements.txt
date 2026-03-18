@@ -13,3 +13,4 @@ fastapi
 uvicorn
 dotenv
 bcrypt
+python-multipart

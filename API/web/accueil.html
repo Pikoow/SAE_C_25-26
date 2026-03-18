@@ -12,7 +12,7 @@
     <script src="audio-player.js"></script>
     <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
-    <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
+    <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
     <!-- Pop-up Exit Intent - À insérer n'importe où dans votre page -->
 <style>
     .exit-popup-overlay {
@@ -1266,7 +1266,7 @@
 </head>
 <body class="accueil">
     <header>
-        <a href="accueil.html"><h2>MuSE</h2></a> 
+        <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a> 
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
@@ -1276,7 +1276,8 @@
                 <a href="#">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
                 <div class="dropdown-content">
                     <a href="api-installation.html">Installation</a>
-                    <a href="api-documentation.html">Documentation</a>
+                    <a href="http://127.0.0.1:8000/docs" target="_blank">Doc. Swagger</a>
+                    <a href="api-documentation.html">Doc Legacy</a>
                     <a href="api-test.html">Testez l'API</a>
                 </div>
             </div>
@@ -1460,16 +1461,13 @@
                 const bar = document.createElement('div');
                 bar.classList.add('eq-bar');
 
-                const hMin     = Math.floor(Math.random() * 60)  + 15;   // 15–75 px
-                const hMax     = Math.floor(Math.random() * 220) + 80;   // 80–300 px
-                const duration = (Math.random() * 4 + 2.5).toFixed(2); // 0.4–1.6 s
-                const delay    = (Math.random() * 2.0).toFixed(2);       // 0–2 s
+                const scaleMin = (Math.random() * 0.1 + 0.2).toFixed(2); // 0.2 à 0.3
+                const duration = (Math.random() * 2 + 2.5).toFixed(2);   // 2.5 à 4.5 s
+                const delay = (Math.random() * 1.0).toFixed(2);          // 0 à 1s
 
-                bar.style.setProperty('--h-min', hMin + 'px');
-                bar.style.setProperty('--h-max', hMax + 'px');
+                bar.style.setProperty('--scale-min', scaleMin);
                 bar.style.setProperty('--duration', duration + 's');
                 bar.style.animationDelay = `-${delay}s`;
-                bar.style.height = hMin + 'px';
 
                 container.appendChild(bar);
             }

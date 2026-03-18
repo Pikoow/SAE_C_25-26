@@ -63,6 +63,26 @@ header h2 {
     flex: 0 0 auto;
 }
 
+/* Brand (logo + site name) - ensure horizontal alignment */
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand h2 {
+    margin: 0;
+    line-height: 1;
+    display: inline-block;
+}
+
+.brand img {
+    display: block;
+    height: 28px;
+}
+
 header nav {
     margin-left: 0;
     flex: 1;
@@ -386,6 +406,7 @@ footer {
     bottom: 0;
     left: 0;
     width: 100%;
+    height: 150px;           /* container fixe */
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -393,7 +414,8 @@ footer {
     padding: 0 10px;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.50;
+    opacity: 0.5;
+    overflow: hidden;        /* empêche débordement */
 }
 
 .accueil .eq-bar {
@@ -401,13 +423,15 @@ footer {
     width: 16px;
     border-radius: 3px 3px 0 0;
     background-color: var(--orange);
-    animation: eqBounce var(--duration) ease-in-out infinite alternate;
+    height: 100%;             /* toute la hauteur du container */
     transform-origin: bottom;
+    transform: scaleY(0.3);  /* valeur minimale */
+    animation: eqBounce var(--duration) ease-in-out infinite alternate;
 }
 
 @keyframes eqBounce {
-    0% { height: var(--h-min); }
-    100% { height: var(--h-max); }
+    0%   { transform: scaleY(var(--scale-min)); }
+    100% { transform: scaleY(1); }
 }
 
 .accueil .hero>*:not(.equalizer-bg) {
@@ -680,7 +704,7 @@ footer {
     border: 2px solid #000;
     border-radius: 12px;
     font-size: 1rem;
-    background-image: url('../images/loupe.avif');
+    background-image: url('../images/loupe.png');
     background-repeat: no-repeat;
     background-position: 15px center;
     background-size: 20px 20px;
@@ -708,6 +732,7 @@ footer {
     background-color: #f38630;
     color: white;
     padding: 8px 15px;
+    margin: 10px;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1153,7 +1178,7 @@ footer {
 /* =====================================================
    PAGE PLAYLISTS
 ===================================================== */
-.playlists-page .playlists-header {
+.playlists-page .playlists-header ,.preferences .preferences-header {
     position: relative;
     background-color: var(--noir);
     overflow: hidden;
@@ -1162,8 +1187,15 @@ footer {
     align-items: center;
     justify-content: center;
 }
+.playlists-page .playlists-header{
+    min-height: 80vh;
+}
 
-.playlists-page .playlists-header::before {
+.preferences .preferences-header {
+    min-height: 90vh;
+}
+
+.playlists-page .playlists-header::before ,.preferences .preferences-header::before{
     content: '';
     position: absolute;
     bottom: -120px;
@@ -1186,7 +1218,7 @@ footer {
     gap: 0;
 }
 
-.playlists-page .playlists-header h1 {
+.playlists-page .playlists-header h1 ,.preferences .preferences-header h1{
     font-family: 'Rammetto One', sans-serif;
     font-size: 3.125rem;
     color: var(--blanc);
@@ -1194,7 +1226,7 @@ footer {
     letter-spacing: -1px;
 }
 
-.playlists-page .playlists-header p {
+.playlists-page .playlists-header p ,.preferences .preferences-header p{
     font-family: 'Outfit', sans-serif;
     font-size: 1rem;
     color: var(--gris-clair);
@@ -2131,6 +2163,88 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 
 .playlists-page .pl-empty-state .pl-empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
 .playlists-page .pl-empty-state p { font-size: 0.9rem; margin: 0; }
+
+/* Custom playlist cover image */
+.playlists-page .playlist-custom-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.playlists-page .playlist-custom-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.playlists-page .playlist-card:hover .playlist-custom-cover img {
+    transform: scale(1.05);
+}
+
+/* Custom cover in modal header */
+.playlists-page .pl-custom-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Image upload section in modal */
+.playlists-page .pl-image-upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 30px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+.playlists-page .pl-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--blanc);
+    border: 1px solid var(--gris-clair);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gris-fonce);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.playlists-page .pl-upload-btn:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: #fff7f0;
+}
+
+.playlists-page .pl-upload-btn svg {
+    flex-shrink: 0;
+}
+
+.playlists-page .pl-remove-image-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    color: var(--rouge);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.playlists-page .pl-remove-image-btn:hover {
+    background: #fff5f5;
+}
 
 /* Notifications */
 .playlists-page .notification {

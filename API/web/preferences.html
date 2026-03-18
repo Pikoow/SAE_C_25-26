@@ -2,11 +2,12 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Préférences - MuSE</title>
+    <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
-  <link rel="icon" type="image/png" sizes="32x32" href="images/logos/muse.png">
+  
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
   <script src="node-auth/js/app.js"></script>
@@ -29,7 +30,7 @@
 
 <body class="preferences">
     <header>
-        <a href="accueil.html"><h2>MuSE</h2></a> 
+        <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a> 
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
@@ -39,7 +40,8 @@
                 <a href="#">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
                 <div class="dropdown-content">
                     <a href="api-installation.html">Installation</a>
-                    <a href="api-documentation.html">Documentation</a>
+                    <a href="http://127.0.0.1:8000/docs" target="_blank">Doc. Swagger</a>
+                    <a href="api-documentation.html">Doc Legacy</a>
                     <a href="api-test.html">Testez l'API</a>
                 </div>
             </div>
@@ -66,7 +68,13 @@
     </div>
     </header>
   <main>
-    <h2 class="titre-centre">Mes Préférences</h2>
+    <section class="preferences-header">
+        <div>
+            <h1>Mes Préférences</h1>
+            <p>Ajoutez ou modifiez vos musiques, albums et artistes préférés afin de générer des playlists adaptées à vos goûts.</p>
+            <p>Vous retrouverez également, sur la page d’accueil, des recommandations personnalisées de musiques, d’albums et d’artistes basées sur vos préférences.</p>
+        </div>
+    </section>
     <section class="preferences-container">
         <section class="search-section">
         <h2>Genres</h2>
