@@ -1182,13 +1182,12 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
 }
 .playlists-page .playlists-header{
     min-height: 80vh;
 }
 
-.preferences .preferences-header{
+.preferences .preferences-header {
     min-height: 90vh;
 }
 
