@@ -115,7 +115,7 @@ app.post("/login", async (req, res) => {
 
     if (userResult.rows.length === 0) {
       // Création utilisateur
-      if (!firstName || !lastName) return res.json({ success: false, error: "Prénom et nom requis" });
+      if (!firstName || !lastName) return res.json({ success: false, error: "E-mail ou mot de passe incorrect" });
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
