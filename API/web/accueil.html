@@ -1591,11 +1591,11 @@
                                     trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
                                 }
                                 if (trackIds.length === 0) trackIds = ['81466'];
-                                return `http://127.0.0.1:8000/reco/tracks?${trackIds.map(id => 'track_ids=' + id).join('&')}&limit=15`;
+                                return `http://127.0.0.1:8000/reco/tracks?${trackIds.map(id => 'track_ids=' + id).join('&')}&limit=15&exclude_user_id=${popupUserId}`;
                             })
-                            .catch(() => 'http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15');
+                            .catch(() => `http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15${popupUserId ? '&exclude_user_id=' + popupUserId : ''}`);
                     } else {
-                        recoUrlPromise = Promise.resolve('http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15');
+                        recoUrlPromise = Promise.resolve(`http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15${popupUserId ? '&exclude_user_id=' + popupUserId : ''}`);
                     }
 
                     recoUrlPromise.then(recoUrl => {
@@ -2575,7 +2575,7 @@
                         const prefData = await prefRes.json();
                         let trackIds = [];
                         if (prefData.count > 0 && prefData.results[0].ids_tracks) trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
-                        if (trackIds.length > 0) recoUrl = 'http://127.0.0.1:8000/reco/tracks?' + trackIds.map(id => 'track_ids=' + id).join('&') + '&limit=12';
+                        if (trackIds.length > 0) recoUrl = 'http://127.0.0.1:8000/reco/tracks?' + trackIds.map(id => 'track_ids=' + id).join('&') + '&limit=12' + (userId ? '&exclude_user_id=' + userId : '');
                     } catch (e) { /* fallback */ }
                 }
                 const recoRes = await fetch(recoUrl);

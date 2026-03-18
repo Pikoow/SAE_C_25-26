@@ -17,6 +17,16 @@ $(document).ready(function () {
 
     // Initialiser la gestion de la modal de création
     setupCreateModal();
+
+    // Clic pour voir les titres dislikés (le nouveau lien discret)
+    $("#view-disliked-link").on("click", function (e) {
+        e.preventDefault();
+        if (!currentUserId) {
+            showNotification('Veuillez vous connecter pour voir vos titres dislikés.', 'error');
+            return;
+        }
+        viewDislikedTracks();
+    });
 });
 
 // ===== GESTION DE LA MODAL DE CRÉATION =====
@@ -62,16 +72,27 @@ async function checkAuthenticatedUser() {
             credentials: "include"
         });
 
-        const data = await response.json();
+        if (!response.ok) {
+            // Not authenticated - do not assume a fallback user id
+            console.debug('Auth check returned', response.status);
+            currentUserId = null;
+            // Show empty playlists state for anonymous users
+            displayPlaylists([]);
+            return;
+        }
 
-        if (!data.error) {
-            currentUserId = data.user.user_id || 1;
+        const data = await response.json();
+        if (data && !data.error && data.user && data.user.user_id) {
+            currentUserId = data.user.user_id;
             loadUserPlaylists(currentUserId);
+        } else {
+            currentUserId = null;
+            displayPlaylists([]);
         }
     } catch (err) {
         console.error("Erreur d'authentification:", err);
-        currentUserId = 1;
-        loadUserPlaylists(currentUserId);
+        currentUserId = null;
+        displayPlaylists([]);
     }
 }
 
@@ -91,6 +112,15 @@ async function loadUserPlaylists(userId) {
 function displayPlaylists(playlists) {
     const container = $(".playlists-container");
     container.empty();
+
+    // Move "titre liker" to the start so it appears as the leftmost card
+    try {
+        const idx = playlists.findIndex(p => (p.playlist_name || '').toLowerCase().trim() === 'titre liker');
+        if (idx > -1) {
+            const [liker] = playlists.splice(idx, 1);
+            playlists.unshift(liker);
+        }
+    } catch (e) { /* ignore */ }
 
     if (playlists.length === 0) {
         container.html(`
@@ -125,12 +155,20 @@ function appendNewPlaylistCard(container) {
 
 // ===== CARTE DE PLAYLIST =====
 function createPlaylistCard(playlist) {
-    const coverHtml = playlist.playlist_image
-        ? `<div class="playlist-custom-cover"><img src="uploads/playlists/${playlist.playlist_image}" alt="${escapeHtml(playlist.playlist_name)}" onerror="this.parentElement.innerHTML='${generatePlaylistCovers(playlist.preview_tracks || []).replace(/'/g, "\\'").replace(/"/g, '&quot;')}'"></div>`
-        : `<div class="playlist-cover-grid">${generatePlaylistCovers(playlist.preview_tracks || [])}</div>`;
+    // If this is the special "titre liker" playlist, use the dedicated liked image
+    const isLiker = ((playlist.playlist_name||'').toLowerCase().trim() === 'titre liker');
+    const coverHtml = isLiker
+        ? `<div class="playlist-custom-cover playlist-custom-cover-liker"><img src="images/liked.png" alt="${escapeHtml(playlist.playlist_name)}" onerror="this.src='images/no_image_music.avif'"></div>`
+        : (playlist.playlist_image
+            ? `<div class="playlist-custom-cover"><img src="uploads/playlists/${playlist.playlist_image}" alt="${escapeHtml(playlist.playlist_name)}" onerror="this.parentElement.innerHTML='${generatePlaylistCovers(playlist.preview_tracks || []).replace(/'/g, "\\'").replace(/\"/g, '&quot;')}'"></div>`
+            : `<div class="playlist-cover-grid">${generatePlaylistCovers(playlist.preview_tracks || [])}</div>`
+          );
+
+    // mark special 'titre liker' playlist with a class
+    const extraClass = isLiker ? ' playlist-card-liker' : '';
 
     const card = $(`
-        <div class="playlist-card" data-playlist-id="${playlist.playlist_id}">
+        <div class="playlist-card${extraClass}" data-playlist-id="${playlist.playlist_id}">
             ${coverHtml}
             <div class="playlist-info">
                 <h3>${escapeHtml(playlist.playlist_name)}</h3>
@@ -187,7 +225,9 @@ async function generateAutoPlaylist() {
 
         if (trackSeeds.length > 0) {
             const trackParams = trackSeeds.map(id => `track_ids=${id}`).join('&');
-            const recTracksResp = await fetch(`${API_BASE_URL}/reco/tracks?${trackParams}&limit=15`);
+            // exclude tracks the user has disliked
+            const excl = currentUserId ? `&exclude_user_id=${currentUserId}` : '';
+            const recTracksResp = await fetch(`${API_BASE_URL}/reco/tracks?${trackParams}&limit=15${excl}`);
             const recTracksData = await recTracksResp.json();
             if (recTracksData.results) {
                 recTracksData.results.forEach(t => generatedTrackIds.add(t.track_id));
@@ -428,6 +468,97 @@ window.viewPlaylist = function (playlistId) {
             showNotification("Erreur lors du chargement de la playlist", "error");
         });
 };
+
+// View disliked tracks (not a real playlist)
+window.viewDislikedTracks = async function () {
+    if (!currentUserId) {
+        showNotification("Veuillez vous connecter pour voir vos titres dislikés.", "error");
+        return;
+    }
+    try {
+        const resp = await fetch(`${API_BASE_URL}/users/${currentUserId}/disliked_tracks`);
+        if (!resp.ok) throw new Error('Erreur serveur');
+        const data = await resp.json();
+        showDislikedModal(data);
+    } catch (err) {
+        console.error('Erreur fetch disliked tracks:', err);
+        showNotification('Impossible de charger les titres dislikés', 'error');
+    }
+};
+
+function showDislikedModal(payload) {
+    // payload: { playlist_name, playlist_description, tracks: [...] }
+    const tracks = payload.tracks || [];
+    const tracksCount = tracks.length;
+
+    let tracksHtml = '';
+    if (tracksCount > 0) {
+        tracks.forEach((track, idx) => {
+            const mins = Math.floor((track.track_duration || 0) / 60);
+            const secs = (track.track_duration || 0) % 60;
+            const dur = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+            tracksHtml += `
+                <div class="modal-track-item" data-track-id="${track.track_id}" data-index="${idx}">
+                    <div class="pl-track-num">
+                        <span class="pl-num-text">${idx + 1}</span>
+                        <span class="pl-play-icon">
+                            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </span>
+                    </div>
+                    <img src="${getTrackImageUrl(track)}" alt="" class="track-image" onerror="this.src='images/no_image_music.avif'">
+                    <div class="track-details">
+                        <div class="track-title">${escapeHtml(track.track_title)}</div>
+                        <div class="track-artist">${escapeHtml(track.artist_names || 'Artiste inconnu')}</div>
+                    </div>
+                    <span class="pl-track-duration">${dur}</span>
+                </div>
+            `;
+        });
+    } else {
+        tracksHtml = `
+            <div class="pl-empty-state">
+                <div class="pl-empty-icon">😕</div>
+                <p>Vous n'avez pas encore disliké de titres</p>
+            </div>
+        `;
+    }
+
+    const modal = $(
+        `<div id="disliked-modal" class="modal show">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-header-covers"><div class="pl-empty-icon">👎</div></div>
+                    <div class="modal-header-info">
+                        <p class="pl-type">Titres dislike</p>
+                        <h2>${escapeHtml(payload.playlist_name || 'Titres dislike')}</h2>
+                        <p class="modal-description">${escapeHtml(payload.playlist_description || '')}</p>
+                        <p class="modal-tracks-count">${tracksCount} morceaux</p>
+                    </div>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-tracks-list">
+                    ${tracksHtml}
+                </div>
+            </div>
+        </div>`
+    ).appendTo('body');
+
+    document.body.style.overflow = 'hidden';
+
+    modal.find('.close-modal').on('click', function () { modal.remove(); document.body.style.overflow = ''; });
+    modal.on('click', function (event) { if ($(event.target).is(modal)) { modal.remove(); document.body.style.overflow = ''; } });
+
+    // Play handler
+    modal.find('.modal-track-item').on('click', function () {
+        const trackId = $(this).data('track-id');
+        fetch(`${API_BASE_URL}/tracks/${trackId}`).then(r => r.json()).then(track => {
+            if (typeof audioPlayer !== 'undefined') {
+                audioPlayer.setQueue([{ url: track.track_file, title: track.track_title, artist: track.artist_info?.artist_name || 'Artiste inconnu', trackId }], 0);
+            }
+        }).catch(err => console.error('Play error:', err));
+    });
+}
 
 window.deletePlaylist = async function (playlistId) {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette playlist ?")) return;
@@ -728,13 +859,19 @@ function showPlaylistModal(playlist) {
         const tId = $(this).data('track-id');
         if (confirm("Retirer ce morceau de la playlist ?")) {
             fetch(`${API_BASE_URL}/playlists/${plId}/tracks/${tId}`, { method: "DELETE" })
-                .then(res => {
-                    if (res.ok) {
+                .then(res => res.json().catch(() => null))
+                .then(data => {
+                    if (!data) return showNotification("Erreur lors de la suppression", "error");
+                    if (data.playlist_deleted) {
+                        showNotification("Morceau retiré — playlist vide supprimée", "success");
+                        // fermer modal et rafraîchir la liste
+                        loadUserPlaylists(currentUserId);
+                        // fermer modal si ouverte
+                        $('#playlist-modal').remove();
+                    } else {
                         showNotification("Morceau retiré de la playlist", "success");
                         viewPlaylist(plId);
                         loadUserPlaylists(currentUserId);
-                    } else {
-                        showNotification("Erreur lors de la suppression", "error");
                     }
                 })
                 .catch(() => showNotification("Erreur lors de la suppression", "error"));

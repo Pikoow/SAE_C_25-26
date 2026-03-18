@@ -209,6 +209,105 @@ $(document).ready(function() {
     initPage();
 });
 
+/* Reactions: Like / Dislike / Favorite helpers */
+async function toggleReaction(targetType, targetId, action, value) {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return alert("Veuillez vous connecter pour interagir.");
+
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/reactions/${targetType}/${targetId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: parseInt(userId), action: action, value: value })
+        });
+        const data = await res.json();
+        if (!data.success) console.warn('Reaction failed', data);
+        return data.reaction;
+    } catch (err) {
+        console.error('Erreur reaction', err);
+        throw err;
+    }
+}
+
+async function getReactionState(targetType, targetId) {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return { liked: false, disliked: false, favorite: false };
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/reactions/${targetType}/${targetId}/${userId}`);
+        if (!res.ok) return { liked: false, disliked: false, favorite: false };
+        return await res.json();
+    } catch (err) {
+        console.error('Erreur getReactionState', err);
+        return { liked: false, disliked: false, favorite: false };
+    }
+}
+
+// Helper to attach buttons inside a container element representing an entity
+function attachReactionButtons(containerEl, targetType, targetId) {
+    if (!containerEl) return;
+    // Create buttons if they don't exist
+    if (!containerEl.querySelector('.reaction-controls')) {
+        const controls = document.createElement('div');
+        controls.className = 'reaction-controls';
+        controls.innerHTML = `
+            <button class="btn-like">👍</button>
+            <button class="btn-dislike">👎</button>
+        `;
+        containerEl.appendChild(controls);
+
+        const btnLike = controls.querySelector('.btn-like');
+        const btnDislike = controls.querySelector('.btn-dislike');
+        const userId = localStorage.getItem('userId');
+
+        // disable buttons for anonymous users
+        if (!userId) {
+            btnLike.disabled = true;
+            btnDislike.disabled = true;
+            btnLike.title = 'Connexion requise';
+            btnDislike.title = 'Connexion requise';
+            btnLike.style.opacity = '0.5';
+            btnDislike.style.opacity = '0.5';
+            btnLike.style.cursor = 'not-allowed';
+            btnDislike.style.cursor = 'not-allowed';
+        }
+
+        // Wire click handlers
+        btnLike.addEventListener('click', async () => {
+            try {
+                const state = await getReactionState(targetType, targetId);
+                const newVal = !state.liked;
+                const serverState = await toggleReaction(targetType, targetId, 'like', newVal);
+                updateReactionUI(controls, serverState || { liked: newVal, disliked: newVal ? false : state.disliked, favorite: state.favorite });
+            } catch (e) { console.error('reaction error', e); }
+        });
+
+        btnDislike.addEventListener('click', async () => {
+            try {
+                const state = await getReactionState(targetType, targetId);
+                const newVal = !state.disliked;
+                const serverState = await toggleReaction(targetType, targetId, 'dislike', newVal);
+                updateReactionUI(controls, serverState || { liked: newVal ? false : state.liked, disliked: newVal, favorite: state.favorite });
+            } catch (e) { console.error('reaction error', e); }
+        });
+
+        // initialize state
+        getReactionState(targetType, targetId).then(state => updateReactionUI(controls, state));
+    }
+}
+
+function updateReactionUI(controlsEl, state) {
+    if (!controlsEl) return;
+    const btnLike = controlsEl.querySelector('.btn-like');
+    const btnDislike = controlsEl.querySelector('.btn-dislike');
+    if (state.liked) btnLike.classList.add('active'); else btnLike.classList.remove('active');
+    if (state.disliked) btnDislike.classList.add('active'); else btnDislike.classList.remove('active');
+}
+
+// Expose helpers to global window for other scripts (player)
+window.getReactionState = getReactionState;
+window.toggleReaction = toggleReaction;
+window.attachReactionButtons = attachReactionButtons;
+
 //Pour lancer les fonctions en parrallèles
 async function initPage() {
     console.time("ChargementParallèle");
