@@ -729,6 +729,8 @@
         const PAGE_SIZE = 20;
         let currentTotal = 0;
         let searchTimeout = null;
+        let currentUserIsSuperAdmin = false;
+        let currentUserId = null;
 
         // ============================
         // GUARD : vérification admin
@@ -745,6 +747,9 @@
 
                 document.getElementById("admin-guard").classList.add("hidden");
                 document.getElementById("admin-main").classList.remove("hidden");
+
+                currentUserIsSuperAdmin = !!data.isSuperAdmin;
+                currentUserId = localStorage.getItem("userId");
 
                 loadStats();
                 loadUsers();
@@ -827,7 +832,10 @@
                     const initials = ((u.user_firstname?.[0] || "") + (u.user_lastname?.[0] || "")).toUpperCase() || "?";
                     const roleCls = (u.user_status || "user").toLowerCase();
                     const roleLabel = roleCls === "super_admin" ? "Super Admin" : roleCls === "admin" ? "Admin" : roleCls === "banned" ? "Banni" : "User";
-                    const isProtected = roleCls === "admin" || roleCls === "super_admin";
+                    const isSuperAdmin = roleCls === "super_admin";
+                    const isAdmin = roleCls === "admin";
+                    // super_admin est toujours protege, les admins sont proteges sauf si le requester est super_admin
+                    const isProtected = isSuperAdmin || (isAdmin && !currentUserIsSuperAdmin);
 
                     return `
                     <tr>
@@ -948,7 +956,7 @@
                 shouldBan ? "danger" : "primary",
                 async () => {
                     try {
-                        const res = await fetch(`${API_URL}/admin/users/${userId}/ban`, {
+                        const res = await fetch(`${API_URL}/admin/users/${userId}/ban?requester_id=${currentUserId}`, {
                             method: "PUT",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ banned: shouldBan })
@@ -976,7 +984,7 @@
                 "primary",
                 async () => {
                     try {
-                        const res = await fetch(`${API_URL}/admin/users/${userId}/role`, {
+                        const res = await fetch(`${API_URL}/admin/users/${userId}/role?requester_id=${currentUserId}`, {
                             method: "PUT",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ role: newRole })
@@ -1003,7 +1011,7 @@
                 "danger",
                 async () => {
                     try {
-                        const res = await fetch(`${API_URL}/admin/users/${userId}`, { method: "DELETE" });
+                        const res = await fetch(`${API_URL}/admin/users/${userId}?requester_id=${currentUserId}`, { method: "DELETE" });
                         const data = await res.json();
                         if (res.ok) {
                             showToast(data.message, "success");

@@ -1832,7 +1832,7 @@ def admin_get_user(user_id: int):
 
 # Changer le rôle d'un utilisateur
 @app.put("/admin/users/{user_id}/role", tags=["Admin"], summary="Changer le rôle d'un utilisateur")
-def admin_update_role(user_id: int, body: UpdateUserRole):
+def admin_update_role(user_id: int, body: UpdateUserRole, requester_id: Optional[int] = Query(None)):
     if body.role not in ("admin", "user"):
         raise HTTPException(status_code=400, detail="Rôle invalide. Utiliser 'admin' ou 'user'.")
 
@@ -1848,8 +1848,22 @@ def admin_update_role(user_id: int, body: UpdateUserRole):
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        if row['user_status'] == 'super_admin':
+
+        target_status = row['user_status']
+
+        # super_admin est intouchable
+        if target_status == 'super_admin':
             raise HTTPException(status_code=403, detail="Impossible de modifier le rôle du super administrateur")
+
+        # Pour toucher un admin, il faut etre super_admin
+        if target_status == 'admin':
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut modifier le rôle d'un admin")
 
         cur.execute(
             "UPDATE sae.users SET user_status = %s WHERE user_id = %s",
@@ -1873,7 +1887,7 @@ def admin_update_role(user_id: int, body: UpdateUserRole):
 
 # Bannir / Débannir un utilisateur
 @app.put("/admin/users/{user_id}/ban", tags=["Admin"], summary="Bannir ou débannir un utilisateur")
-def admin_ban_user(user_id: int, body: BanUser):
+def admin_ban_user(user_id: int, body: BanUser, requester_id: Optional[int] = Query(None)):
     new_status = "banned" if body.banned else "user"
 
     conn = get_db_connection()
@@ -1883,13 +1897,25 @@ def admin_ban_user(user_id: int, body: BanUser):
     try:
         cur = conn.cursor()
 
-        # Empêcher de bannir un admin
+        # Empêcher de bannir un admin/super_admin (sauf si requester est super_admin)
         cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        if row['user_status'] in ('admin', 'super_admin') and body.banned:
-            raise HTTPException(status_code=403, detail="Impossible de bannir un administrateur")
+
+        target_status = row['user_status']
+
+        if target_status == 'super_admin' and body.banned:
+            raise HTTPException(status_code=403, detail="Impossible de bannir le super administrateur")
+
+        if target_status == 'admin' and body.banned:
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut bannir un admin")
 
         cur.execute(
             "UPDATE sae.users SET user_status = %s WHERE user_id = %s",
@@ -1910,7 +1936,7 @@ def admin_ban_user(user_id: int, body: BanUser):
 
 # Supprimer un utilisateur (admin)
 @app.delete("/admin/users/{user_id}", tags=["Admin"], summary="Supprimer un utilisateur")
-def admin_delete_user(user_id: int):
+def admin_delete_user(user_id: int, requester_id: Optional[int] = Query(None)):
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -1918,13 +1944,25 @@ def admin_delete_user(user_id: int):
     try:
         cur = conn.cursor()
 
-        # Empêcher de supprimer un admin
+        # Empêcher de supprimer un admin/super_admin (sauf si requester est super_admin)
         cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        if row['user_status'] in ('admin', 'super_admin'):
-            raise HTTPException(status_code=403, detail="Impossible de supprimer un administrateur")
+
+        target_status = row['user_status']
+
+        if target_status == 'super_admin':
+            raise HTTPException(status_code=403, detail="Impossible de supprimer le super administrateur")
+
+        if target_status == 'admin':
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut supprimer un admin")
 
         # Supprimer les données liées
         cur.execute("DELETE FROM sae.favorite WHERE user_id = %s", (user_id,))
