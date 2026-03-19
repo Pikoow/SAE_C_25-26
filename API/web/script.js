@@ -3,18 +3,23 @@ function ajouterElementSelectionne(nom, containerId, idElement) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    // Utilisation de l'ID réel pour éviter les doublons et les erreurs de sauvegarde
     const uniqueHtmlId = `badge-${containerId}-${idElement}`;
     if (document.getElementById(uniqueHtmlId)) return;
 
     const badge = document.createElement("div");
     badge.className = "badge-item";
-    badge.id = uniqueHtmlId; 
-    badge.setAttribute('data-id', idElement); 
-    badge.title = "Cliquez pour supprimer";
-    badge.innerHTML = `<span>${nom}</span>`;
+    badge.id = uniqueHtmlId;
+    badge.setAttribute('data-id', idElement); // Crucial pour la sauvegarde
+    
+    badge.innerHTML = `
+        <span class="badge-label">${nom}</span>
+        <button class="badge-remove" title="Supprimer">×</button>
+    `;
 
-    badge.addEventListener("click", function() {
-        this.remove();
+    // Suppression : clic sur la croix OU sur le badge entier
+    badge.addEventListener('click', function() {
+        badge.remove();
     });
 
     container.appendChild(badge);
@@ -114,17 +119,37 @@ async function chargerMusiques() {
         console.error("Erreur Musiques :", error);
     }
 }
+
 //Fonction pour sauvegarder les preferences de user
 async function Sauvegarde() {
     const userId = localStorage.getItem("userId");
-    if (!userId) return alert("Veuillez vous connecter.");
+    if (!userId) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Non connecté',
+            text: 'Veuillez vous connecter pour sauvegarder vos préférences.',
+            confirmButtonColor: '#ed7a26'
+        });
+    }
 
-    const choixUtilisateur = confirm("Voulez-vous enregistrer vos préférences ?");
+    const confirmation = await Swal.fire({
+        title: 'Sauvegarder ?',
+        text: 'Voulez-vous enregistrer vos préférences ?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ed7a26',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Sauvegarder',
+        cancelButtonText: 'Annuler',
+        reverseButtons: true
+    });
 
-    if (choixUtilisateur) {
+    if (confirmation.isConfirmed) {
         const getIds = (containerId) => {
             const badges = document.querySelectorAll(`#${containerId} .badge-item`);
-            return Array.from(badges).map(badge => String(badge.getAttribute('data-id')));
+            return Array.from(badges)
+                .map(badge => badge.getAttribute('data-id'))
+                .filter(id => id && !id.startsWith('load-')); 
         };
 
         const payload = {
@@ -133,8 +158,6 @@ async function Sauvegarde() {
             artists: getIds("selected-artists-list"),
             tracks: getIds("selected-tracks-list")
         };
-
-        console.log("Données envoyées au main.py :", payload);
 
         try {
             const response = await fetch("http://127.0.0.1:8000/save-favorites", {
@@ -145,57 +168,99 @@ async function Sauvegarde() {
 
             const result = await response.json();
             if (result.success) {
-                console.log("Vos préférences ont été enregistrées !");
-            }
-            else{
-                console.log("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sauvegardé !',
+                    text: 'Vos préférences ont été enregistrées avec succès.',
+                    confirmButtonColor: '#ed7a26',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Une erreur est survenue lors de la sauvegarde.',
+                    confirmButtonColor: '#ed7a26'
+                });
+                console.error("Erreur API:", result.error);
             }
         } catch (err) {
-            console.error("Erreur de connexion à l'API Python :", err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur de connexion',
+                text: 'Impossible de contacter le serveur.',
+                confirmButtonColor: '#ed7a26'
+            });
+            console.error("Erreur de connexion :", err);
         }
-        console.log("Préférences enregistrées.");
-    } else {
-        console.log("Action annulée.");
     }
 }
 
 // Vide toutes les listes
-function Reset() {
-    const choixUtilisateur = confirm("Voulez-vous vraiment supprimer vos préférences ?");
+async function Reset() {
+    const confirmation = await Swal.fire({
+        title: 'Réinitialiser ?',
+        text: 'Voulez-vous vraiment supprimer toutes vos préférences ?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Supprimer tout',
+        cancelButtonText: 'Annuler',
+        reverseButtons: true
+    });
 
-    if (choixUtilisateur) {
+    if (confirmation.isConfirmed) {
         $('.selected-list-container').empty();
         $('#selected-genres-list, #selected-artists-list, #selected-tracks-list').empty();
-        console.log("Préférences supprimées.");
-    } else {
-        console.log("Action annulée.");
+        Swal.fire({
+            icon: 'success',
+            title: 'Réinitialisé',
+            text: 'Vos préférences ont été supprimées.',
+            confirmButtonColor: '#ed7a26',
+            timer: 2000,
+            showConfirmButton: false
+        });
     }
 }
 
 //Fonction pour remplir avec les anciennes données de user
 async function chargerPreferencesUtilisateur() {
     const userId = localStorage.getItem("userId") || 1;
-    const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
-    const result = await response.json();
-    if (result.count !== 0) {
-        const data = result.results;
-        const mappings = [
-            { data: data[0].user_favorite_genre, container: 'selected-genres-list' },
-            { data: data[0].user_favorite_artist, container: 'selected-artists-list' },
-            { data: data[0].user_favorite_tracks, container: 'selected-tracks-list' }
-        ];
-        mappings.forEach(map => {
-            if (map.data) {
-                const items = map.data.split(',');
-                
-                items.forEach((item, index) => {
-                    const cleanName = item.trim();
-                    if (cleanName !== "") {
-                        ajouterElementSelectionne(cleanName, map.container, `load-${index}`);
-                    }
-                });
-            }
-        });
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
+        const result = await response.json();
+        
+        if (result.count !== 0 && result.results[0]) {
+            const data = result.results[0];
+            
+            // On traite chaque catégorie en liant les noms avec leurs vrais IDs
+            const categories = [
+                { items: data.user_favorite_genre, ids: data.ids_genres, container: 'selected-genres-list' },
+                { items: data.user_favorite_artist, ids: data.ids_artists, container: 'selected-artists-list' },
+                { items: data.user_favorite_tracks, ids: data.ids_tracks, container: 'selected-tracks-list' }
+            ];
+
+            categories.forEach(cat => {
+                if (cat.items && cat.ids) {
+                    const names = cat.items.split(',');
+                    const ids = cat.ids.split(',');
+
+                    names.forEach((name, index) => {
+                        const cleanName = name.trim();
+                        // On utilise l'ID réel ou on crée un fallback si par hasard il y a un décalage
+                        const cleanId = ids[index] ? ids[index].trim() : `load-${index}-${Date.now()}`;
+                        
+                        if (cleanName) {
+                            ajouterElementSelectionne(cleanName, cat.container, cleanId);
+                        }
+                    });
+                }
+            });
+        }
+    } catch (err) {
+        console.error("Erreur lors du chargement des préférences :", err);
     }
 }
 
@@ -211,59 +276,126 @@ async function initPage() {
 
     await Promise.all([
         chargerPreferencesUtilisateur(),
-        chargerGenres(),//1.41
-        chargerArtists(),//2.61
-        chargerMusiques()//600
-        //1400
+        chargerGenres(),
+        chargerArtists(),
+        chargerMusiques()
     ]);
 
-    // console.log("Toutes les ressources sont chargées !");
+    console.timeEnd("ChargementParallèle");
 }
+async function toggleReaction(targetType, targetId, action, value) {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return alert("Veuillez vous connecter pour interagir.");
+
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/reactions/${targetType}/${targetId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: parseInt(userId), action: action, value: value })
+        });
+        const data = await res.json();
+        if (!data.success) console.warn('Reaction failed', data);
+        return data.reaction;
+    } catch (err) {
+        console.error('Erreur reaction', err);
+        throw err;
+    }
+}
+
+async function getReactionState(targetType, targetId) {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return { liked: false, disliked: false, favorite: false };
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/reactions/${targetType}/${targetId}/${userId}`);
+        if (!res.ok) return { liked: false, disliked: false, favorite: false };
+        return await res.json();
+    } catch (err) {
+        console.error('Erreur getReactionState', err);
+        return { liked: false, disliked: false, favorite: false };
+    }
+}
+
+// Helper to attach buttons inside a container element representing an entity
+function attachReactionButtons(containerEl, targetType, targetId) {
+    if (!containerEl) return;
+    // Create buttons if they don't exist
+    if (!containerEl.querySelector('.reaction-controls')) {
+        const controls = document.createElement('div');
+        controls.className = 'reaction-controls';
+        controls.innerHTML = `
+            <button class="btn-like">👍</button>
+            <button class="btn-dislike">👎</button>
+        `;
+        containerEl.appendChild(controls);
+
+        const btnLike = controls.querySelector('.btn-like');
+        const btnDislike = controls.querySelector('.btn-dislike');
+        const userId = localStorage.getItem('userId');
+
+        // disable buttons for anonymous users
+        if (!userId) {
+            btnLike.disabled = true;
+            btnDislike.disabled = true;
+            btnLike.title = 'Connexion requise';
+            btnDislike.title = 'Connexion requise';
+            btnLike.style.opacity = '0.5';
+            btnDislike.style.opacity = '0.5';
+            btnLike.style.cursor = 'not-allowed';
+            btnDislike.style.cursor = 'not-allowed';
+        }
+
+        // Wire click handlers
+        btnLike.addEventListener('click', async () => {
+            try {
+                const state = await getReactionState(targetType, targetId);
+                const newVal = !state.liked;
+                const serverState = await toggleReaction(targetType, targetId, 'like', newVal);
+                updateReactionUI(controls, serverState || { liked: newVal, disliked: newVal ? false : state.disliked, favorite: state.favorite });
+            } catch (e) { console.error('reaction error', e); }
+        });
+
+        btnDislike.addEventListener('click', async () => {
+            try {
+                const state = await getReactionState(targetType, targetId);
+                const newVal = !state.disliked;
+                const serverState = await toggleReaction(targetType, targetId, 'dislike', newVal);
+                updateReactionUI(controls, serverState || { liked: newVal ? false : state.liked, disliked: newVal, favorite: state.favorite });
+            } catch (e) { console.error('reaction error', e); }
+        });
+
+        // initialize state
+        getReactionState(targetType, targetId).then(state => updateReactionUI(controls, state));
+    }
+}
+
+function updateReactionUI(controlsEl, state) {
+    if (!controlsEl) return;
+    const btnLike = controlsEl.querySelector('.btn-like');
+    const btnDislike = controlsEl.querySelector('.btn-dislike');
+    if (state.liked) btnLike.classList.add('active'); else btnLike.classList.remove('active');
+    if (state.disliked) btnDislike.classList.add('active'); else btnDislike.classList.remove('active');
+}
+
+// Expose helpers to global window for other scripts (player)
+window.getReactionState = getReactionState;
+window.toggleReaction = toggleReaction;
+window.attachReactionButtons = attachReactionButtons;
+
+
 
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
 
-
-
-// const carousel_buttons = document.querySelectorAll(".carousel-button");
-// const carousel_slides = document.querySelectorAll(".carousel-slide");
-// // console.log(carousel_buttons,carousel_slides)
-// let currentIndex = 3
-// carousel_buttons.forEach((carrBut) => {
-//     carrBut.addEventListener('click', (e) => {
-        
-//         const direction = e.target.id === 'next' ? 1 : -1;
-//         const total = carousel_slides.length;
-
-//         currentIndex = (currentIndex + direction + total) % total;
-
-//         const new_left  = (currentIndex - 1 + total) % total;
-//         const new_right = (currentIndex + 1) % total;
-
-//         console.log(new_left, currentIndex, new_right);
-
-//         carousel_slides.forEach(slide =>
-//             slide.classList.remove("active")
-//         );
-
-//         carousel_slides[currentIndex].classList.add("active");
-//         carousel_slides[new_left].classList.add("active");
-//         carousel_slides[new_right].classList.add("active");
-//     })
-// })
-
-
-
 const carousel_buttons_artist = document.querySelectorAll(".carousel-button-artist");
 const carousel_slides_artist = document.querySelectorAll(".artist-card-carousel");
-// console.log(carousel_buttons,carousel_slides)
+
 let artist_index = 0
 carousel_buttons_artist.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
         const direction = e.target.id === 'next-artist' ? 1 : -1;
-        const total = carousel_slides.length;
+        const total = carousel_slides_artist.length; // Correction de l'appel aux slides
 
         artist_index = (artist_index + direction + total) % total;
 
@@ -272,39 +404,39 @@ carousel_buttons_artist.forEach((carrBut) => {
 
         console.log(new_left, artist_index, new_right);
 
-        carousel_slides.forEach(slide =>
+        carousel_slides_artist.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carousel_slides[artist_index].classList.add("active");
-        carousel_slides[new_left].classList.add("active");
-        carousel_slides[new_right].classList.add("active");
+        carousel_slides_artist[artist_index].classList.add("active");
+        carousel_slides_artist[new_left].classList.add("active");
+        carousel_slides_artist[new_right].classList.add("active");
     })
 })
 
 const carousel_buttons_track = document.querySelectorAll(".carousel-button-track");
 const carousel_slides_track = document.querySelectorAll(".track-card");
-// console.log(carousel_buttons,carousel_slides)
+
 let track_index = 0
 carousel_buttons_track.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
         const direction = e.target.id === 'next-track' ? 1 : -1;
-        const total = carousel_slides.length;
+        const total = carousel_slides_track.length; // Correction de l'appel aux slides
 
         track_index = (track_index + direction + total) % total;
 
         const new_left  = (track_index - 1 + total) % total;
         const new_right = (track_index + 1) % total;
 
-        console.log(new_left, currentIndex, new_right); 
+        console.log(new_left, track_index, new_right); 
 
-        carousel_slides.forEach(slide =>
+        carousel_slides_track.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carousel_slides[track_index].classList.add("active");
-        carousel_slides[new_left].classList.add("active");
-        carousel_slides[new_right].classList.add("active");
+        carousel_slides_track[track_index].classList.add("active");
+        carousel_slides_track[new_left].classList.add("active");
+        carousel_slides_track[new_right].classList.add("active");
     })
 })

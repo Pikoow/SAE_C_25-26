@@ -15,11 +15,6 @@
     <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
     <script>
-        (function() {
-            var t = localStorage.getItem('muse-theme');
-            if (t && t !== 'orange') document.documentElement.setAttribute('data-theme', t);
-        })();
-
         $(document).ready(function() {
             const userId = localStorage.getItem("userId");
             const userName = localStorage.getItem("userName");
@@ -38,6 +33,11 @@
                 overlay.classList.remove('visible');
             }
         };
+
+        (function() {
+            var t = localStorage.getItem('muse-theme');
+            if (t && t !== 'orange') document.documentElement.setAttribute('data-theme', t);
+        })();
     </script>
 </head>
 <body class="playlists-page">
@@ -46,7 +46,7 @@
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
-            <a href="blindtest.html">Blindtest</a>
+            <a href="accueil.html">Blindtest</a>
             <a href="preferences.html">Préférences</a>
                 
             <div class="dropdown">
@@ -101,14 +101,13 @@
     <main>
         <section class="playlists-header">
             <div>
-                <h1>Mes Playlists</h1>
-                <p>Créez et gérez vos playlists personnalisées ou laissez‑vous surprendre par une sélection générée rien que pour vous par nos soins</p>
+                <h1>Mes blindtests</h1>
+                <p>Générez, jouez, rejouez et gérez vos blindtests personnalisées, puis partagez les avec vos amis</p>
                 <div>
                     <button class="bouton-creation" id="open-create-playlist-btn" title="Créer une playlist">
-                        Créer une playlist
+                        Générez un blindtest
                     </button>
-                    <button class="bouton-generation" id="generate-playlist-btn" title="Générer une playlist">
-                        Générer une playlist
+                    
                     </button>
                 </div>
                 <a href="#" id="view-disliked-link" class="discreet-disliked-link">Gérer mes titres masqués</a>

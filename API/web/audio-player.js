@@ -71,6 +71,9 @@ class AudioPlayer {
             
             <div class="player-right">
                 <button class="player-add-playlist-btn" id="player-add-playlist-btn" title="Ajouter à une playlist" disabled>+</button>
+                <button id="player-dislike-btn" class="player-reaction-btn" title="Dislike">👎</button>
+                <button id="player-like-btn" class="player-reaction-btn" title="Like">👍</button>
+                <!-- favorite button removed -->
                 <span class="time-current">0:00</span>
                 <span class="time-separator">/</span>
                 <span class="time-total">0:00</span>
@@ -205,7 +208,7 @@ class AudioPlayer {
                 width: 50px;
                 height: 50px;
                 border-radius: 50%;
-                background: rgb(237, 122, 38);
+                background: var(--orange);
                 border: none;
                 cursor: pointer;
                 display: flex;
@@ -215,7 +218,7 @@ class AudioPlayer {
             }
 
             .play-btn:hover:not(:disabled) {
-                background: rgb(253, 114, 8);
+                background: var(--orange-fonce);
                 transform: scale(1.05);
             }
 
@@ -272,6 +275,25 @@ class AudioPlayer {
             .player-add-playlist-btn.added {
                 border-color: #27ae60;
                 color: #27ae60;
+            }
+
+            .player-reaction-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 8px;
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.15);
+                color: rgba(255,255,255,0.9);
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+            }
+            .player-reaction-btn.active {
+                background: var(--orange);
+                color: white;
+                border-color: var(--orange);
             }
 
             /* Player playlist dropdown */
@@ -417,7 +439,7 @@ class AudioPlayer {
 
             .progress-fill {
                 height: 100%;
-                background: rgb(237, 122, 38);
+                background: var(--orange);
                 width: 0%;
                 transition: width 0.1s linear;
             }
@@ -605,6 +627,149 @@ class AudioPlayer {
                 this.playNext();
             }
         });
+
+        // Reaction buttons handlers are attached later via attachReactionListenersIfNeeded()
+    }
+
+    attachReactionListenersIfNeeded() {
+        // Attach listeners per-button and avoid re-attaching to elements that already have handlers.
+        try {
+            if (this.likeBtn && this.likeBtn.dataset && this.likeBtn.dataset.reactionAttached !== '1') {
+                this.likeBtn.dataset.reactionAttached = '1';
+                this.likeBtn.addEventListener('click', async () => {
+                    if (!this.currentTrack || !this.currentTrack.trackId) return alert('Aucune piste sélectionnée');
+                    try {
+                        const state = await window.getReactionState('track', this.currentTrack.trackId);
+                        const newVal = !state.liked;
+                        const serverState = await window.toggleReaction('track', this.currentTrack.trackId, 'like', newVal);
+                        // Normalize server state shape (may be array or object)
+                        let s = serverState;
+                        if (Array.isArray(serverState)) s = { liked: !!serverState[0], disliked: !!serverState[1], favorite: !!serverState[2] };
+                        if (!s || typeof s !== 'object') s = { liked: newVal, disliked: newVal ? false : state.disliked };
+
+                        const userId = localStorage.getItem('userId');
+                        let playlistOpFailed = false;
+                        if (userId) {
+                            try {
+                                if (s.liked) await this.addTrackToNamedPlaylist(userId, 'Titres liké', this.currentTrack.trackId);
+                                else await this.removeTrackFromNamedPlaylist(userId, 'Titres liké', this.currentTrack.trackId);
+                            } catch (err) {
+                                console.error('Playlist operation failed:', err);
+                                playlistOpFailed = true;
+                            }
+                        }
+
+                        if (playlistOpFailed) {
+                            showNotification("Impossible de synchroniser la playlist. Réactualisation de l'état.", "error");
+                            const fresh = await window.getReactionState('track', this.currentTrack.trackId);
+                            this.likeBtn.classList.toggle('active', !!fresh.liked);
+                            if (this.dislikeBtn) this.dislikeBtn.classList.toggle('active', !!fresh.disliked);
+                            
+                        } else {
+                            this.likeBtn.classList.toggle('active', !!s.liked);
+                            if (this.dislikeBtn) this.dislikeBtn.classList.toggle('active', !!s.disliked);
+                            
+                        }
+                    } catch (e) { console.error(e); }
+                });
+            }
+
+            if (this.dislikeBtn && this.dislikeBtn.dataset && this.dislikeBtn.dataset.reactionAttached !== '1') {
+                this.dislikeBtn.dataset.reactionAttached = '1';
+                this.dislikeBtn.addEventListener('click', async () => {
+                    if (!this.currentTrack || !this.currentTrack.trackId) return alert('Aucune piste sélectionnée');
+                    try {
+                        const state = await window.getReactionState('track', this.currentTrack.trackId);
+                        const newVal = !state.disliked;
+                        const serverState = await window.toggleReaction('track', this.currentTrack.trackId, 'dislike', newVal);
+                        // Normalize server state
+                        let s = serverState;
+                        if (Array.isArray(serverState)) s = { liked: !!serverState[0], disliked: !!serverState[1], favorite: !!serverState[2] };
+                        if (!s || typeof s !== 'object') s = { disliked: newVal, liked: newVal ? false : state.liked };
+
+                        const userId = localStorage.getItem('userId');
+                        let playlistOpFailed = false;
+                        if (userId) {
+                            try {
+                                // Do not create a 'disliked titres' playlist. Only ensure mutual exclusivity
+                                if (s.disliked) await this.removeTrackFromNamedPlaylist(userId, 'Titres liké', this.currentTrack.trackId);
+                            } catch (err) {
+                                console.error('Playlist operation failed:', err);
+                                playlistOpFailed = true;
+                            }
+                        }
+
+                        if (playlistOpFailed) {
+                            showNotification("Impossible de synchroniser la playlist. Réactualisation de l'état.", "error");
+                            const fresh = await window.getReactionState('track', this.currentTrack.trackId);
+                            this.dislikeBtn.classList.toggle('active', !!fresh.disliked);
+                            if (this.likeBtn) this.likeBtn.classList.toggle('active', !!fresh.liked);
+                            
+                        } else {
+                            this.dislikeBtn.classList.toggle('active', !!s.disliked);
+                            if (this.likeBtn) this.likeBtn.classList.toggle('active', !!s.liked);
+                            
+                        }
+                    } catch (e) { console.error(e); }
+                });
+            }
+        } catch (e) {
+            console.error('attachReactionListeners error', e);
+        }
+    }
+
+    async ensurePlaylistByName(userId, name) {
+        try {
+            const res = await fetch(`http://127.0.0.1:8000/users/${userId}/playlists`);
+            if (!res.ok) return null;
+            const pls = await res.json();
+            const found = (pls || []).find(p => (p.playlist_name || '').toLowerCase() === name.toLowerCase());
+            if (found) return found.playlist_id;
+
+            // create
+            const createRes = await fetch('http://127.0.0.1:8000/playlists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, description: '', user_id: parseInt(userId), track_ids: [] })
+            });
+            if (!createRes.ok) return null;
+            const data = await createRes.json();
+            return data.playlist_id || null;
+        } catch (e) {
+            console.error('ensurePlaylist error', e);
+            return null;
+        }
+    }
+
+    async addTrackToNamedPlaylist(userId, name, trackId) {
+        try {
+            const pid = await this.ensurePlaylistByName(userId, name);
+            if (!pid) return;
+            const getRes = await fetch(`http://127.0.0.1:8000/playlists/${pid}`);
+            if (!getRes.ok) return;
+            const pl = await getRes.json();
+            const existing = (pl.tracks || []).map(t => parseInt(t.track_id));
+            if (existing.includes(parseInt(trackId))) return;
+            existing.push(parseInt(trackId));
+            await fetch(`http://127.0.0.1:8000/playlists/${pid}/tracks`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ track_ids: existing })
+            });
+        } catch (e) { console.error('addTrackToNamedPlaylist', e); }
+    }
+
+    async removeTrackFromNamedPlaylist(userId, name, trackId) {
+        try {
+            const res = await fetch(`http://127.0.0.1:8000/users/${userId}/playlists`);
+            if (!res.ok) return;
+            const pls = await res.json();
+            const found = (pls || []).find(p => (p.playlist_name || '').toLowerCase() === name.toLowerCase());
+            if (!found) return;
+            const pid = found.playlist_id;
+            // call delete endpoint
+            await fetch(`http://127.0.0.1:8000/playlists/${pid}/tracks/${trackId}`, { method: 'DELETE' });
+        } catch (e) { console.error('removeTrackFromNamedPlaylist', e); }
     }
 
     convertTrackUrl(dbUrl) {
@@ -613,13 +778,15 @@ class AudioPlayer {
         return `https://files.freemusicarchive.org/storage-freemusicarchive-org/music/${path}`;
     }
 
-    playTrack(trackInfo) {
+    async playTrack(trackInfo) {
         const { url, title, artist, trackId } = trackInfo;
 
         if (!url) {
             console.error('No track URL provided');
             return;
         }
+
+        console.debug('playTrack called with', { title, artist, trackId });
 
         const fullUrl = this.convertTrackUrl(url);
 
@@ -630,14 +797,60 @@ class AudioPlayer {
             trackId: trackId || null
         };
 
+        console.debug('currentTrack set to', this.currentTrack);
+
         this.audio.src = fullUrl;
-        this.trackTitleEl.textContent = this.currentTrack.title;
+        document.body.appendChild(this.playerContainer);
+
+        // References to interactive elements
+        this.addPlaylistBtn = this.playerContainer.querySelector('#player-add-playlist-btn');
+        this.likeBtn = this.playerContainer.querySelector('#player-like-btn');
+        this.dislikeBtn = this.playerContainer.querySelector('#player-dislike-btn');
+        // favBtn removed from UI
+        this.progressFill = this.playerContainer.querySelector('#progress-fill');
+        this.progressInput = this.playerContainer.querySelector('#progress-input');
+        this.playPauseBtn = this.playerContainer.querySelector('#play-pause-btn');
+        this.stopBtn = this.playerContainer.querySelector('#stop-btn');
+        this.prevBtn = this.playerContainer.querySelector('#prev-btn');
+        this.nextBtn = this.playerContainer.querySelector('#next-btn');
+        this.trackTitleEl = this.playerContainer.querySelector('#current-track-title');
+        this.artistNameEl = this.playerContainer.querySelector('#current-artist-name');
+        this.sourceTagEl = this.playerContainer.querySelector('#player-source-tag');
+        this.playIcon = this.playerContainer.querySelector('.play-icon');
+        this.pauseIcon = this.playerContainer.querySelector('.pause-icon');
+        this.timeCurrent = this.playerContainer.querySelector('.time-current');
+        this.timeTotal = this.playerContainer.querySelector('.time-total');
+        this.trackTitleEl.textContent = this.currentTrack.title || 'Titre inconnu';
         this.artistNameEl.textContent = this.currentTrack.artist;
 
         // Activer le bouton playlist si on a un trackId
         if (this.addPlaylistBtn) {
             this.addPlaylistBtn.disabled = !trackId;
         }
+
+        // Disable reaction buttons for anonymous users
+        const logged = this.checkUserLoginStatus();
+        if (this.likeBtn) {
+            this.likeBtn.disabled = !logged;
+            if (!logged) { this.likeBtn.title = 'Connexion requise'; }
+        }
+        if (this.dislikeBtn) {
+            this.dislikeBtn.disabled = !logged;
+            if (!logged) { this.dislikeBtn.title = 'Connexion requise'; }
+        }
+
+        // Update reaction buttons state for this track
+        if (this.currentTrack.trackId) {
+            try {
+                const state = await window.getReactionState ? await window.getReactionState('track', this.currentTrack.trackId) : { liked: false, disliked: false, favorite: false };
+                if (this.likeBtn) this.likeBtn.classList.toggle('active', state.liked);
+                if (this.dislikeBtn) this.dislikeBtn.classList.toggle('active', state.disliked);
+                
+            } catch (e) { console.warn('Impossible de récupérer l\'état des réactions', e); }
+        }
+
+        // Attach reaction listeners if not already attached (listeners need elements present)
+        this.attachReactionListenersIfNeeded();
 
         // Clear source if not set externally before this call
         // (source is set via setSource before playTrack)
