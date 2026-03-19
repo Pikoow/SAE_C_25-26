@@ -1396,7 +1396,7 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     border-color: var(--orange);
 }
 
-/* Special styling for the user's "titre liker" playlist */
+/* Special styling for the user's "Titres liké" playlist */
 .playlists-page .playlist-card-liker {
     border: 3px solid var(--orange);
     background: linear-gradient(135deg, #fff7f0 0%, #fff2e6 100%);

@@ -809,21 +809,21 @@ def toggle_reaction(target_type: str, target_id: int, payload: dict):
 
                 if action == 'like':
                     if liked:
-                        # ensure 'titre liker' exists for this user
-                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titre liker'", (user_id,))
+                        # ensure 'titres liké' exists for this user
+                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titres liké'", (user_id,))
                         row = cur.fetchone()
                         if row:
                             pid = row['playlist_id']
                         else:
-                            cur.execute("INSERT INTO sae.playlist (playlist_name, playlist_description) VALUES (%s,%s) RETURNING playlist_id", ('titre liker','Playlist de titres likés'))
+                            cur.execute("INSERT INTO sae.playlist (playlist_name, playlist_description) VALUES (%s,%s) RETURNING playlist_id", ('Titres liké','Playlist de titres likés'))
                             pid = cur.fetchone()['playlist_id']
                             cur.execute("INSERT INTO sae.playlist_user (playlist_id, user_id) VALUES (%s,%s)", (pid, user_id))
                         # add track to playlist (position = end)
                         cur.execute("INSERT INTO sae.playlist_track (playlist_id, track_id, position) VALUES (%s,%s, COALESCE((SELECT MAX(position)+1 FROM sae.playlist_track WHERE playlist_id=%s), 0)) ON CONFLICT DO NOTHING", (pid, target_id, pid))
                         # Note: disliked tracks are not stored in a playlist anymore; reaction upsert clears the disliked flag.
                     else:
-                        # remove from 'titre liker' if exists
-                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titre liker'", (user_id,))
+                        # remove from 'titres liké' if exists
+                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titres liké'", (user_id,))
                         row = cur.fetchone()
                         if row:
                             pid = row['playlist_id']
@@ -834,8 +834,8 @@ def toggle_reaction(target_type: str, target_id: int, payload: dict):
                     if disliked:
                         # When a user dislikes a track we do NOT create a special "disliked titres" playlist.
                         # We keep the reaction in `sae.user_reaction` and ensure mutual exclusivity by
-                        # removing the track from the "titre liker" playlist if present.
-                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titre liker'", (user_id,))
+                        # removing the track from the "titres liké" playlist if present.
+                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titres liké'", (user_id,))
                         row2 = cur.fetchone()
                         if row2:
                             pid2 = row2['playlist_id']
@@ -1392,10 +1392,10 @@ def delete_playlist(playlist_id: int):
             playlist_name = row.get('playlist_name')
             playlist_image = row.get('playlist_image')
 
-        # Si la playlist est une playlist spéciale de type 'titre liker',
+        # Si la playlist est une playlist spéciale de type 'Titres liké',
         # supprimer aussi les réactions associées (liked/disliked) pour les utilisateurs liés.
         try:
-            if playlist_name and playlist_name.lower().strip() in ('titre liker',):
+            if playlist_name and playlist_name.lower().strip() in ('titres liké',):
                 # Récupérer les user_id liés à cette playlist
                 cur.execute("SELECT user_id FROM sae.playlist_user WHERE playlist_id = %s", (playlist_id,))
                 users = cur.fetchall()

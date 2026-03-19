@@ -108,14 +108,21 @@ async function loadUserPlaylists(userId) {
     }
 }
 
+// Fonction utilitaire pour repérer la playlist spéciale
+function isLikerPlaylist(playlistName) {
+    const name = (playlistName || '').toLowerCase().trim();
+    // On accepte "titres liké" et "titre liker" au cas où l'ancienne traîne encore
+    return name === 'titres liké' || name === 'titre liker';
+}
+
 // ===== AFFICHAGE DES PLAYLISTS =====
 function displayPlaylists(playlists) {
     const container = $(".playlists-container");
     container.empty();
 
-    // Move "titre liker" to the start so it appears as the leftmost card
+    // Move "Titres liké" to the start so it appears as the leftmost card
     try {
-        const idx = playlists.findIndex(p => (p.playlist_name || '').toLowerCase().trim() === 'titre liker');
+        const idx = playlists.findIndex(p => isLikerPlaylist(p.playlist_name));
         if (idx > -1) {
             const [liker] = playlists.splice(idx, 1);
             playlists.unshift(liker);
@@ -155,8 +162,9 @@ function appendNewPlaylistCard(container) {
 
 // ===== CARTE DE PLAYLIST =====
 function createPlaylistCard(playlist) {
-    // If this is the special "titre liker" playlist, use the dedicated liked image
-    const isLiker = ((playlist.playlist_name||'').toLowerCase().trim() === 'titre liker');
+    // If this is the special "Titres liké" playlist, use the dedicated liked image
+    const isLiker = isLikerPlaylist(playlist.playlist_name);
+    
     const coverHtml = isLiker
         ? `<div class="playlist-custom-cover playlist-custom-cover-liker"><img src="images/liked.png" alt="${escapeHtml(playlist.playlist_name)}" onerror="this.src='images/no_image_music.avif'"></div>`
         : (playlist.playlist_image
@@ -164,7 +172,7 @@ function createPlaylistCard(playlist) {
             : `<div class="playlist-cover-grid">${generatePlaylistCovers(playlist.preview_tracks || [])}</div>`
           );
 
-    // mark special 'titre liker' playlist with a class
+    // mark special 'Titres liké' playlist with a class
     const extraClass = isLiker ? ' playlist-card-liker' : '';
 
     const card = $(`

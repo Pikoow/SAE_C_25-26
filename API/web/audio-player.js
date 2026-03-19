@@ -651,8 +651,8 @@ class AudioPlayer {
                         let playlistOpFailed = false;
                         if (userId) {
                             try {
-                                if (s.liked) await this.addTrackToNamedPlaylist(userId, 'titre liker', this.currentTrack.trackId);
-                                else await this.removeTrackFromNamedPlaylist(userId, 'titre liker', this.currentTrack.trackId);
+                                if (s.liked) await this.addTrackToNamedPlaylist(userId, 'Titres liké', this.currentTrack.trackId);
+                                else await this.removeTrackFromNamedPlaylist(userId, 'Titres liké', this.currentTrack.trackId);
                             } catch (err) {
                                 console.error('Playlist operation failed:', err);
                                 playlistOpFailed = true;
@@ -692,7 +692,7 @@ class AudioPlayer {
                         if (userId) {
                             try {
                                 // Do not create a 'disliked titres' playlist. Only ensure mutual exclusivity
-                                if (s.disliked) await this.removeTrackFromNamedPlaylist(userId, 'titre liker', this.currentTrack.trackId);
+                                if (s.disliked) await this.removeTrackFromNamedPlaylist(userId, 'Titres liké', this.currentTrack.trackId);
                             } catch (err) {
                                 console.error('Playlist operation failed:', err);
                                 playlistOpFailed = true;
