@@ -17,10 +17,8 @@ function ajouterElementSelectionne(nom, containerId, idElement) {
         <button class="badge-remove" title="Supprimer">×</button>
     `;
 
-    // Gestionnaire de suppression : UNIQUEMENT sur la croix
-    const removeBtn = badge.querySelector('.badge-remove');
-    removeBtn.addEventListener('click', function(e) {
-        e.stopPropagation(); 
+    // Suppression : clic sur la croix OU sur le badge entier
+    badge.addEventListener('click', function() {
         badge.remove();
     });
 
