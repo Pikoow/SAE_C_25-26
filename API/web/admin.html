@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Administration - MuSE</title>
     <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
@@ -15,6 +16,7 @@
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
+            <a href="blindtest.html">Blindtest</a>
             <a href="preferences.html">Préférences</a>
             <div class="dropdown">
                 <a href="#">API <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
@@ -127,6 +129,53 @@
         </div>
     </div>
 
+    <!-- MODAL: Modifier profil utilisateur -->
+    <div class="admin-modal-overlay" id="modal-edit">
+        <div class="admin-modal" style="max-width:520px;text-align:left;">
+            <h3 style="text-align:center;margin-bottom:16px;">Modifier le profil</h3>
+            <input type="hidden" id="edit-user-id" />
+            <div class="admin-edit-form">
+                <div class="form-group">
+                    <label for="edit-firstname">Prenom</label>
+                    <input type="text" id="edit-firstname" placeholder="Prenom" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-lastname">Nom</label>
+                    <input type="text" id="edit-lastname" placeholder="Nom" />
+                </div>
+                <div class="form-group full-width">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" placeholder="Email" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-age">Age</label>
+                    <input type="number" id="edit-age" placeholder="Age" min="1" max="150" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-gender">Genre</label>
+                    <select id="edit-gender">
+                        <option value="">--</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Femme">Femme</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-location">Localisation</label>
+                    <input type="text" id="edit-location" placeholder="Localisation" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-phone">Telephone</label>
+                    <input type="text" id="edit-phone" placeholder="Telephone" />
+                </div>
+            </div>
+            <div class="admin-modal-actions">
+                <button class="admin-modal-btn cancel" onclick="closeModal('modal-edit')">Annuler</button>
+                <button class="admin-modal-btn primary" onclick="submitEditProfile()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div class="admin-toast" id="admin-toast"></div>
 
@@ -158,6 +207,8 @@
         const PAGE_SIZE = 20;
         let currentTotal = 0;
         let searchTimeout = null;
+        let currentUserIsSuperAdmin = false;
+        let currentUserId = null;
 
         // ============================
         // GUARD : vérification admin
@@ -174,6 +225,9 @@
 
                 document.getElementById("admin-guard").classList.add("hidden");
                 document.getElementById("admin-main").classList.remove("hidden");
+
+                currentUserIsSuperAdmin = !!data.isSuperAdmin;
+                currentUserId = localStorage.getItem("userId");
 
                 loadStats();
                 loadUsers();
@@ -256,7 +310,10 @@
                     const initials = ((u.user_firstname?.[0] || "") + (u.user_lastname?.[0] || "")).toUpperCase() || "?";
                     const roleCls = (u.user_status || "user").toLowerCase();
                     const roleLabel = roleCls === "super_admin" ? "Super Admin" : roleCls === "admin" ? "Admin" : roleCls === "banned" ? "Banni" : "User";
-                    const isProtected = roleCls === "admin" || roleCls === "super_admin";
+                    const isSuperAdmin = roleCls === "super_admin";
+                    const isAdmin = roleCls === "admin";
+                    // super_admin est toujours protege, les admins sont proteges sauf si le requester est super_admin
+                    const isProtected = isSuperAdmin || (isAdmin && !currentUserIsSuperAdmin);
 
                     return `
                     <tr>
@@ -276,6 +333,7 @@
                         <td>
                             <div class="admin-actions">
                                 <button class="admin-action-btn" data-tooltip="Détails" onclick="showUserDetail(${u.user_id})" title="Détails"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>
+                                ${(!isAdmin && !isSuperAdmin) || currentUserIsSuperAdmin ? `<button class="admin-action-btn" data-tooltip="Modifier" onclick="openEditProfile(${u.user_id})" title="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>` : ``}
                                 ${!isProtected ? `
                                     <button class="admin-action-btn ban" data-tooltip="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}" title="${roleCls === 'banned' ? 'Debannir' : 'Bannir'}"
                                             onclick="confirmBan(${u.user_id}, '${u.user_firstname || ""}', ${roleCls !== 'banned'})">
@@ -367,6 +425,73 @@
         }
 
         // ============================
+        // EDIT PROFILE
+        // ============================
+        async function openEditProfile(userId) {
+            try {
+                const res = await fetch(`${API_URL}/admin/users/${userId}`);
+                const u = await res.json();
+
+                document.getElementById("edit-user-id").value = u.user_id;
+                document.getElementById("edit-firstname").value = u.user_firstname || "";
+                document.getElementById("edit-lastname").value = u.user_lastname || "";
+                document.getElementById("edit-email").value = u.user_mail || "";
+                document.getElementById("edit-age").value = u.user_age || "";
+                document.getElementById("edit-gender").value = u.user_gender || "";
+                document.getElementById("edit-location").value = u.user_location || "";
+                document.getElementById("edit-phone").value = u.user_phonenumber || "";
+
+                openModal("modal-edit");
+            } catch (err) {
+                showToast("Erreur lors du chargement du profil", "error");
+            }
+        }
+
+        async function submitEditProfile() {
+            const userId = document.getElementById("edit-user-id").value;
+            const body = {};
+
+            const firstname = document.getElementById("edit-firstname").value.trim();
+            const lastname = document.getElementById("edit-lastname").value.trim();
+            const email = document.getElementById("edit-email").value.trim();
+            const age = document.getElementById("edit-age").value;
+            const gender = document.getElementById("edit-gender").value;
+            const location = document.getElementById("edit-location").value.trim();
+            const phone = document.getElementById("edit-phone").value.trim();
+
+            if (firstname) body.user_firstname = firstname;
+            if (lastname) body.user_lastname = lastname;
+            if (email) body.user_mail = email;
+            if (age) body.user_age = parseInt(age);
+            if (gender) body.user_gender = gender;
+            if (location) body.user_location = location;
+            if (phone) body.user_phonenumber = phone;
+
+            if (Object.keys(body).length === 0) {
+                showToast("Aucun champ modifie", "info");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/admin/users/${userId}/profile?requester_id=${currentUserId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message, "success");
+                    closeModal("modal-edit");
+                    loadUsers();
+                } else {
+                    showToast(data.detail || "Erreur", "error");
+                }
+            } catch (err) {
+                showToast("Erreur serveur", "error");
+            }
+        }
+
+        // ============================
         // ACTIONS : BAN / ROLE / DELETE
         // ============================
         function confirmBan(userId, name, shouldBan) {
@@ -377,7 +502,7 @@
                 shouldBan ? "danger" : "primary",
                 async () => {
                     try {
-                        const res = await fetch(`${API_URL}/admin/users/${userId}/ban`, {
+                        const res = await fetch(`${API_URL}/admin/users/${userId}/ban?requester_id=${currentUserId}`, {
                             method: "PUT",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ banned: shouldBan })
@@ -405,7 +530,7 @@
                 "primary",
                 async () => {
                     try {
-                        const res = await fetch(`${API_URL}/admin/users/${userId}/role`, {
+                        const res = await fetch(`${API_URL}/admin/users/${userId}/role?requester_id=${currentUserId}`, {
                             method: "PUT",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ role: newRole })
@@ -432,7 +557,7 @@
                 "danger",
                 async () => {
                     try {
-                        const res = await fetch(`${API_URL}/admin/users/${userId}`, { method: "DELETE" });
+                        const res = await fetch(`${API_URL}/admin/users/${userId}?requester_id=${currentUserId}`, { method: "DELETE" });
                         const data = await res.json();
                         if (res.ok) {
                             showToast(data.message, "success");

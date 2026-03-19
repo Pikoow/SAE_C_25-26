@@ -47,6 +47,26 @@ async def lifespan(app: FastAPI):
             cur.close()
             conn.close()
             print("Migration: playlist_track.position + playlist.playlist_image OK")
+            # Create user_reaction table for likes/dislikes/favorites
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS sae.user_reaction (
+                    user_id INT REFERENCES sae.users(user_id),
+                    target_type VARCHAR(20) NOT NULL,
+                    target_id INT NOT NULL,
+                    liked BOOLEAN DEFAULT FALSE,
+                    disliked BOOLEAN DEFAULT FALSE,
+                    favorite BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW(),
+                    PRIMARY KEY (user_id, target_type, target_id)
+                );
+            """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            print("Migration: sae.user_reaction OK")
     except Exception as e:
         print(f"Migration warning: {e}")
     yield
@@ -682,6 +702,241 @@ def get_album_by_id(album_id: int):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# --- Reactions endpoints: like / dislike / favorite for artists and albums ---
+@app.post("/reactions/{target_type}/{target_id}")
+def toggle_reaction(target_type: str, target_id: int, payload: dict):
+    """Payload: { "user_id": int, "action": "like"|"dislike"|"favorite", "value": true|false }
+    target_type: 'artist' or 'album'"""
+    if target_type not in ("artist", "album", "track"):
+        raise HTTPException(status_code=400, detail="target_type must be 'artist', 'album' or 'track'")
+
+    user_id = payload.get("user_id")
+    action = payload.get("action")
+    value = payload.get("value")
+
+    if not user_id or action not in ("like", "dislike", "favorite") or not isinstance(value, bool):
+        raise HTTPException(status_code=400, detail="Invalid payload")
+
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="DB connexion failed")
+
+    try:
+        cur = conn.cursor()
+        # verify user exists
+        cur.execute("SELECT user_id FROM sae.users WHERE user_id = %s", (user_id,))
+        if not cur.fetchone():
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # verify target exists
+        if target_type == "artist":
+            cur.execute("SELECT artist_id FROM sae.artist WHERE artist_id = %s", (target_id,))
+        elif target_type == "album":
+            cur.execute("SELECT album_id FROM sae.album WHERE album_id = %s", (target_id,))
+        else:
+            cur.execute("SELECT track_id FROM sae.tracks WHERE track_id = %s", (target_id,))
+        if not cur.fetchone():
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail=f"{target_type} not found")
+
+        # Prepare values for upsert
+        liked = False; disliked = False; favorite = False
+        if action == "like":
+            liked = value
+            if value:
+                disliked = False
+            # merge likes with favorites: liking a track marks it as favorite
+            favorite = value
+        elif action == "dislike":
+            disliked = value
+            if value:
+                liked = False
+            # disliking should remove favorite
+            favorite = False
+        elif action == "favorite":
+            favorite = value
+
+        # Upsert row
+        cur.execute("""
+            INSERT INTO sae.user_reaction (user_id, target_type, target_id, liked, disliked, favorite, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            ON CONFLICT (user_id, target_type, target_id) DO UPDATE
+            SET liked = EXCLUDED.liked,
+                disliked = EXCLUDED.disliked,
+                favorite = EXCLUDED.favorite,
+                updated_at = NOW();
+        """, (user_id, target_type, target_id, liked, disliked, favorite))
+
+        # Update favorites count on target when favorite toggled
+        if action == "favorite":
+            if favorite:
+                if target_type == "artist":
+                    cur.execute("UPDATE sae.artist SET artist_favorites = COALESCE(artist_favorites,0) + 1 WHERE artist_id = %s", (target_id,))
+                elif target_type == "album":
+                    cur.execute("UPDATE sae.album SET album_favorites = COALESCE(album_favorites,0) + 1 WHERE album_id = %s", (target_id,))
+                else:
+                    cur.execute("UPDATE sae.tracks SET track_favorite = COALESCE(track_favorite,0) + 1 WHERE track_id = %s", (target_id,))
+            else:
+                if target_type == "artist":
+                    cur.execute("UPDATE sae.artist SET artist_favorites = GREATEST(COALESCE(artist_favorites,0) - 1, 0) WHERE artist_id = %s", (target_id,))
+                elif target_type == "album":
+                    cur.execute("UPDATE sae.album SET album_favorites = GREATEST(COALESCE(album_favorites,0) - 1, 0) WHERE album_id = %s", (target_id,))
+                else:
+                    cur.execute("UPDATE sae.tracks SET track_favorite = GREATEST(COALESCE(track_favorite,0) - 1, 0) WHERE track_id = %s", (target_id,))
+
+        # --- Synchronize special playlists for tracks in the same transaction ---
+        if target_type == 'track' and action in ('like', 'dislike'):
+            try:
+                # Helper to delete empty playlist (and associated records + image)
+                def _maybe_delete_playlist(cur, pid):
+                    cur.execute("SELECT COUNT(*) as cnt FROM sae.playlist_track WHERE playlist_id = %s", (pid,))
+                    cnt = cur.fetchone()['cnt']
+                    if cnt == 0:
+                        cur.execute("SELECT playlist_image FROM sae.playlist WHERE playlist_id = %s", (pid,))
+                        img = cur.fetchone()
+                        image_file = img.get('playlist_image') if img else None
+                        cur.execute("DELETE FROM sae.playlist_user WHERE playlist_id = %s", (pid,))
+                        cur.execute("DELETE FROM sae.playlist WHERE playlist_id = %s", (pid,))
+                        if image_file:
+                            try:
+                                image_path = os.path.join(os.path.dirname(__file__), '..', 'web', 'uploads', 'playlists', image_file)
+                                if os.path.exists(image_path):
+                                    os.remove(image_path)
+                            except Exception:
+                                pass
+
+                if action == 'like':
+                    if liked:
+                        # ensure 'titres liké' exists for this user
+                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titres liké'", (user_id,))
+                        row = cur.fetchone()
+                        if row:
+                            pid = row['playlist_id']
+                        else:
+                            cur.execute("INSERT INTO sae.playlist (playlist_name, playlist_description) VALUES (%s,%s) RETURNING playlist_id", ('Titres liké','Playlist de titres likés'))
+                            pid = cur.fetchone()['playlist_id']
+                            cur.execute("INSERT INTO sae.playlist_user (playlist_id, user_id) VALUES (%s,%s)", (pid, user_id))
+                        # add track to playlist (position = end)
+                        cur.execute("INSERT INTO sae.playlist_track (playlist_id, track_id, position) VALUES (%s,%s, COALESCE((SELECT MAX(position)+1 FROM sae.playlist_track WHERE playlist_id=%s), 0)) ON CONFLICT DO NOTHING", (pid, target_id, pid))
+                        # Note: disliked tracks are not stored in a playlist anymore; reaction upsert clears the disliked flag.
+                    else:
+                        # remove from 'titres liké' if exists
+                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titres liké'", (user_id,))
+                        row = cur.fetchone()
+                        if row:
+                            pid = row['playlist_id']
+                            cur.execute("DELETE FROM sae.playlist_track WHERE playlist_id=%s AND track_id=%s", (pid, target_id))
+                            _maybe_delete_playlist(cur, pid)
+
+                if action == 'dislike':
+                    if disliked:
+                        # When a user dislikes a track we do NOT create a special "disliked titres" playlist.
+                        # We keep the reaction in `sae.user_reaction` and ensure mutual exclusivity by
+                        # removing the track from the "titres liké" playlist if present.
+                        cur.execute("SELECT p.playlist_id FROM sae.playlist p JOIN sae.playlist_user pu ON p.playlist_id=pu.playlist_id WHERE pu.user_id=%s AND lower(trim(p.playlist_name)) = 'titres liké'", (user_id,))
+                        row2 = cur.fetchone()
+                        if row2:
+                            pid2 = row2['playlist_id']
+                            cur.execute("DELETE FROM sae.playlist_track WHERE playlist_id=%s AND track_id=%s", (pid2, target_id))
+                            _maybe_delete_playlist(cur, pid2)
+                    else:
+                        # On un-dislike we simply stop marking the track as disliked in user_reaction;
+                        # no playlist cleanup is required because we never created a disliked playlist.
+                        pass
+            except Exception:
+                # don't fail the whole reaction toggle if playlist cleanup fails
+                pass
+
+        # --- Synchronize user's preferences (sae.favorite) when liking/unliking tracks ---
+        try:
+            if target_type == 'track':
+                # fetch existing favorites row for user
+                cur.execute("SELECT user_favorite_tracks FROM sae.favorite WHERE user_id = %s", (user_id,))
+                fav_row = cur.fetchone()
+                existing = ''
+                if fav_row and fav_row.get('user_favorite_tracks'):
+                    existing = fav_row.get('user_favorite_tracks')
+                parts = [p for p in (existing or '').split(',') if p.strip()]
+                str_tid = str(target_id)
+                if liked:
+                    if str_tid not in parts:
+                        parts.append(str_tid)
+                else:
+                    # on unlike, remove from favorites
+                    parts = [p for p in parts if p != str_tid]
+
+                new_val = ','.join(parts)
+                if fav_row:
+                    cur.execute("UPDATE sae.favorite SET user_favorite_tracks = %s WHERE user_id = %s", (new_val, user_id))
+                else:
+                    cur.execute("INSERT INTO sae.favorite (user_favorite_tracks, user_favorite_artist, user_favorite_genre, user_id) VALUES (%s,%s,%s,%s)", (new_val, '', '', user_id))
+        except Exception:
+            # don't block main operation if favorites sync fails
+            pass
+
+        conn.commit()
+
+        # Return current reaction state
+        cur.execute("SELECT liked, disliked, favorite FROM sae.user_reaction WHERE user_id=%s AND target_type=%s AND target_id=%s", (user_id, target_type, target_id))
+        state = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "reaction": state}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/reactions/{target_type}/{target_id}/{user_id}")
+def get_reaction(target_type: str, target_id: int, user_id: int):
+    if target_type not in ("artist", "album", "track"):
+        raise HTTPException(status_code=400, detail="target_type must be 'artist', 'album' or 'track'")
+
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="DB connexion failed")
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT liked, disliked, favorite FROM sae.user_reaction WHERE user_id=%s AND target_type=%s AND target_id=%s", (user_id, target_type, target_id))
+        state = cur.fetchone()
+        cur.close(); conn.close()
+        if not state:
+            return {"liked": False, "disliked": False, "favorite": False}
+        return state
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/users/{user_id}/disliked_tracks")
+def get_user_disliked_tracks(user_id: int, limit: Optional[int] = Query(200, ge=1, le=2000), offset: Optional[int] = Query(0, ge=0)):
+    """Return a list of tracks that the user has marked as disliked."""
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="DB connexion failed")
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT t.track_id, t.track_title, t.track_duration, t.track_genre_top, t.track_listens, t.track_file, t.track_image_file,
+                   (SELECT string_agg(art.artist_name, ', ') FROM sae.artist art JOIN sae.artist_album_track aat ON art.artist_id = aat.artist_id WHERE aat.track_id = t.track_id) AS artist_names
+            FROM sae.user_reaction ur
+            JOIN sae.tracks t ON ur.target_id = t.track_id
+            WHERE ur.user_id = %s AND ur.target_type = 'track' AND ur.disliked = TRUE
+            ORDER BY ur.updated_at DESC
+            LIMIT %s OFFSET %s
+        """, (user_id, limit, offset))
+        tracks = cur.fetchall()
+        cur.close(); conn.close()
+        return {"playlist_name": "Titres dislike", "playlist_description": "Titres que vous avez dislikés", "tracks": tracks, "count": len(tracks)}
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Récupère toutes les musiques d'un album spécifique par son ID
 @app.get("/albums/{album_id}/tracks", tags=["Albums"], summary="Musiques d'un album")
 def get_album_tracks(
@@ -778,21 +1033,47 @@ def get_album_tracks(
 @app.get("/reco/tracks", tags=["Recommandations"], summary="Recommandations de musiques similaires")
 def recommend_tracks(
     track_ids: List[int] = Query(..., description="One or more track IDs to base recommendations on"),
-    limit: int = Query(10, ge=1, le=50)
+    limit: int = Query(10, ge=1, le=50),
+    exclude_user_id: Optional[int] = Query(None, description="Optional user id whose disliked tracks should be excluded")
 ):
     """
     Exemple: /reco/tracks?track_ids=69170&track_ids=95976
     """
     try:
         recommendations = recommend_similar_tracks(track_ids, top_n=limit)
-        
+
         if not recommendations:
             raise HTTPException(status_code=404, detail="No recommendations found for the given IDs")
-            
+
+        # If exclude_user_id provided, remove tracks that the user has disliked
+        if exclude_user_id is not None:
+            try:
+                conn = get_db_connection()
+                if conn:
+                    cur = conn.cursor()
+                    cur.execute("SELECT target_id FROM sae.user_reaction WHERE user_id=%s AND target_type='track' AND disliked = TRUE", (exclude_user_id,))
+                    rows = cur.fetchall()
+                    disliked = set(r['target_id'] for r in rows) if rows else set()
+                    cur.close()
+                    conn.close()
+                else:
+                    disliked = set()
+            except Exception:
+                disliked = set()
+
+            def _id_of(item):
+                if isinstance(item, dict):
+                    return item.get('track_id') or item.get('trackId') or item.get('id')
+                return int(item)
+
+            filtered = [r for r in recommendations if (_id_of(r) not in disliked)]
+        else:
+            filtered = recommendations
+
         return {
             "input_ids": track_ids,
-            "count": len(recommendations),
-            "results": recommendations
+            "count": len(filtered),
+            "results": filtered
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1102,7 +1383,55 @@ def delete_playlist(playlist_id: int):
     
     try:
         cur = conn.cursor()
-        
+        # Récupérer le nom de la playlist pour décider d'un nettoyage additionnel
+        cur.execute("SELECT playlist_name, playlist_image FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+        row = cur.fetchone()
+        playlist_name = None
+        playlist_image = None
+        if row:
+            playlist_name = row.get('playlist_name')
+            playlist_image = row.get('playlist_image')
+
+        # Si la playlist est une playlist spéciale de type 'Titres liké',
+        # supprimer aussi les réactions associées (liked/disliked) pour les utilisateurs liés.
+        try:
+            if playlist_name and playlist_name.lower().strip() in ('titres liké',):
+                # Récupérer les user_id liés à cette playlist
+                cur.execute("SELECT user_id FROM sae.playlist_user WHERE playlist_id = %s", (playlist_id,))
+                users = cur.fetchall()
+                user_ids = [u['user_id'] for u in users if u.get('user_id')]
+                if user_ids:
+                    # Supprimer les réactions pour ces users sur les tracks de la playlist
+                    cur.execute(
+                        "DELETE FROM sae.user_reaction WHERE target_type = 'track' AND target_id IN (SELECT track_id FROM sae.playlist_track WHERE playlist_id = %s) AND user_id = ANY(%s)",
+                        (playlist_id, user_ids)
+                    )
+                    # Also remove these tracks from users' favorites (user_favorite_tracks)
+                    try:
+                        cur.execute("SELECT track_id FROM sae.playlist_track WHERE playlist_id = %s", (playlist_id,))
+                        track_rows = cur.fetchall()
+                        track_ids = [str(r['track_id']) for r in track_rows if r.get('track_id')]
+                        if track_ids:
+                            for uid in user_ids:
+                                try:
+                                    cur.execute("SELECT user_favorite_tracks FROM sae.favorite WHERE user_id = %s", (uid,))
+                                    fav_row = cur.fetchone()
+                                    if fav_row and fav_row.get('user_favorite_tracks'):
+                                        existing = fav_row.get('user_favorite_tracks') or ''
+                                        parts = [p for p in (existing or '').split(',') if p.strip()]
+                                        new_parts = [p for p in parts if p not in track_ids]
+                                        new_str = ','.join(new_parts)
+                                        cur.execute("UPDATE sae.favorite SET user_favorite_tracks = %s WHERE user_id = %s", (new_str, uid))
+                                except Exception:
+                                    # per-user favorite cleanup should not block overall deletion
+                                    pass
+                    except Exception:
+                        # don't block main deletion if favorite cleanup fails
+                        pass
+        except Exception:
+            # ne pas bloquer la suppression principale si cleanup échoue
+            pass
+
         # Désactiver temporairement les triggers si nécessaire
         cur.execute("SET session_replication_role = 'replica';")
         
@@ -1110,6 +1439,16 @@ def delete_playlist(playlist_id: int):
         cur.execute("DELETE FROM sae.playlist_track WHERE playlist_id = %s", (playlist_id,))
         cur.execute("DELETE FROM sae.playlist_user WHERE playlist_id = %s", (playlist_id,))
         cur.execute("DELETE FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+
+        # Attempt to delete playlist image file from uploads
+        try:
+            if playlist_image:
+                uploads_dir = os.path.join(os.path.dirname(__file__), '..', 'web', 'uploads', 'playlists')
+                image_path = os.path.join(uploads_dir, playlist_image)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+        except Exception:
+            pass
         
         # Réactiver les triggers
         cur.execute("SET session_replication_role = 'origin';")
@@ -1196,12 +1535,42 @@ def remove_track_from_playlist(playlist_id: int, track_id: int):
             "DELETE FROM sae.playlist_track WHERE playlist_id = %s AND track_id = %s",
             (playlist_id, track_id)
         )
-        
+
+        # Vérifier s'il reste des tracks
+        cur.execute("SELECT COUNT(*) as cnt FROM sae.playlist_track WHERE playlist_id = %s", (playlist_id,))
+        cnt = cur.fetchone()['cnt']
+
+        playlist_deleted = False
+        if cnt == 0:
+            # supprimer associations utilisateur puis la playlist
+            # optionnel: supprimer fichier image si présent
+            try:
+                # Récupérer le nom du fichier image pour suppression éventuelle
+                cur.execute("SELECT playlist_image FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+                img = cur.fetchone()
+                if img and img.get('playlist_image'):
+                    image_file = img.get('playlist_image')
+                    # tenter suppression fichier (silencieuse)
+                    uploads_dir = os.path.join(os.path.dirname(__file__), '..', 'web', 'uploads', 'playlists')
+                    image_path = os.path.join(uploads_dir, image_file)
+                    try:
+                        if os.path.exists(image_path):
+                            os.remove(image_path)
+                    except Exception:
+                        pass
+
+                cur.execute("DELETE FROM sae.playlist_user WHERE playlist_id = %s", (playlist_id,))
+                cur.execute("DELETE FROM sae.playlist WHERE playlist_id = %s", (playlist_id,))
+                playlist_deleted = True
+            except Exception:
+                # ignore and continue
+                pass
+
         conn.commit()
         cur.close()
         conn.close()
-        
-        return {"message": "Track supprimée de la playlist"}
+
+        return {"message": "Track supprimée de la playlist", "playlist_deleted": playlist_deleted}
     except HTTPException:
         raise
     except Exception as e:
@@ -1661,6 +2030,15 @@ class UpdateUserRole(BaseModel):
 class BanUser(BaseModel):
     banned: bool  # True = bannir, False = débannir
 
+class AdminUpdateProfile(BaseModel):
+    user_firstname: Optional[str] = None
+    user_lastname: Optional[str] = None
+    user_mail: Optional[str] = None
+    user_age: Optional[int] = None
+    user_gender: Optional[str] = None
+    user_location: Optional[str] = None
+    user_phonenumber: Optional[str] = None
+
 
 # Statistiques globales pour le dashboard admin
 @app.get("/admin/stats", tags=["Admin"], summary="Statistiques globales")
@@ -1832,7 +2210,7 @@ def admin_get_user(user_id: int):
 
 # Changer le rôle d'un utilisateur
 @app.put("/admin/users/{user_id}/role", tags=["Admin"], summary="Changer le rôle d'un utilisateur")
-def admin_update_role(user_id: int, body: UpdateUserRole):
+def admin_update_role(user_id: int, body: UpdateUserRole, requester_id: Optional[int] = Query(None)):
     if body.role not in ("admin", "user"):
         raise HTTPException(status_code=400, detail="Rôle invalide. Utiliser 'admin' ou 'user'.")
 
@@ -1848,8 +2226,22 @@ def admin_update_role(user_id: int, body: UpdateUserRole):
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        if row['user_status'] == 'super_admin':
+
+        target_status = row['user_status']
+
+        # super_admin est intouchable
+        if target_status == 'super_admin':
             raise HTTPException(status_code=403, detail="Impossible de modifier le rôle du super administrateur")
+
+        # Pour toucher un admin, il faut etre super_admin
+        if target_status == 'admin':
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut modifier le rôle d'un admin")
 
         cur.execute(
             "UPDATE sae.users SET user_status = %s WHERE user_id = %s",
@@ -1873,7 +2265,7 @@ def admin_update_role(user_id: int, body: UpdateUserRole):
 
 # Bannir / Débannir un utilisateur
 @app.put("/admin/users/{user_id}/ban", tags=["Admin"], summary="Bannir ou débannir un utilisateur")
-def admin_ban_user(user_id: int, body: BanUser):
+def admin_ban_user(user_id: int, body: BanUser, requester_id: Optional[int] = Query(None)):
     new_status = "banned" if body.banned else "user"
 
     conn = get_db_connection()
@@ -1883,13 +2275,25 @@ def admin_ban_user(user_id: int, body: BanUser):
     try:
         cur = conn.cursor()
 
-        # Empêcher de bannir un admin
+        # Empêcher de bannir un admin/super_admin (sauf si requester est super_admin)
         cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        if row['user_status'] in ('admin', 'super_admin') and body.banned:
-            raise HTTPException(status_code=403, detail="Impossible de bannir un administrateur")
+
+        target_status = row['user_status']
+
+        if target_status == 'super_admin' and body.banned:
+            raise HTTPException(status_code=403, detail="Impossible de bannir le super administrateur")
+
+        if target_status == 'admin' and body.banned:
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut bannir un admin")
 
         cur.execute(
             "UPDATE sae.users SET user_status = %s WHERE user_id = %s",
@@ -1908,9 +2312,9 @@ def admin_ban_user(user_id: int, body: BanUser):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Supprimer un utilisateur (admin)
-@app.delete("/admin/users/{user_id}", tags=["Admin"], summary="Supprimer un utilisateur")
-def admin_delete_user(user_id: int):
+# Modifier le profil d'un utilisateur (admin) — mot de passe exclu
+@app.put("/admin/users/{user_id}/profile", tags=["Admin"], summary="Modifier le profil d'un utilisateur (admin)")
+def admin_update_profile(user_id: int, body: AdminUpdateProfile, requester_id: Optional[int] = Query(None)):
     conn = get_db_connection()
     if not conn:
         raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
@@ -1918,13 +2322,95 @@ def admin_delete_user(user_id: int):
     try:
         cur = conn.cursor()
 
-        # Empêcher de supprimer un admin
+        # Vérifier que l'utilisateur existe et son role
+        cur.execute("SELECT user_id, user_status FROM sae.users WHERE user_id = %s", (user_id,))
+        target = cur.fetchone()
+        if not target:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+        # Un admin ne peut pas modifier le profil d'un autre admin (seul super_admin peut)
+        if target['user_status'] in ('admin', 'super_admin'):
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut modifier le profil d'un admin")
+
+        fields = []
+        params = []
+
+        if body.user_firstname is not None:
+            fields.append("user_firstname = %s")
+            params.append(body.user_firstname)
+        if body.user_lastname is not None:
+            fields.append("user_lastname = %s")
+            params.append(body.user_lastname)
+        if body.user_mail is not None:
+            fields.append("user_mail = %s")
+            params.append(body.user_mail)
+        if body.user_age is not None:
+            fields.append("user_age = %s")
+            params.append(body.user_age)
+        if body.user_gender is not None:
+            fields.append("user_gender = %s")
+            params.append(body.user_gender)
+        if body.user_location is not None:
+            fields.append("user_location = %s")
+            params.append(body.user_location)
+        if body.user_phonenumber is not None:
+            fields.append("user_phonenumber = %s")
+            params.append(body.user_phonenumber)
+
+        if not fields:
+            raise HTTPException(status_code=400, detail="Aucun champ à mettre à jour")
+
+        params.append(user_id)
+        query = f"UPDATE sae.users SET {', '.join(fields)} WHERE user_id = %s"
+        cur.execute(query, params)
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return {"success": True, "message": "Profil utilisateur mis à jour"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Supprimer un utilisateur (admin)
+@app.delete("/admin/users/{user_id}", tags=["Admin"], summary="Supprimer un utilisateur")
+def admin_delete_user(user_id: int, requester_id: Optional[int] = Query(None)):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+
+    try:
+        cur = conn.cursor()
+
+        # Empêcher de supprimer un admin/super_admin (sauf si requester est super_admin)
         cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (user_id,))
         row = cur.fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-        if row['user_status'] in ('admin', 'super_admin'):
-            raise HTTPException(status_code=403, detail="Impossible de supprimer un administrateur")
+
+        target_status = row['user_status']
+
+        if target_status == 'super_admin':
+            raise HTTPException(status_code=403, detail="Impossible de supprimer le super administrateur")
+
+        if target_status == 'admin':
+            requester_role = None
+            if requester_id:
+                cur.execute("SELECT user_status FROM sae.users WHERE user_id = %s", (requester_id,))
+                req_row = cur.fetchone()
+                requester_role = req_row['user_status'] if req_row else None
+            if requester_role != 'super_admin':
+                raise HTTPException(status_code=403, detail="Seul le super administrateur peut supprimer un admin")
 
         # Supprimer les données liées
         cur.execute("DELETE FROM sae.favorite WHERE user_id = %s", (user_id,))

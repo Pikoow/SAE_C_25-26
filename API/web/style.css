@@ -83,6 +83,26 @@ header h2 {
     height: 28px;
 }
 
+/* Reaction buttons */
+.reaction-controls {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+.reaction-controls button {
+    background: transparent;
+    border: 1px solid var(--gris-clair);
+    border-radius: 0.35rem;
+    padding: 0.25rem 0.45rem;
+    cursor: pointer;
+    font-size: 1rem;
+}
+.reaction-controls button.active {
+    background: var(--orange);
+    color: white;
+    border-color: var(--orange);
+}
+
 header nav {
     margin-left: 0;
     flex: 1;
@@ -406,6 +426,7 @@ footer {
     bottom: 0;
     left: 0;
     width: 100%;
+    height: 150px;           /* container fixe */
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -413,7 +434,8 @@ footer {
     padding: 0 10px;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.50;
+    opacity: 0.5;
+    overflow: hidden;        /* empêche débordement */
 }
 
 .accueil .eq-bar {
@@ -421,13 +443,15 @@ footer {
     width: 16px;
     border-radius: 3px 3px 0 0;
     background-color: var(--orange);
-    animation: eqBounce var(--duration) ease-in-out infinite alternate;
+    height: 100%;             /* toute la hauteur du container */
     transform-origin: bottom;
+    transform: scaleY(0.3);  /* valeur minimale */
+    animation: eqBounce var(--duration) ease-in-out infinite alternate;
 }
 
 @keyframes eqBounce {
-    0% { height: var(--h-min); }
-    100% { height: var(--h-max); }
+    0%   { transform: scaleY(var(--scale-min)); }
+    100% { transform: scaleY(1); }
 }
 
 .accueil .hero>*:not(.equalizer-bg) {
@@ -2519,7 +2543,7 @@ footer {
     border: 2px solid #000;
     border-radius: 12px;
     font-size: 1rem;
-    background-image: url('../images/loupe.svg');
+    background-image: url('../images/loupe.png');
     background-repeat: no-repeat;
     background-position: 15px center;
     background-size: 20px 20px;
@@ -2542,24 +2566,87 @@ footer {
     margin-top: 0;
     color: #333;
 }
-
-.preferences .badge-item {
-    background-color: var(--orange);
-    color: white;
-    padding: 8px 15px;
-    margin: 10px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: none;
+/* Conteneur pour s'assurer que les listes ne sont pas vides ou trop serrées */
+.selection-area div[id$="-list"] {
+    min-height: 50px;
+    padding: 10px;
+    border: 1px inset rgba(0,0,0,0.05);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.5);
     display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Conteneur : Un seul élément par ligne */
+#selected-genres-list, 
+#selected-artists-list, 
+#selected-tracks-list {
+    display: flex;
+    margin-top: 10px;
+    flex-direction: column; /* Force l'empilement vertical */
+    gap: 8px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+}
+
+/* Le Badge : Largeur totale et alignement interne */
+.preferences .badge-item {
+    display: flex; 
     align-items: center;
+    justify-content: space-between; /* POUSSE LA CROIX À DROITE */
+    background-color: #f38630;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: grab;
+    width: 100%; /* Prend toute la largeur */
+    box-sizing: border-box;
+    transition: all 0.2s ease;
 }
 
 .preferences .badge-item:hover {
-    background-color: var(--orange-fonce);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #e6761b;
+    transform: translateX(4px); /* Petit effet de décalage au survol */
+}
+
+/* La Croix de suppression : Bien à droite */
+.preferences .badge-item .badge-remove {
+    width: 26px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 4px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+    flex-shrink: 0; /* Empêche la croix de s'écraser */
+}
+
+.preferences .badge-item .badge-remove:hover {
+    background: #ffffff;
+    color: #f38630;
+}
+
+/* Suppression du jaune jQuery UI */
+.ui-state-highlight {
+    background: rgba(243, 134, 48, 0.05) !important;
+    border: 2px dashed #f38630 !important;
+    height: 42px;
+    width: 100%;
+    border-radius: 6px;
+    visibility: visible !important;
+}
+
+.ui-sortable-helper {
+    cursor: grabbing !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
 }
 
 .preferences .actions-container {
@@ -2569,6 +2656,13 @@ footer {
     margin: 40px 0;
     width: 100%;
 }
+    /* Reaction buttons disabled state */
+    .reaction-controls button:disabled,
+    .player-reaction-btn:disabled,
+    .playlist-actions button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 
 .preferences .btn-reset,
 .btn-save {
@@ -2995,7 +3089,7 @@ footer {
 /* =====================================================
    PAGE PLAYLISTS
 ===================================================== */
-.playlists-page .playlists-header {
+.playlists-page .playlists-header ,.preferences .preferences-header {
     position: relative;
     background-color: var(--noir);
     overflow: hidden;
@@ -3004,8 +3098,15 @@ footer {
     align-items: center;
     justify-content: center;
 }
+.playlists-page .playlists-header{
+    min-height: 80vh;
+}
 
-.playlists-page .playlists-header::before {
+.preferences .preferences-header {
+    min-height: 90vh;
+}
+
+.playlists-page .playlists-header::before ,.preferences .preferences-header::before{
     content: '';
     position: absolute;
     bottom: -120px;
@@ -3028,7 +3129,7 @@ footer {
     gap: 0;
 }
 
-.playlists-page .playlists-header h1 {
+.playlists-page .playlists-header h1 ,.preferences .preferences-header h1{
     font-family: 'Rammetto One', sans-serif;
     font-size: 3.125rem;
     color: var(--blanc);
@@ -3036,7 +3137,7 @@ footer {
     letter-spacing: -1px;
 }
 
-.playlists-page .playlists-header p {
+.playlists-page .playlists-header p ,.preferences .preferences-header p{
     font-family: 'Outfit', sans-serif;
     font-size: 1rem;
     color: var(--gris-clair);
@@ -3114,6 +3215,27 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
     transform: scale(1.02);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
     border-color: var(--orange);
+}
+
+/* Special styling for the user's "Titres liké" playlist */
+.playlists-page .playlist-card-liker {
+    border: 3px solid var(--orange);
+    background: linear-gradient(135deg, #fff7f0 0%, #fff2e6 100%);
+    box-shadow: 0 18px 45px rgba(237,122,38,0.12);
+}
+.playlists-page .playlist-card-liker .playlist-info h3 {
+    color: var(--orange);
+}
+.playlists-page .playlist-card-liker .playlist-meta {
+    color: #e67e22;
+}
+
+/* Special cover size/appearance for liker card */
+.playlists-page .playlist-custom-cover {
+    width: 100%;
+    height: 150px; /* Nouvelle hauteur fixe */
+    overflow: hidden;
+    background: #f0f0f0;
 }
 
 .playlists-page .playlist-cover-grid {
@@ -4726,4 +4848,19 @@ body:not(.accueil):not(.preferences):not(.test-api) .playlists-container {
 .login-prompt-modal .btn-secondary:hover {
     background: #d5dbdb;
     transform: translateY(-1px);
+}
+
+/* Lien discret pour les titres masqués (Page Playlist) */
+.playlists-page .discreet-disliked-link {
+    display: inline-block;
+    margin-top: 20px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.playlists-page .discreet-disliked-link:hover {
+    color: rgba(255, 255, 255, 1);
 }

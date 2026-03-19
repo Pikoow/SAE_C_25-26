@@ -1,10 +1,9 @@
 import psycopg2
+import psycopg2.extras
 import pandas as pd
 import numpy as np
-import json
 import os
 from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,144 +22,204 @@ DB_CONFIG = {
 }
 
 # ==================================================
+# IN-MEMORY CACHE
+# Cache invalidé uniquement si de nouveaux embeddings sont écrits en DB.
+# ==================================================
+_cache: dict = {
+    "ids": None,       # np.ndarray (N,)
+    "names": None,     # np.ndarray (N,)
+    "matrix": None,    # np.ndarray (N, D) — lignes L2-normalisées
+}
+_embedding_col_checked: bool = False
+
+# ==================================================
 # DB CONNECTION
 # ==================================================
 def db_connect():
     return psycopg2.connect(**DB_CONFIG)
 
 # ==================================================
-# FETCH ARTISTS
-# ==================================================
-def fetch_artists():
-    conn = db_connect()
-    df = pd.read_sql("SELECT * FROM sae.artist;", conn)
-    conn.close()
-    return df
-
-# ==================================================
-# COLONNE EMBEDDING
+# COLONNE EMBEDDING (vérifiée une seule fois par process)
 # ==================================================
 def ensure_embedding_column():
+    global _embedding_col_checked
+    if _embedding_col_checked:
+        return
     conn = db_connect()
     cur = conn.cursor()
     cur.execute("""
         SELECT column_name
         FROM information_schema.columns
-        WHERE table_name='artist'
-        AND column_name='artist_embedding';
+        WHERE table_schema = 'sae'
+          AND table_name   = 'artist'
+          AND column_name  = 'artist_embedding';
     """)
     if not cur.fetchone():
         cur.execute("ALTER TABLE sae.artist ADD COLUMN artist_embedding FLOAT8[];")
         conn.commit()
     cur.close()
     conn.close()
+    _embedding_col_checked = True
 
 # ==================================================
 # BUILD ARTIST TEXT
 # ==================================================
-def build_artist_text(row):
-    fields = [
-        row.get("artist_bio", ""),
-        row.get("artist_related_project", ""),
-        row.get("artist_location", ""),
-        row.get("artist_associated_label", ""),
-        row.get("artist_tags", "")
-    ]
-    return " ".join(str(f) for f in fields if pd.notnull(f))
+_TEXT_FIELDS = (
+    "artist_bio",
+    "artist_related_project",
+    "artist_location",
+    "artist_associated_label",
+    "artist_tags",
+)
+
+def build_artist_text(row) -> str:
+    return " ".join(
+        str(row[f]) for f in _TEXT_FIELDS
+        if row.get(f) is not None and pd.notnull(row[f])
+    )
 
 # ==================================================
-# COMPUTE MISSING EMBEDDINGS
+# COMPUTE MISSING EMBEDDINGS  (batch UPDATE)
 # ==================================================
-def compute_missing_embeddings(df, model):
+def compute_missing_embeddings(df: pd.DataFrame, model: SentenceTransformer) -> None:
     missing = df[df["artist_embedding"].isnull()]
     if missing.empty:
-        return df
+        return
 
     texts = missing.apply(build_artist_text, axis=1).tolist()
-    embeddings = model.encode(texts, show_progress_bar=False)
+    embeddings = model.encode(texts, show_progress_bar=False, batch_size=64)
 
+    # Un seul UPDATE batch via execute_values
+    rows = [
+        (emb.tolist(), int(aid))
+        for emb, aid in zip(embeddings, missing["artist_id"])
+    ]
     conn = db_connect()
     cur = conn.cursor()
-
-    for artist_id, emb in zip(missing["artist_id"], embeddings):
-        cur.execute(
-            "UPDATE sae.artist SET artist_embedding = %s WHERE artist_id = %s",
-            (emb.tolist(), artist_id)
-        )
-
+    psycopg2.extras.execute_values(
+        cur,
+        "UPDATE sae.artist SET artist_embedding = data.emb "
+        "FROM (VALUES %s) AS data(emb, artist_id) "
+        "WHERE sae.artist.artist_id = data.artist_id",
+        rows,
+        template="(%s::float8[], %s)",
+    )
     conn.commit()
     cur.close()
     conn.close()
 
-    return df
+# ==================================================
+# CACHE : chargement et normalisation L2
+# ==================================================
+def _load_cache() -> None:
+    """Charge la matrice d'embeddings en mémoire et la normalise (dot product = cosine)."""
+    conn = db_connect()
+    df = pd.read_sql(
+        "SELECT artist_id, artist_name, artist_embedding "
+        "FROM sae.artist WHERE artist_embedding IS NOT NULL;",
+        conn,
+    )
+    conn.close()
 
-def initialize_artist_system():
+    if df.empty:
+        _cache["ids"] = np.array([], dtype=np.int64)
+        _cache["names"] = np.array([], dtype=object)
+        _cache["matrix"] = np.empty((0, 0), dtype=np.float32)
+        return
+
+    ids   = df["artist_id"].values.astype(np.int64)
+    names = df["artist_name"].values
+    matrix = np.vstack(df["artist_embedding"].values).astype(np.float32)
+
+    # Normalisation L2 → cosine similarity = simple dot product
+    norms = np.linalg.norm(matrix, axis=1, keepdims=True)
+    norms = np.where(norms == 0, 1.0, norms)   # évite division par zéro
+    matrix /= norms
+
+    _cache["ids"]    = ids
+    _cache["names"]  = names
+    _cache["matrix"] = matrix
+
+def _get_cache():
+    """Retourne le cache, le charge si nécessaire."""
+    if _cache["ids"] is None:
+        _load_cache()
+    return _cache
+
+def invalidate_cache() -> None:
+    """À appeler si la DB est modifiée en dehors du process."""
+    _cache["ids"] = None
+
+# ==================================================
+# INITIALIZE
+# ==================================================
+def initialize_artist_system() -> None:
     """
-    Checks database schema and populates missing embeddings.
+    Vérifie le schéma DB, calcule les embeddings manquants, précharge le cache.
     """
     print("Création des embeddings d'artistes...")
     ensure_embedding_column()
-    df = fetch_artists()
+
+    conn = db_connect()
+    df = pd.read_sql("SELECT * FROM sae.artist;", conn)
+    conn.close()
 
     compute_missing_embeddings(df, MODEL)
+    _load_cache()   # préchauffe le cache
     print("Recommendation d'artistes prête.")
 
 # ==================================================
-# PUBLIC API FUNCTION (UPDATED)
+# PUBLIC API
 # ==================================================
-def recommend_artists(artist_ids, top_k: int = 5):
+def recommend_artists(artist_ids, top_k: int = 5) -> list[dict]:
     """
-    Unified recommendation: Accepts a single artist_id (int) or a list of artist_ids.
+    Recommande des artistes similaires.
+    Accepte un artist_id (int) ou une liste d'artist_ids.
     """
     ensure_embedding_column()
 
-    conn = db_connect()
-    try:
-        # Load all artists with embeddings
-        df = pd.read_sql("SELECT artist_id, artist_name, artist_embedding FROM sae.artist WHERE artist_embedding IS NOT NULL;", conn)
-        
-        if df.empty:
-            return []
+    if isinstance(artist_ids, int):
+        artist_ids = [artist_ids]
+    input_ids_set = set(artist_ids)
 
-        # Convert single ID to list for uniform processing
-        if isinstance(artist_ids, int):
-            artist_ids = [artist_ids]
-            
-        # Extract embeddings for the input artists
-        input_artists_df = df[df['artist_id'].isin(artist_ids)]
-        
-        if input_artists_df.empty:
-            return []
+    cache = _get_cache()
+    ids    = cache["ids"]
+    names  = cache["names"]
+    matrix = cache["matrix"]
 
-        # Calculate the target profile (mean of all input embeddings)
-        input_embeddings = np.array(input_artists_df["artist_embedding"].tolist())
-        target_emb = np.mean(input_embeddings, axis=0).reshape(1, -1)
-        
-        # Prepare the matrix for comparison
-        all_ids = df["artist_id"].values
-        all_names = df["artist_name"].values
-        matrix = np.array(df["artist_embedding"].tolist())
+    if ids.size == 0:
+        return []
 
-        # Calculate similarities
-        similarities = cosine_similarity(target_emb, matrix)[0]
-        indices = np.argsort(similarities)[::-1]
-        
-        results = []
-        input_ids_set = set(artist_ids)
-        
-        for idx in indices:
-            # Exclude the artists already in the input list
-            if all_ids[idx] in input_ids_set:
-                continue
-                
-            results.append({
-                "artist_id": int(all_ids[idx]),
-                "artist_name": str(all_names[idx]),
-                "similarity": float(round(similarities[idx], 4))
-            })
-            if len(results) >= top_k:
-                break
-                
-        return results
-    finally:
-        conn.close()
+    # Masque booléen des artistes en entrée
+    input_mask = np.isin(ids, list(input_ids_set))
+    if not input_mask.any():
+        return []
+
+    # Profil cible = moyenne des embeddings normalisés → re-normalisation
+    target_emb = matrix[input_mask].mean(axis=0)
+    norm = np.linalg.norm(target_emb)
+    if norm > 0:
+        target_emb /= norm
+
+    # Cosine similarity via dot product (matrice déjà normalisée)
+    similarities = matrix @ target_emb   # (N,)
+
+    # Exclure les artistes en entrée avant de chercher le top-k
+    similarities[input_mask] = -1.0
+
+    # np.argpartition : O(N) au lieu de O(N log N) pour le tri complet
+    n_candidates = min(top_k, ids.size - input_mask.sum())
+    if n_candidates <= 0:
+        return []
+
+    top_indices = np.argpartition(similarities, -n_candidates)[-n_candidates:]
+    top_indices = top_indices[np.argsort(similarities[top_indices])[::-1]]
+
+    return [
+        {
+            "artist_id":   int(ids[i]),
+            "artist_name": str(names[i]),
+            "similarity":  float(round(float(similarities[i]), 4)),
+        }
+        for i in top_indices
+    ]

@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Accueil - MuSE</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
@@ -19,6 +20,7 @@
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
+            <a href="blindtest.html">Blindtest</a>
             <a href="preferences.html">Préférences</a>
                 
             <div class="dropdown">
@@ -210,16 +212,13 @@
                 const bar = document.createElement('div');
                 bar.classList.add('eq-bar');
 
-                const hMin     = Math.floor(Math.random() * 60)  + 15;   // 15–75 px
-                const hMax     = Math.floor(Math.random() * 220) + 80;   // 80–300 px
-                const duration = (Math.random() * 4 + 2.5).toFixed(2); // 0.4–1.6 s
-                const delay    = (Math.random() * 2.0).toFixed(2);       // 0–2 s
+                const scaleMin = (Math.random() * 0.1 + 0.2).toFixed(2); // 0.2 à 0.3
+                const duration = (Math.random() * 2 + 2.5).toFixed(2);   // 2.5 à 4.5 s
+                const delay = (Math.random() * 1.0).toFixed(2);          // 0 à 1s
 
-                bar.style.setProperty('--h-min', hMin + 'px');
-                bar.style.setProperty('--h-max', hMax + 'px');
+                bar.style.setProperty('--scale-min', scaleMin);
                 bar.style.setProperty('--duration', duration + 's');
                 bar.style.animationDelay = `-${delay}s`;
-                bar.style.height = hMin + 'px';
 
                 container.appendChild(bar);
             }
@@ -342,11 +341,11 @@
                                     trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
                                 }
                                 if (trackIds.length === 0) trackIds = ['81466'];
-                                return `http://127.0.0.1:8000/reco/tracks?${trackIds.map(id => 'track_ids=' + id).join('&')}&limit=15`;
+                                return `http://127.0.0.1:8000/reco/tracks?${trackIds.map(id => 'track_ids=' + id).join('&')}&limit=15&exclude_user_id=${popupUserId}`;
                             })
-                            .catch(() => 'http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15');
+                            .catch(() => `http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15${popupUserId ? '&exclude_user_id=' + popupUserId : ''}`);
                     } else {
-                        recoUrlPromise = Promise.resolve('http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15');
+                        recoUrlPromise = Promise.resolve(`http://127.0.0.1:8000/reco/tracks?track_ids=81466&limit=15${popupUserId ? '&exclude_user_id=' + popupUserId : ''}`);
                     }
 
                     recoUrlPromise.then(recoUrl => {
@@ -1326,7 +1325,7 @@
                         const prefData = await prefRes.json();
                         let trackIds = [];
                         if (prefData.count > 0 && prefData.results[0].ids_tracks) trackIds = prefData.results[0].ids_tracks.split(',').filter(x => x);
-                        if (trackIds.length > 0) recoUrl = 'http://127.0.0.1:8000/reco/tracks?' + trackIds.map(id => 'track_ids=' + id).join('&') + '&limit=12';
+                        if (trackIds.length > 0) recoUrl = 'http://127.0.0.1:8000/reco/tracks?' + trackIds.map(id => 'track_ids=' + id).join('&') + '&limit=12' + (userId ? '&exclude_user_id=' + userId : '');
                     } catch (e) { /* fallback */ }
                 }
                 const recoRes = await fetch(recoUrl);
