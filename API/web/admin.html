@@ -7,6 +7,14 @@
     <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <script src="header-ui.js" defer></script>
+
+    <script>
+        (function() {
+            var t = localStorage.getItem('muse-theme');
+            if (t && t !== 'orange') document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+
 </head>
 
 <body class="admin-page">
@@ -28,6 +36,27 @@
                 </div>
             </div>
         </nav>
+
+        <div class="theme-switcher-wrapper">
+            <button class="theme-btn" id="themeBtnToggle" title="Changer la couleur du site" aria-expanded="false">
+                <span class="theme-btn-dot" id="themeBtnDot"></span>Thème
+            </button>
+            <div class="theme-panel" id="themePanel" role="listbox" aria-label="Choisir un thème de couleur">
+                <p class="theme-panel-title">Couleur du site</p>
+                <div class="theme-options">
+                    <button class="theme-option active" data-theme="orange" role="option" aria-selected="true">
+                        <span class="theme-option-swatch" style="background: rgb(237,122,38);"></span>Orange<span class="theme-option-check">&#10003;</span>
+                    </button>
+                    <button class="theme-option" data-theme="violet" role="option" aria-selected="false">
+                        <span class="theme-option-swatch" style="background: rgb(124,77,211);"></span>Violet<span class="theme-option-check">&#10003;</span>
+                    </button>
+                    <button class="theme-option" data-theme="vert" role="option" aria-selected="false">
+                        <span class="theme-option-swatch" style="background: rgb(39,174,96);"></span>Vert<span class="theme-option-check">&#10003;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="header-right">
             <div id="auth-buttons" class="connexion-inscription">
                 <a href="connexion.html?mode=login">Connexion</a>

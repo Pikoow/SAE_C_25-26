@@ -243,6 +243,138 @@ header nav .dropdown:hover>a {
     color: var(--orange);
 }
 
+
+[data-theme="violet"] {
+    --orange: rgb(124, 77, 211);
+    --orange-clair: rgb(167, 119, 247);
+    --orange-fonce: rgb(90, 46, 178);
+    --api-bg-light: #f3eeff;
+    --api-border-color: #d8c6fa;
+}
+[data-theme="bleu"] {
+    --orange: rgb(41, 128, 185);
+    --orange-clair: rgb(84, 166, 220);
+    --orange-fonce: rgb(21, 96, 148);
+    --api-bg-light: #eaf4fb;
+    --api-border-color: #b3d9f0;
+}
+[data-theme="vert"] {
+    --orange: rgb(39, 174, 96);
+    --orange-clair: rgb(82, 210, 133);
+    --orange-fonce: rgb(22, 138, 72);
+    --api-bg-light: #eafaf1;
+    --api-border-color: #b2dfcc;
+}
+
+.theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: transparent;
+    border: 1px solid var(--blanc);
+    border-radius: 0.313em;
+    padding: 0 14px;
+    height: 1.9em;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    color: var(--noir);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    white-space: nowrap;
+    margin-right: 0.75em;
+    flex-shrink: 0;
+}
+.theme-btn:hover {
+    color: var(--orange);
+    transform: scale(1.04);
+}
+.theme-btn-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--orange);
+    flex-shrink: 0;
+    transition: background-color 0.3s;
+    border: 1.5px solid rgba(0,0,0,0.08);
+}
+.theme-switcher-wrapper {
+    position: relative;
+}
+.theme-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: var(--blanc);
+    border-radius: 12px;
+    border: 1px solid var(--gris-clair);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 14px;
+    z-index: 2000;
+    min-width: 210px;
+}
+.theme-panel.visible {
+    display: block;
+    animation: themePanelIn 0.18s ease;
+}
+@keyframes themePanelIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.theme-panel-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--gris-fonce);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    opacity: 0.55;
+}
+.theme-options {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    color: var(--noir);
+}
+.theme-option:hover { background: #f5f5f5; }
+.theme-option.active {
+    background: var(--api-bg-light);
+    font-weight: 600;
+    color: var(--orange);
+}
+.theme-option-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(0,0,0,0.07);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.theme-option-check {
+    margin-left: auto;
+    font-size: 0.85rem;
+    opacity: 0;
+    color: var(--orange);
+}
+.theme-option.active .theme-option-check { opacity: 1; }
+
+
 /* =========================================
    MENU UTILISATEUR (HEADER DROITE)
    ========================================= */
