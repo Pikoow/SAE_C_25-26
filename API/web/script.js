@@ -125,9 +125,28 @@ async function chargerMusiques() {
 //Fonction pour sauvegarder les preferences de user
 async function Sauvegarde() {
     const userId = localStorage.getItem("userId");
-    if (!userId) return alert("Veuillez vous connecter.");
+    if (!userId) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Non connecté',
+            text: 'Veuillez vous connecter pour sauvegarder vos préférences.',
+            confirmButtonColor: '#ed7a26'
+        });
+    }
 
-    if (confirm("Voulez-vous enregistrer vos préférences ?")) {
+    const confirmation = await Swal.fire({
+        title: 'Sauvegarder ?',
+        text: 'Voulez-vous enregistrer vos préférences ?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ed7a26',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Sauvegarder',
+        cancelButtonText: 'Annuler',
+        reverseButtons: true
+    });
+
+    if (confirmation.isConfirmed) {
         const getIds = (containerId) => {
             const badges = document.querySelectorAll(`#${containerId} .badge-item`);
             return Array.from(badges)
@@ -151,26 +170,60 @@ async function Sauvegarde() {
 
             const result = await response.json();
             if (result.success) {
-                alert("Préférences enregistrées avec succès !");
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sauvegardé !',
+                    text: 'Vos préférences ont été enregistrées avec succès.',
+                    confirmButtonColor: '#ed7a26',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
             } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Une erreur est survenue lors de la sauvegarde.',
+                    confirmButtonColor: '#ed7a26'
+                });
                 console.error("Erreur API:", result.error);
             }
         } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur de connexion',
+                text: 'Impossible de contacter le serveur.',
+                confirmButtonColor: '#ed7a26'
+            });
             console.error("Erreur de connexion :", err);
         }
     }
 }
 
 // Vide toutes les listes
-function Reset() {
-    const choixUtilisateur = confirm("Voulez-vous vraiment supprimer vos préférences ?");
+async function Reset() {
+    const confirmation = await Swal.fire({
+        title: 'Réinitialiser ?',
+        text: 'Voulez-vous vraiment supprimer toutes vos préférences ?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: 'Supprimer tout',
+        cancelButtonText: 'Annuler',
+        reverseButtons: true
+    });
 
-    if (choixUtilisateur) {
+    if (confirmation.isConfirmed) {
         $('.selected-list-container').empty();
         $('#selected-genres-list, #selected-artists-list, #selected-tracks-list').empty();
-        console.log("Préférences supprimées.");
-    } else {
-        console.log("Action annulée.");
+        Swal.fire({
+            icon: 'success',
+            title: 'Réinitialisé',
+            text: 'Vos préférences ont été supprimées.',
+            confirmButtonColor: '#ed7a26',
+            timer: 2000,
+            showConfirmButton: false
+        });
     }
 }
 
@@ -219,7 +272,19 @@ $(document).ready(function() {
     initPage();
 });
 
-/* Reactions: Like / Dislike / Favorite helpers */
+//Pour lancer les fonctions en parrallèles
+async function initPage() {
+    console.time("ChargementParallèle");
+
+    await Promise.all([
+        chargerPreferencesUtilisateur(),
+        chargerGenres(),
+        chargerArtists(),
+        chargerMusiques()
+    ]);
+
+    console.timeEnd("ChargementParallèle");
+}
 async function toggleReaction(targetType, targetId, action, value) {
     const userId = localStorage.getItem("userId");
     if (!userId) return alert("Veuillez vous connecter pour interagir.");
@@ -318,39 +383,7 @@ window.getReactionState = getReactionState;
 window.toggleReaction = toggleReaction;
 window.attachReactionButtons = attachReactionButtons;
 
-function activerDragAndDrop() {
-    const selectors = "#selected-genres-list, #selected-artists-list, #selected-tracks-list";
-    
-    $(selectors).sortable({
-        placeholder: "ui-state-highlight",
-        forcePlaceholderSize: true, // Force la taille pour éviter les sauts de ligne brusques
-        tolerance: "pointer",       // Plus précis pour le dépôt
-        revert: 150,                // Animation fluide de remise en place
-        opacity: 0.8,               // Transparence légère pendant le déplacement
-        start: function(e, ui) {
-            // On s'assure que le placeholder a la même largeur que le badge déplacé
-            ui.placeholder.width(ui.item.outerWidth());
-            ui.placeholder.height(ui.item.outerHeight());
-        }
-    }).disableSelection();
-}
 
-//Pour lancer les fonctions en parrallèles
-async function initPage() {
-    console.time("ChargementParallèle");
-
-    await Promise.all([
-        chargerPreferencesUtilisateur(),
-        chargerGenres(),
-        chargerArtists(),
-        chargerMusiques()
-    ]);
-
-    // Appel de la fonction pour rendre les listes réorganisables
-    activerDragAndDrop(); 
-
-    console.timeEnd("ChargementParallèle");
-}
 
 /****************************************
  *********** C A R R O U S E L **********
