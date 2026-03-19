@@ -2,18 +2,25 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MuSE – Découvrez, ressentez et partagez la musique. Explorez des albums, artistes et playlists personnalisés selon vos goûts.">
     <title>Accueil - MuSE</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
-    <script src="script.js"></script>
-    <script src="audio-player.js"></script>
-    <script src="node-auth/js/app.js"></script>
-    <script src="header-ui.js" defer></script>
     <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
-    <!-- Pop-up Exit Intent - À insérer n'importe où dans votre page -->
+    <link rel="preconnect" href="https://code.jquery.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://freemusicarchive.org">
+    <link rel="dns-prefetch" href="http://127.0.0.1:8000">
+    <link rel="dns-prefetch" href="http://localhost:3000">
+    <link rel="preload" href="images/logos/Group%206.svg" as="image" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css"></noscript>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" defer></script>
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js" defer></script>
+    <script src="script.js" defer></script>
+    <script src="audio-player.js" defer></script>
+    <script src="node-auth/js/app.js" defer></script>
+    <script src="header-ui.js" defer></script>
 <style>
     .exit-popup-overlay {
         position: fixed;
@@ -439,7 +446,6 @@
     }
 
     .exit-popup-confetti {
-        position: fixed;
         width: 10px;
         height: 10px;
         position: absolute;
@@ -467,6 +473,7 @@
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease;
+        contain: layout;
     }
 
     .album-popup-overlay.visible {
@@ -757,6 +764,7 @@
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease;
+        contain: layout;
     }
 
     .artist-popup-overlay.visible {
@@ -956,6 +964,7 @@
         animation: carouselScroll var(--scroll-duration, 40s) linear infinite;
         width: max-content;
         padding: 6px 0;
+        will-change: transform;
     }
 
     .carousel-track:hover {
@@ -1266,19 +1275,19 @@
 </head>
 <body class="accueil">
     <header>
-        <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a> 
-        <nav>
-            <a href="accueil.html">Accueil</a>
+        <a href="accueil.html" class="brand" aria-label="MuSE – Accueil"><img src="images/logos/Group%206.svg" alt="MuSE logo" width="38" height="38" fetchpriority="high" style="vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a> 
+        <nav aria-label="Navigation principale">
+            <a href="accueil.html" aria-current="page">Accueil</a>
             <a href="playlists.html">Playlists</a>
             <a href="preferences.html">Préférences</a>
                 
             <div class="dropdown">
-                <a href="#">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
-                <div class="dropdown-content">
-                    <a href="api-installation.html">Installation</a>
-                    <a href="http://127.0.0.1:8000/docs" target="_blank">Doc. Swagger</a>
-                    <a href="api-documentation.html">Doc Legacy</a>
-                    <a href="api-test.html">Testez l'API</a>
+                <a href="#" aria-haspopup="true" aria-expanded="false">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);" aria-hidden="true">▾</span></a>
+                <div class="dropdown-content" role="menu">
+                    <a href="api-installation.html" role="menuitem">Installation</a>
+                    <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer" role="menuitem">Doc. Swagger</a>
+                    <a href="api-documentation.html" role="menuitem">Doc Legacy</a>
+                    <a href="api-test.html" role="menuitem">Testez l'API</a>
                 </div>
             </div>
         </nav>
@@ -1293,19 +1302,19 @@
         </div>
 
         <div id="user-menu" class="user-dropdown hidden">
-            <a href="#" id="user-name-display">Mon Profil &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
+            <a href="#" id="user-name-display" aria-haspopup="true" aria-expanded="false">Mon Profil &nbsp; <span style="display: inline-block; transform: translateY(-1px);" aria-hidden="true">▾</span></a>
             
-            <div class="dropdown-content user-dropdown-content">
-                <a href="profil.html">Mon profil</a>
-                <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+            <div class="dropdown-content user-dropdown-content" role="menu">
+                <a href="profil.html" role="menuitem">Mon profil</a>
+                <a href="#" id="logoutBtn" class="logout-link" role="menuitem">Déconnexion</a>
             </div>
         </div>
 
     </div>
     </header>
 
-    <main>
-        <section class="hero">
+    <main id="main-content">
+        <section class="hero" aria-label="Présentation de MuSE">
 
     <!-- Barres equalizer (injectées par JS) -->
     <div class="equalizer-bg" id="equalizer-bg"></div>
@@ -1314,41 +1323,41 @@
     <h1>Découvre, Ressens, Partage</h1>
     <h2>MuSE te connecte aux albums, artistes et playlists qui te correspondent. Explore une nouvelle façon d'écouter la musique.</h2>
     <div id="auth-buttons-display" class="btns">
-        <a href="connexion.html" class="btn-login">Connexion</a>
-        <a href="connexion.html" class="btn-signup">Inscription</a>
+        <a href="connexion.html" class="btn-login" aria-label="Se connecter à MuSE">Connexion</a>
+        <a href="connexion.html" class="btn-signup" aria-label="Créer un compte MuSE">Inscription</a>
     </div>
 
 </section>
         <!-- Albums Carousel -->
-        <section class="carousel-section">
+        <section class="carousel-section" aria-label="Sélection d'albums">
             <div class="carousel-section-header">
                 <h2>Sélection d'albums</h2>
                 <span class="section-subtitle">Survolez pour explorer</span>
             </div>
-            <div class="carousel-wrapper">
-                <div class="carousel-track" id="albums-track" style="--scroll-duration: 50s;"></div>
+            <div class="carousel-wrapper" aria-label="Carrousel d'albums">
+                <div class="carousel-track" id="albums-track" style="--scroll-duration: 50s;" aria-live="polite"></div>
             </div>
         </section>
 
         <!-- Tracks Carousel -->
-        <section class="carousel-section">
+        <section class="carousel-section" aria-label="Morceaux recommandés">
             <div class="carousel-section-header">
                 <h2>Morceaux pour vous</h2>
                 <span class="section-subtitle">Basé sur vos préférences — cliquez + pour ajouter à une playlist</span>
             </div>
-            <div class="carousel-wrapper">
-                <div class="carousel-track" id="tracks-track" style="--scroll-duration: 50s;"></div>
+            <div class="carousel-wrapper" aria-label="Carrousel de morceaux">
+                <div class="carousel-track" id="tracks-track" style="--scroll-duration: 50s;" aria-live="polite"></div>
             </div>
         </section>
 
         <!-- Artists Carousel -->
-        <section class="carousel-section">
+        <section class="carousel-section" aria-label="Artistes recommandés">
             <div class="carousel-section-header">
                 <h2>Artistes recommandés</h2>
                 <span class="section-subtitle">Des talents à suivre</span>
             </div>
-            <div class="carousel-wrapper">
-                <div class="carousel-track" id="artists-track" style="--scroll-duration: 50s;"></div>
+            <div class="carousel-wrapper" aria-label="Carrousel d'artistes">
+                <div class="carousel-track" id="artists-track" style="--scroll-duration: 50s;" aria-live="polite"></div>
             </div>
         </section>
 
@@ -1356,21 +1365,21 @@
         <div class="cr-playlist-dropdown" id="crPlaylistDropdown"></div>
 
         <!-- Album Popup -->
-        <div class="album-popup-overlay" id="albumPopupOverlay">
+        <div class="album-popup-overlay" id="albumPopupOverlay" role="dialog" aria-modal="true" aria-labelledby="apAlbumTitle">
             <div class="album-popup-card">
                 <div class="album-popup-header">
-                    <button class="ap-back-btn" id="apBackBtn" title="Retour à l'artiste">&larr;</button>
-                    <img id="apAlbumImg" src="images/no_image_music.avif" alt="Album">
+                    <button class="ap-back-btn" id="apBackBtn" title="Retour à l'artiste" aria-label="Retour à l'artiste">&larr;</button>
+                    <img id="apAlbumImg" src="images/no_image_music.avif" alt="Pochette de l'album" width="110" height="110" loading="lazy">
                     <div class="album-popup-meta">
                         <h2 id="apAlbumTitle">Chargement...</h2>
                         <p class="ap-artist" id="apAlbumArtist"></p>
                         <p class="ap-count" id="apAlbumCount"></p>
-                        <button class="ap-add-all-btn" id="apAddAllBtn" title="Ajouter tout à une playlist">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/></svg>
+                        <button class="ap-add-all-btn" id="apAddAllBtn" title="Ajouter tout à une playlist" aria-label="Ajouter tous les morceaux à une playlist">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/></svg>
                             Ajouter tout
                         </button>
                     </div>
-                    <button class="album-popup-close" id="apCloseBtn" title="Fermer">&times;</button>
+                    <button class="album-popup-close" id="apCloseBtn" title="Fermer" aria-label="Fermer la popup album">&times;</button>
                 </div>
                 <div class="album-popup-tracks" id="apTracksList">
                     <div class="ap-loading">Chargement des morceaux...</div>
@@ -1379,36 +1388,36 @@
         </div>
 
         <!-- Artist Popup -->
-        <div class="artist-popup-overlay" id="artistPopupOverlay">
+        <div class="artist-popup-overlay" id="artistPopupOverlay" role="dialog" aria-modal="true" aria-labelledby="artpName">
             <div class="artist-popup-card">
                 <div class="artist-popup-header">
-                    <img id="artpImg" src="images/no_image_artist.avif" alt="Artiste">
+                    <img id="artpImg" src="images/no_image_artist.avif" alt="Photo de l'artiste" width="90" height="90" loading="lazy">
                     <div class="artp-meta">
                         <h2 id="artpName">Chargement...</h2>
                         <p id="artpStats"></p>
                     </div>
-                    <button class="artist-popup-close" id="artpCloseBtn" title="Fermer">&times;</button>
+                    <button class="artist-popup-close" id="artpCloseBtn" title="Fermer" aria-label="Fermer la popup artiste">&times;</button>
                 </div>
                 <div class="artist-popup-body" id="artpBody">
                     <div class="ap-loading">Chargement...</div>
                 </div>
             </div>
         </div>
-        <div class="exit-popup-overlay" id="exitPopupOverlay">
+        <div class="exit-popup-overlay" id="exitPopupOverlay" role="dialog" aria-modal="true" aria-labelledby="exitPopupTitle">
             <div class="exit-popup" id="exitPopup">
-                <h1>Avant de partir, écoutez ca !</h1>
+                <h1 id="exitPopupTitle">Avant de partir, écoutez ca !</h1>
                 <p class="exit-popup-subtitle">Ces morceaux pourraient vous plaire &mdash; cliquez pour ecouter un extrait</p>
                 <div class="exit-popup-tracks" id="popup-tracks-container"></div>
                 <div class="exit-popup-buttons">
-                    <button class="exit-popup-btn exit-popup-btn-stop" id="popupStopBtn" onclick="exitPopupStopMusic()" title="Arrêter la musique"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>Arreter la musique</button>
-                    <button class="exit-popup-btn exit-popup-btn-explore" onclick="exitPopupExplore()" title="Explorer plus de musiques"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Explorer plus de musiques</button>
-                    <button class="exit-popup-btn exit-popup-btn-close" onclick="exitPopupDismiss()" title="Non merci">Non merci</button>
+                    <button class="exit-popup-btn exit-popup-btn-stop" id="popupStopBtn" onclick="exitPopupStopMusic()" title="Arrêter la musique" aria-label="Arrêter la musique"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>Arreter la musique</button>
+                    <button class="exit-popup-btn exit-popup-btn-explore" onclick="exitPopupExplore()" title="Explorer plus de musiques" aria-label="Explorer plus de musiques"><svg style="width:16px;height:16px;vertical-align:middle;margin-right:6px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Explorer plus de musiques</button>
+                    <button class="exit-popup-btn exit-popup-btn-close" onclick="exitPopupDismiss()" title="Non merci" aria-label="Non merci, fermer la popup">Non merci</button>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer>
+    <footer aria-label="Pied de page MuSE">
         <div class="titre-footer">
             <h2>MuSE</h2>
         </div>
@@ -1442,10 +1451,10 @@
         <div class="barre-separation-footer"></div>
         <div class="fin-footer">
             <div class="reseaux-sociaux-footer">
-                <a href="#"><img src="/images/icones/instagram.avif" alt="Instagram"/></a>
-                <a href="#"><img src="/images/icones/linkedin.avif" alt="LinkedIn"/></a>
-                <a href="#"><img src="/images/icones/github.avif" alt="GitHub"/></a>
-                <a href="#"><img src="/images/icones/facebook.avif" alt="Facebook"/></a>
+                <a href="#" aria-label="Instagram"><img src="images/icones/instagram.avif" alt="Instagram" width="24" height="24" loading="lazy"/></a>
+                <a href="#" aria-label="LinkedIn"><img src="images/icones/linkedin.avif" alt="LinkedIn" width="24" height="24" loading="lazy"/></a>
+                <a href="#" aria-label="GitHub"><img src="images/icones/github.avif" alt="GitHub" width="24" height="24" loading="lazy"/></a>
+                <a href="#" aria-label="Facebook"><img src="images/icones/facebook.avif" alt="Facebook" width="24" height="24" loading="lazy"/></a>
             </div>
             <p>© 2026 MuSE Français</p>
         </div>
@@ -2638,10 +2647,9 @@
     }
     getDashboard();
 
-    <!-- Confetti CDN -->
-        //src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
-
-        // On attend que la page soit chargée
+    // Confetti CDN (désactivé)
+    // src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"
+    // On attend que la page soit chargée
         document.addEventListener("DOMContentLoaded", function() {
 
             const popup = document.getElementById("avisPopup");
@@ -2715,10 +2723,10 @@
   </script>
 
   <!-- Login Prompt Modal for Music Preview Limit -->
-  <div id="loginPromptOverlay" class="login-prompt-overlay">
+  <div id="loginPromptOverlay" class="login-prompt-overlay" role="dialog" aria-modal="true" aria-labelledby="loginPromptTitle">
     <div class="login-prompt-modal">
-      <span class="modal-icon">🎵</span>
-      <h3>Écoutez en illimité !</h3>
+      <span class="modal-icon" aria-hidden="true">🎵</span>
+      <h3 id="loginPromptTitle">Écoutez en illimité !</h3>
       <p>Vous avez atteint la limite de 30 secondes d'écoute gratuite.<br>
       Créez un compte ou connectez-vous pour profiter de toute la musique sans restriction.</p>
       <div class="modal-buttons">

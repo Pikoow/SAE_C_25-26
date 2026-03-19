@@ -80,7 +80,7 @@ class AudioPlayer {
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
-                <input type="range" id="progress-input" min="0" max="100" value="0" disabled>
+                <input type="range" aria-label="Barre de progression" id="progress-input" min="0" max="100" value="0" disabled>
             </div>
         `;
 
