@@ -208,7 +208,7 @@ class AudioPlayer {
                 width: 50px;
                 height: 50px;
                 border-radius: 50%;
-                background: rgb(237, 122, 38);
+                background: var(--orange);
                 border: none;
                 cursor: pointer;
                 display: flex;
@@ -218,7 +218,7 @@ class AudioPlayer {
             }
 
             .play-btn:hover:not(:disabled) {
-                background: rgb(253, 114, 8);
+                background: var(--orange-fonce);
                 transform: scale(1.05);
             }
 
@@ -291,9 +291,9 @@ class AudioPlayer {
                 font-size: 16px;
             }
             .player-reaction-btn.active {
-                background: #ed7a26;
+                background: var(--orange);
                 color: white;
-                border-color: #ed7a26;
+                border-color: var(--orange);
             }
 
             /* Player playlist dropdown */
@@ -439,7 +439,7 @@ class AudioPlayer {
 
             .progress-fill {
                 height: 100%;
-                background: rgb(237, 122, 38);
+                background: var(--orange);
                 width: 0%;
                 transition: width 0.1s linear;
             }
