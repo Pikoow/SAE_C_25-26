@@ -747,24 +747,87 @@ footer {
     margin-top: 0;
     color: #333;
 }
+/* Conteneur pour s'assurer que les listes ne sont pas vides ou trop serrées */
+.selection-area div[id$="-list"] {
+    min-height: 50px;
+    padding: 10px;
+    border: 1px inset rgba(0,0,0,0.05);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
 
+/* Conteneur : Un seul élément par ligne */
+#selected-genres-list, 
+#selected-artists-list, 
+#selected-tracks-list {
+    display: flex;
+    margin-top: 10px;
+    flex-direction: column; /* Force l'empilement vertical */
+    gap: 8px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+}
+
+/* Le Badge : Largeur totale et alignement interne */
 .preferences .badge-item {
+    display: flex; 
+    align-items: center;
+    justify-content: space-between; /* POUSSE LA CROIX À DROITE */
     background-color: #f38630;
     color: white;
-    padding: 8px 15px;
-    margin: 10px;
-    border-radius: 20px;
-    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: grab;
+    width: 100%; /* Prend toute la largeur */
+    box-sizing: border-box;
     transition: all 0.2s ease;
-    user-select: none;
-    display: flex;
-    align-items: center;
 }
 
 .preferences .badge-item:hover {
-    background-color: #d36d1a;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #e6761b;
+    transform: translateX(4px); /* Petit effet de décalage au survol */
+}
+
+/* La Croix de suppression : Bien à droite */
+.preferences .badge-item .badge-remove {
+    width: 26px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 4px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+    flex-shrink: 0; /* Empêche la croix de s'écraser */
+}
+
+.preferences .badge-item .badge-remove:hover {
+    background: #ffffff;
+    color: #f38630;
+}
+
+/* Suppression du jaune jQuery UI */
+.ui-state-highlight {
+    background: rgba(243, 134, 48, 0.05) !important;
+    border: 2px dashed #f38630 !important;
+    height: 42px;
+    width: 100%;
+    border-radius: 6px;
+    visibility: visible !important;
+}
+
+.ui-sortable-helper {
+    cursor: grabbing !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
 }
 
 .preferences .actions-container {

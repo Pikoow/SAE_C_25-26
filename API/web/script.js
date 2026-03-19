@@ -3,18 +3,25 @@ function ajouterElementSelectionne(nom, containerId, idElement) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    // Utilisation de l'ID réel pour éviter les doublons et les erreurs de sauvegarde
     const uniqueHtmlId = `badge-${containerId}-${idElement}`;
     if (document.getElementById(uniqueHtmlId)) return;
 
     const badge = document.createElement("div");
     badge.className = "badge-item";
-    badge.id = uniqueHtmlId; 
-    badge.setAttribute('data-id', idElement); 
-    badge.title = "Cliquez pour supprimer";
-    badge.innerHTML = `<span>${nom}</span>`;
+    badge.id = uniqueHtmlId;
+    badge.setAttribute('data-id', idElement); // Crucial pour la sauvegarde
+    
+    badge.innerHTML = `
+        <span class="badge-label">${nom}</span>
+        <button class="badge-remove" title="Supprimer">×</button>
+    `;
 
-    badge.addEventListener("click", function() {
-        this.remove();
+    // Gestionnaire de suppression : UNIQUEMENT sur la croix
+    const removeBtn = badge.querySelector('.badge-remove');
+    removeBtn.addEventListener('click', function(e) {
+        e.stopPropagation(); 
+        badge.remove();
     });
 
     container.appendChild(badge);
@@ -114,17 +121,18 @@ async function chargerMusiques() {
         console.error("Erreur Musiques :", error);
     }
 }
+
 //Fonction pour sauvegarder les preferences de user
 async function Sauvegarde() {
     const userId = localStorage.getItem("userId");
     if (!userId) return alert("Veuillez vous connecter.");
 
-    const choixUtilisateur = confirm("Voulez-vous enregistrer vos préférences ?");
-
-    if (choixUtilisateur) {
+    if (confirm("Voulez-vous enregistrer vos préférences ?")) {
         const getIds = (containerId) => {
             const badges = document.querySelectorAll(`#${containerId} .badge-item`);
-            return Array.from(badges).map(badge => String(badge.getAttribute('data-id')));
+            return Array.from(badges)
+                .map(badge => badge.getAttribute('data-id'))
+                .filter(id => id && !id.startsWith('load-')); 
         };
 
         const payload = {
@@ -133,8 +141,6 @@ async function Sauvegarde() {
             artists: getIds("selected-artists-list"),
             tracks: getIds("selected-tracks-list")
         };
-
-        console.log("Données envoyées au main.py :", payload);
 
         try {
             const response = await fetch("http://127.0.0.1:8000/save-favorites", {
@@ -145,17 +151,13 @@ async function Sauvegarde() {
 
             const result = await response.json();
             if (result.success) {
-                console.log("Vos préférences ont été enregistrées !");
-            }
-            else{
-                console.log("Erreur : " + (result.error || "Problème lors de la sauvegarde"));
+                alert("Préférences enregistrées avec succès !");
+            } else {
+                console.error("Erreur API:", result.error);
             }
         } catch (err) {
-            console.error("Erreur de connexion à l'API Python :", err);
+            console.error("Erreur de connexion :", err);
         }
-        console.log("Préférences enregistrées.");
-    } else {
-        console.log("Action annulée.");
     }
 }
 
@@ -175,27 +177,39 @@ function Reset() {
 //Fonction pour remplir avec les anciennes données de user
 async function chargerPreferencesUtilisateur() {
     const userId = localStorage.getItem("userId") || 1;
-    const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
-    const result = await response.json();
-    if (result.count !== 0) {
-        const data = result.results;
-        const mappings = [
-            { data: data[0].user_favorite_genre, container: 'selected-genres-list' },
-            { data: data[0].user_favorite_artist, container: 'selected-artists-list' },
-            { data: data[0].user_favorite_tracks, container: 'selected-tracks-list' }
-        ];
-        mappings.forEach(map => {
-            if (map.data) {
-                const items = map.data.split(',');
-                
-                items.forEach((item, index) => {
-                    const cleanName = item.trim();
-                    if (cleanName !== "") {
-                        ajouterElementSelectionne(cleanName, map.container, `load-${index}`);
-                    }
-                });
-            }
-        });
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/voir_favorite/${userId}`);
+        const result = await response.json();
+        
+        if (result.count !== 0 && result.results[0]) {
+            const data = result.results[0];
+            
+            // On traite chaque catégorie en liant les noms avec leurs vrais IDs
+            const categories = [
+                { items: data.user_favorite_genre, ids: data.ids_genres, container: 'selected-genres-list' },
+                { items: data.user_favorite_artist, ids: data.ids_artists, container: 'selected-artists-list' },
+                { items: data.user_favorite_tracks, ids: data.ids_tracks, container: 'selected-tracks-list' }
+            ];
+
+            categories.forEach(cat => {
+                if (cat.items && cat.ids) {
+                    const names = cat.items.split(',');
+                    const ids = cat.ids.split(',');
+
+                    names.forEach((name, index) => {
+                        const cleanName = name.trim();
+                        // On utilise l'ID réel ou on crée un fallback si par hasard il y a un décalage
+                        const cleanId = ids[index] ? ids[index].trim() : `load-${index}-${Date.now()}`;
+                        
+                        if (cleanName) {
+                            ajouterElementSelectionne(cleanName, cat.container, cleanId);
+                        }
+                    });
+                }
+            });
+        }
+    } catch (err) {
+        console.error("Erreur lors du chargement des préférences :", err);
     }
 }
 
@@ -304,65 +318,53 @@ window.getReactionState = getReactionState;
 window.toggleReaction = toggleReaction;
 window.attachReactionButtons = attachReactionButtons;
 
+function activerDragAndDrop() {
+    const selectors = "#selected-genres-list, #selected-artists-list, #selected-tracks-list";
+    
+    $(selectors).sortable({
+        placeholder: "ui-state-highlight",
+        forcePlaceholderSize: true, // Force la taille pour éviter les sauts de ligne brusques
+        tolerance: "pointer",       // Plus précis pour le dépôt
+        revert: 150,                // Animation fluide de remise en place
+        opacity: 0.8,               // Transparence légère pendant le déplacement
+        start: function(e, ui) {
+            // On s'assure que le placeholder a la même largeur que le badge déplacé
+            ui.placeholder.width(ui.item.outerWidth());
+            ui.placeholder.height(ui.item.outerHeight());
+        }
+    }).disableSelection();
+}
+
 //Pour lancer les fonctions en parrallèles
 async function initPage() {
     console.time("ChargementParallèle");
 
     await Promise.all([
         chargerPreferencesUtilisateur(),
-        chargerGenres(),//1.41
-        chargerArtists(),//2.61
-        chargerMusiques()//600
-        //1400
+        chargerGenres(),
+        chargerArtists(),
+        chargerMusiques()
     ]);
 
-    // console.log("Toutes les ressources sont chargées !");
+    // Appel de la fonction pour rendre les listes réorganisables
+    activerDragAndDrop(); 
+
+    console.timeEnd("ChargementParallèle");
 }
 
 /****************************************
  *********** C A R R O U S E L **********
  ****************************************/
 
-
-
-// const carousel_buttons = document.querySelectorAll(".carousel-button");
-// const carousel_slides = document.querySelectorAll(".carousel-slide");
-// // console.log(carousel_buttons,carousel_slides)
-// let currentIndex = 3
-// carousel_buttons.forEach((carrBut) => {
-//     carrBut.addEventListener('click', (e) => {
-        
-//         const direction = e.target.id === 'next' ? 1 : -1;
-//         const total = carousel_slides.length;
-
-//         currentIndex = (currentIndex + direction + total) % total;
-
-//         const new_left  = (currentIndex - 1 + total) % total;
-//         const new_right = (currentIndex + 1) % total;
-
-//         console.log(new_left, currentIndex, new_right);
-
-//         carousel_slides.forEach(slide =>
-//             slide.classList.remove("active")
-//         );
-
-//         carousel_slides[currentIndex].classList.add("active");
-//         carousel_slides[new_left].classList.add("active");
-//         carousel_slides[new_right].classList.add("active");
-//     })
-// })
-
-
-
 const carousel_buttons_artist = document.querySelectorAll(".carousel-button-artist");
 const carousel_slides_artist = document.querySelectorAll(".artist-card-carousel");
-// console.log(carousel_buttons,carousel_slides)
+
 let artist_index = 0
 carousel_buttons_artist.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
         const direction = e.target.id === 'next-artist' ? 1 : -1;
-        const total = carousel_slides.length;
+        const total = carousel_slides_artist.length; // Correction de l'appel aux slides
 
         artist_index = (artist_index + direction + total) % total;
 
@@ -371,39 +373,39 @@ carousel_buttons_artist.forEach((carrBut) => {
 
         console.log(new_left, artist_index, new_right);
 
-        carousel_slides.forEach(slide =>
+        carousel_slides_artist.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carousel_slides[artist_index].classList.add("active");
-        carousel_slides[new_left].classList.add("active");
-        carousel_slides[new_right].classList.add("active");
+        carousel_slides_artist[artist_index].classList.add("active");
+        carousel_slides_artist[new_left].classList.add("active");
+        carousel_slides_artist[new_right].classList.add("active");
     })
 })
 
 const carousel_buttons_track = document.querySelectorAll(".carousel-button-track");
 const carousel_slides_track = document.querySelectorAll(".track-card");
-// console.log(carousel_buttons,carousel_slides)
+
 let track_index = 0
 carousel_buttons_track.forEach((carrBut) => {
     carrBut.addEventListener('click', (e) => {
         
         const direction = e.target.id === 'next-track' ? 1 : -1;
-        const total = carousel_slides.length;
+        const total = carousel_slides_track.length; // Correction de l'appel aux slides
 
         track_index = (track_index + direction + total) % total;
 
         const new_left  = (track_index - 1 + total) % total;
         const new_right = (track_index + 1) % total;
 
-        console.log(new_left, currentIndex, new_right); 
+        console.log(new_left, track_index, new_right); 
 
-        carousel_slides.forEach(slide =>
+        carousel_slides_track.forEach(slide =>
             slide.classList.remove("active")
         );
 
-        carousel_slides[track_index].classList.add("active");
-        carousel_slides[new_left].classList.add("active");
-        carousel_slides[new_right].classList.add("active");
+        carousel_slides_track[track_index].classList.add("active");
+        carousel_slides_track[new_left].classList.add("active");
+        carousel_slides_track[new_right].classList.add("active");
     })
 })
