@@ -343,6 +343,7 @@ def pca_analysis(df):
     plt.show()
 
 
+
 # ==== ANALYSE FACTORIELLE DES CORRESPONDANCES (AFC) ===== #
 
 def afc_analysis(df):

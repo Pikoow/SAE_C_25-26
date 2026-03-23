@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS sae;
 SET SCHEMA 'sae';
 
 /* ##################################################################### */
-/*                                TABLES                                 */
+/* TABLES                                 */
 /* ##################################################################### */
 
 /* ========================== TABLE USERS  ========================== */
@@ -437,10 +437,10 @@ CREATE TABLE playlist (
     playlist_id SERIAL PRIMARY KEY,
     playlist_name VARCHAR(255) NOT NULL,
     playlist_description TEXT,
-    /* list_tracks           ****************************************a voir si table lie pour la liste track**********************/
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW(),
+    playlist_num_tracks INT DEFAULT 0
 );
-ALTER TABLE sae.playlist ADD COLUMN playlist_num_tracks INT DEFAULT 0;
+
 
 /* ========================== TABLE PLAYLIST TRACK / playlist user ========================== */
 
@@ -456,7 +456,27 @@ CREATE TABLE playlist_user (
     PRIMARY KEY (playlist_id, user_id)
 );
 
+/* ========================== TABLE BLINDTEST ========================== */
 
+CREATE TABLE blindtest (
+    blindtest_id SERIAL PRIMARY KEY,
+    blindtest_name VARCHAR(255) NOT NULL,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    difficulty_seconds INT DEFAULT 10,
+    score INT DEFAULT 0,
+    total_tracks INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+/* ========================== TABLE BLINDTEST TRACK ========================== */
+
+CREATE TABLE blindtest_track (
+    blindtest_id INT REFERENCES blindtest(blindtest_id) ON DELETE CASCADE,
+    track_id INT REFERENCES tracks(track_id) ON DELETE CASCADE,
+    track_order INT NOT NULL,
+    is_guessed BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (blindtest_id, track_id)
+);
 
 /* ========================== TABLE artistsocialscore et artist rank  ========================== */
 
@@ -535,7 +555,7 @@ CREATE TABLE artist_track_publisher (
 
 
 /* ##################################################################### */
-/*                                 VUES                                  */
+/* VUES                                  */
 /* ##################################################################### */
 
 CREATE OR REPLACE VIEW tracks_features AS
@@ -651,7 +671,7 @@ CREATE OR REPLACE VIEW user_features AS
 
 
 /* ##################################################################### */
-/*                               TRIGGERS                                */
+/* TRIGGERS                                */
 /* ##################################################################### */
 
 CREATE OR REPLACE FUNCTION sae.update_album_track_count()
@@ -741,7 +761,7 @@ FOR EACH ROW EXECUTE FUNCTION set_track_created_date();
 
 
 /* ##################################################################### */
-/*                               INDEX                                   */
+/* INDEX                                   */
 /* ##################################################################### */
 
 

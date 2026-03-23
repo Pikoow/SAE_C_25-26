@@ -3,41 +3,612 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mes Playlists - MuSE</title>
+    <title>Mes Blindtests - MuSE</title>
     <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
-    <script src="script.js"></script>
-    <script src="playlists.js"></script>
     <script src="audio-player.js"></script>
-    <script src="node-auth/js/app.js"></script>
     <script src="header-ui.js" defer></script>
-    <script>
-        $(document).ready(function() {
-            const userId = localStorage.getItem("userId");
-            const userName = localStorage.getItem("userName");
-            if (userId) {
-                console.log("Utilisateur connecté avec l'ID :", userId);
-                $('#bienvenue-msg').text(`Bonjour ${userName} !`);
-            } else {
-                window.location.href = "connexion.html";
-            }
-        });
+    
+    <style>
+        /* =====================================================
+           MODALES (Création & Vue Blindtest)
+        ===================================================== */
+        .create-modal-overlay, .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 6000;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
 
-        // Function to close login prompt modal
-        window.closeLoginPrompt = function() {
-            const overlay = document.getElementById('loginPromptOverlay');
-            if (overlay) {
-                overlay.classList.remove('visible');
+        .create-modal-overlay[style*="display: block"], .modal.show {
+            display: flex !important;
+            animation: plFadeIn 0.3s ease;
+        }
+
+        @keyframes plFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .create-modal-content, .modal-content {
+            background: var(--blanc, #fff);
+            border-radius: 24px;
+            padding: 40px;
+            width: 90%;
+            max-width: 720px;
+            max-height: 88vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+            animation: slideUpModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .blindtest-game-modal {
+            padding: 0; /* Full bleed pour le header du jeu */
+        }
+
+        @keyframes slideUpModal {
+            from { transform: translateY(30px) scale(0.97); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .create-modal-close, .close-modal {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: #f0f0f0;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .create-modal-close:hover, .close-modal:hover {
+            background: var(--orange, #ed7a26);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* En-tête Modale Création */
+        .create-modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #f5f5f5;
+        }
+        .create-modal-header h2 {
+            font-family: 'Rammetto One', sans-serif;
+            font-size: 1.8rem;
+            color: var(--noir, #000);
+            margin-bottom: 6px;
+        }
+        .create-modal-header p { color: #888; font-size: 0.95rem; }
+
+        /* En-tête Modale Jeu */
+        .modal-header {
+            background: linear-gradient(135deg, var(--orange, #ed7a26) 0%, var(--orange-fonce, #fd7208) 100%);
+            padding: 30px 40px;
+            color: white;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            font-family: 'Rammetto One', sans-serif;
+            font-size: 2rem;
+            margin: 5px 0;
+        }
+
+        /* --- Formulaires --- */
+        .playlist-form { display: flex; flex-direction: column; gap: 20px; }
+        .form-row { display: flex; gap: 20px; }
+        .form-group { flex: 1; display: flex; flex-direction: column; }
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .styled-input, .styled-select, input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #eaeaea;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            background-color: #fcfcfc;
+            color: var(--noir, #000);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        .styled-input:focus, .styled-select:focus, input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--orange, #ed7a26);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(237, 122, 38, 0.15);
+        }
+
+        .advanced-params {
+            background: #f9f9f9;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        .advanced-params[open] {
+            background: #fff;
+            border-color: var(--orange, #ed7a26);
+            box-shadow: 0 4px 15px rgba(237, 122, 38, 0.08);
+        }
+        .advanced-params summary {
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            outline: none;
+            color: var(--orange, #ed7a26);
+        }
+        .advanced-params-content {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- Boutons --- */
+        .action-btn, #generate-blindtest-btn {
+            background: linear-gradient(135deg, var(--orange, #ed7a26), var(--orange-fonce, #fd7208));
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(237, 122, 38, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .action-btn:hover, #generate-blindtest-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(237, 122, 38, 0.4);
+        }
+        
+        .action-btn-dark {
+            padding: 14px 24px;
+            background: var(--noir, #000);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .action-btn-dark:hover { background: #333; }
+
+        .btn-export-pdf {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #ccc;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            margin-right: 40px;
+            transition: all 0.2s;
+        }
+        .btn-export-pdf:hover {
+            border-color: var(--orange, #ed7a26);
+            color: var(--orange, #ed7a26);
+            background: #fff5e6;
+        }
+
+        /* =====================================================
+           GAMEPLAY BLINDTEST UI
+        ===================================================== */
+        .gameplay-area { padding: 40px; text-align: center; }
+
+        #bt-current-track-num {
+            font-family: 'Rammetto One', sans-serif;
+            color: var(--gris-fonce, #2a2a2a);
+            margin-bottom: 20px;
+        }
+
+        .timer-container {
+            width: 100%;
+            height: 12px;
+            background: #eee;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .timer-bar {
+            height: 100%;
+            background: var(--orange, #ed7a26);
+            width: 100%;
+            border-radius: 6px;
+        }
+
+        /* Liste des pistes dans le PDF/Récap */
+        .modal-tracks-list {
+            padding: 20px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-track-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: #f5f5f5;
+            gap: 15px;
+        }
+        .modal-track-item.correct { background: #eafaf1; border-left: 4px solid var(--vert, #27ae60); }
+        .modal-track-item.wrong { background: #fff5f5; border-left: 4px solid var(--rouge, #ff0000); }
+
+        .track-image { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        .track-details { flex: 1; text-align: left; }
+        .track-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 3px; color: var(--noir); }
+        .track-artist { font-size: 0.9rem; color: #666; }
+
+        /* =====================================================
+           STYLES POUR IMPRESSION PDF (@media print)
+        ===================================================== */
+        @media print {
+            body * { visibility: hidden; }
+            
+            #view-blindtest-modal, #view-blindtest-modal * { visibility: visible; }
+            
+            #view-blindtest-modal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                display: block !important;
             }
+
+            .modal-content {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+
+            .modal-header, .close-modal, #export-pdf-btn, #bt-gameplay-area { display: none !important; }
+
+            #pdf-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            #bt-final-score-container { display: none !important; }
+
+            .modal-tracks-list { padding: 0; }
+
+            .modal-track-item {
+                background: transparent !important;
+                border: 1px solid #ddd;
+                border-left: 5px solid #ccc;
+                page-break-inside: avoid;
+                margin-bottom: 10px;
+            }
+            
+            .modal-track-item.correct { border-left-color: var(--vert, #27ae60); }
+            .modal-track-item.wrong { border-left-color: var(--rouge, #ff0000); }
+        }
+    </style>
+
+    <script>
+       // --- LOGIQUE DU JEU BLINDTEST ---
+let currentBlindtest = null;
+let currentTrackIndex = 0;
+let score = 0;
+let blindtestTimer = null;
+
+// Base de test au cas où l'API n'est pas lancée
+const baseMockTracks = [
+    { track_id: 1, title: "Bohemian Rhapsody", artist: "Queen", url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3" },
+    { track_id: 2, title: "Shape of You", artist: "Ed Sheeran", url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/WFMU/Broke_For_Free/Directionless_EP/Broke_For_Free_-_01_-_Night_Owl.mp3" },
+    { track_id: 3, title: "Billie Jean", artist: "Michael Jackson", url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Chad_Crouch/Arps/Chad_Crouch_-_Algorithms.mp3" },
+    { track_id: 4, title: "Blinding Lights", artist: "The Weeknd", url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3" }
+];
+
+$(document).ready(function() {
+    // 1. Charger les blindtests existants depuis la BDD au démarrage
+    chargerBlindtestsBDD();
+
+    // Ouvrir/Fermer Modale Création
+    $('#open-create-playlist-btn').on('click', () => $('#create-blindtest-modal').fadeIn());
+    $('#close-blindtest-modal').on('click', () => $('#create-blindtest-modal').fadeOut());
+
+    // 2. Générer et Sauvegarder le Blindtest
+    $('#generate-blindtest-btn').on('click', async function() {
+        const btn = $(this);
+        btn.text('Génération...').prop('disabled', true);
+
+        const nbTracks = parseInt($('#bt-nb-tracks').val()) || 10;
+        const diffLabel = $('#bt-difficulty option:selected').text();
+        const difficultySecs = parseInt($('#bt-difficulty').val());
+        const userId = localStorage.getItem("userId") || 1;
+
+        let selectedTracks = [];
+
+        try {
+            // Tenter de récupérer les musiques via l'API
+            const response = await fetch('http://127.0.0.1:8000/tracks');
+            if(response.ok) {
+                const data = await response.json();
+                let allTracks = data.results || [];
+                
+                if(allTracks.length > 0) {
+                    allTracks = allTracks.sort(() => 0.5 - Math.random());
+                    selectedTracks = allTracks.slice(0, nbTracks).map(t => {
+                        let trackUrl = t.track_file;
+                        if (trackUrl && trackUrl.startsWith('music/')) {
+                            trackUrl = 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/' + trackUrl.substring(6);
+                        }
+                        return {
+                            track_id: t.track_id,
+                            title: t.track_title,
+                            artist: (t.artist_info && t.artist_info.artist_name) ? t.artist_info.artist_name : "Artiste inconnu",
+                            url: trackUrl,
+                            guessed: null
+                        };
+                    });
+                }
+            }
+        } catch(e) {
+            console.warn("API indisponible pour les musiques, bascule sur les mocks.");
+        }
+
+        // Compléter avec le mock si la BDD n'a pas assez de pistes
+        if (selectedTracks.length < nbTracks) {
+            let remaining = nbTracks - selectedTracks.length;
+            for (let i = 0; i < remaining; i++) {
+                let mock = baseMockTracks[i % baseMockTracks.length];
+                selectedTracks.push({ ...mock, track_id: 'mock_' + i, guessed: null });
+            }
+        }
+
+        currentBlindtest = {
+            name: "Session #" + Math.floor(Math.random() * 1000),
+            difficulty: difficultySecs,
+            tracks: selectedTracks,
+            total_tracks: selectedTracks.length
         };
 
-        (function() {
-            var t = localStorage.getItem('muse-theme');
-            if (t && t !== 'orange') document.documentElement.setAttribute('data-theme', t);
-        })();
+        // --- SAUVEGARDE EN BASE DE DONNÉES ---
+        try {
+            const saveRes = await fetch('http://127.0.0.1:8000/blindtests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: currentBlindtest.name,
+                    user_id: parseInt(userId),
+                    difficulty: difficultySecs,
+                    tracks: selectedTracks.map((t, idx) => ({ track_id: t.track_id, order: idx + 1 }))
+                })
+            });
+            const saveData = await saveRes.json();
+            if(saveData.blindtest_id) {
+                currentBlindtest.id = saveData.blindtest_id;
+            }
+        } catch (e) {
+            console.warn("Erreur sauvegarde API, sauvegarde locale de secours.", e);
+            // Secours : sauvegarde dans le LocalStorage
+            let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
+            localBts.push(currentBlindtest);
+            localStorage.setItem('localBlindtests', JSON.stringify(localBts));
+        }
+
+        // Afficher la carte
+        afficherCarteBlindtest(currentBlindtest.name, currentBlindtest.total_tracks, diffLabel, currentBlindtest);
+        
+        $('#create-blindtest-modal').fadeOut();
+        btn.text('Créer et Jouer 🎮').prop('disabled', false);
+    });
+
+    // Gestion de "Entrée" pour valider la musique
+    $('#bt-guess-input').on('keypress', function(e) {
+        if(e.which === 13) { validateGuess(); }
+    });
+
+    $('#bt-guess-btn').on('click', validateGuess);
+    $('#bt-next-btn').on('click', nextTrack);
+});
+
+// Fonction pour récupérer les blindtests depuis la BDD au chargement
+async function chargerBlindtestsBDD() {
+    const userId = localStorage.getItem("userId") || 1;
+    $('.playlists-container').empty(); // On vide le conteneur
+
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/users/${userId}/blindtests`);
+        if(response.ok) {
+            const blindtests = await response.json();
+            blindtests.forEach(bt => {
+                let diffLabel = bt.difficulty_seconds === 10 ? "Facile" : (bt.difficulty_seconds === 5 ? "Moyen" : "Difficile");
+                // On passe 'null' pour les tracks car la carte affichera juste l'historique ou relancera
+                afficherCarteBlindtest(bt.blindtest_name, bt.total_tracks, diffLabel, null, bt.score);
+            });
+        }
+    } catch(e) {
+        console.warn("Impossible de charger depuis la BDD. Chargement local.");
+        let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
+        localBts.forEach(bt => {
+            let diffLabel = bt.difficulty === 10 ? "Facile" : (bt.difficulty === 5 ? "Moyen" : "Difficile");
+            afficherCarteBlindtest(bt.name, bt.total_tracks, diffLabel, bt);
+        });
+    }
+}
+
+// Fonction utilitaire pour générer la carte HTML
+function afficherCarteBlindtest(nom, nbTracks, diffLabel, blindtestObj, scoreBdd = null) {
+    // Si on a un score enregistré, on l'affiche
+    let scoreHtml = scoreBdd !== null ? `<br><strong style="color:var(--orange)">Score : ${scoreBdd}/${nbTracks}</strong>` : '';
+    
+    // On convertit l'objet en chaîne sécurisée pour le onclick s'il est fourni (nouveau blindtest)
+    let onclickAction = blindtestObj 
+        ? `startBlindtest(event, ${JSON.stringify(blindtestObj).replace(/"/g, '&quot;')})` 
+        : `alert('Historique : Cette partie est déjà terminée.')`; // À faire évoluer si on veut rejouer
+
+    const cardHtml = `
+        <div class="playlist-card" onclick="${onclickAction}" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eaeaea; cursor: pointer; transition: all 0.3s;">
+            <div class="playlist-custom-cover" style="background: linear-gradient(135deg, #FF9A4F, #ED7A26); width: 100%; height: 180px; display:flex; align-items:center; justify-content:center; color:white; font-size:4rem;">🎮</div>
+            <div class="playlist-info" style="padding: 20px;">
+                <h3 style="font-size: 1.3rem; margin-bottom: 5px; color:black;">${nom}</h3>
+                <p class="playlist-description" style="color: #888; font-size: 0.95rem;">${nbTracks} Titres • ${diffLabel} ${scoreHtml}</p>
+                <div class="playlist-actions" style="margin-top:15px;">
+                    <button class="btn-view" style="width:100%; background: #000; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">${blindtestObj ? 'Jouer' : 'Voir'}</button>
+                </div>
+            </div>
+        </div>
+    `;
+    $('.playlists-container').prepend(cardHtml);
+}
+
+// Le reste de la logique (startBlindtest, playCurrentBlindtestTrack, showGuessForm, etc...)
+// Reste identique à mon message précédent, il suffit de mettre à jour startBlindtest pour accepter l'objet
+window.startBlindtest = function(event, btObject) {
+    if(!btObject) return;
+    currentBlindtest = btObject;
+    currentTrackIndex = 0;
+    score = 0;
+    
+    // Préparer l'UI
+    $('#view-blindtest-modal').addClass('show');
+    $('#bt-final-score-container').hide();
+    $('#export-pdf-btn').hide();
+    $('#view-bt-tracks').empty();
+    $('#pdf-header').hide();
+    
+    updateScoreUI();
+    playCurrentBlindtestTrack();
+};
+
+function playCurrentBlindtestTrack() {
+    if(currentTrackIndex >= currentBlindtest.tracks.length) {
+        endBlindtest();
+        return;
+    }
+
+    const track = currentBlindtest.tracks[currentTrackIndex];
+    
+    $('#bt-gameplay-area').show();
+    $('#bt-guess-section').hide();
+    $('#bt-result-section').hide();
+    $('#bt-guess-input').val('');
+    $('#bt-current-track-num').text(`Piste ${currentTrackIndex + 1} / ${currentBlindtest.tracks.length}`);
+    $('#bt-timer-bar').css('width', '100%').css('transition', `width ${currentBlindtest.difficulty}s linear`);
+
+    if(typeof audioPlayer !== 'undefined') {
+        audioPlayer.playTrack({
+            url: track.url,
+            title: "???",
+            artist: "???",
+            trackId: track.track_id
+        });
+
+        setTimeout(() => { $('#bt-timer-bar').css('width', '0%'); }, 50);
+
+        blindtestTimer = setTimeout(() => {
+            audioPlayer.pause();
+            showGuessForm();
+        }, currentBlindtest.difficulty * 1000);
+    } else {
+        alert("Lecteur audio indisponible.");
+    }
+}
+
+function showGuessForm() {
+    $('#bt-timer-bar').css('transition', 'none').css('width', '0%');
+    $('#bt-guess-section').fadeIn();
+    $('#bt-guess-input').focus();
+}
+
+function validateGuess() {
+    const guess = $('#bt-guess-input').val().trim().toLowerCase();
+    const track = currentBlindtest.tracks[currentTrackIndex];
+    
+    const isCorrect = guess && (track.title.toLowerCase().includes(guess) || track.artist.toLowerCase().includes(guess));
+    
+    track.guessed = isCorrect;
+    if(isCorrect) score++;
+    
+    updateScoreUI();
+    
+    $('#bt-guess-section').hide();
+    $('#bt-result-msg').html(isCorrect ? `<span style="color:#27ae60">✅ Bonne réponse !</span>` : `<span style="color:#e74c3c">❌ Raté !</span>`);
+    $('#bt-result-info').html(`C'était <strong>${track.title}</strong> de <strong>${track.artist}</strong>`);
+    $('#bt-result-section').fadeIn();
+
+    const trackHtml = `
+        <div class="modal-track-item ${isCorrect ? 'correct' : 'wrong'}">
+            <div style="font-size:1.5rem; margin-right:10px;">${isCorrect ? '✅' : '❌'}</div>
+            <img src="images/no_image_music.avif" class="track-image">
+            <div class="track-details">
+                <h4 class="track-title">${track.title}</h4>
+                <p class="track-artist">${track.artist}</p>
+            </div>
+        </div>
+    `;
+    $('#view-bt-tracks').append(trackHtml);
+}
+
+function nextTrack() {
+    currentTrackIndex++;
+    playCurrentBlindtestTrack();
+}
+
+function endBlindtest() {
+    $('#bt-gameplay-area').hide();
+    $('#bt-final-score-container').show();
+    $('#bt-final-score').text(score);
+    $('#bt-final-total').text(currentBlindtest.tracks.length);
+    $('#export-pdf-btn').fadeIn();
+    $('#pdf-final-score').text(`${score} / ${currentBlindtest.tracks.length}`);
+    $('#pdf-header').show();
+    
+    if(typeof audioPlayer !== 'undefined') audioPlayer.stop();
+
+    // OPTIONNEL : Mettre à jour le score en BDD à la fin (nécessite une route PUT ou POST)
+    // fetch(`http://127.0.0.1:8000/blindtests/${currentBlindtest.id}/score`, { ... })
+}
+
+function updateScoreUI() {
+    $('#bt-score').text(score);
+    $('#bt-total').text(currentBlindtest ? currentBlindtest.tracks.length : 0);
+}
+
+window.closeBlindtestView = function() {
+    $('#view-blindtest-modal').removeClass('show');
+    $('#pdf-header').hide();
+    if(blindtestTimer) clearTimeout(blindtestTimer);
+    if(typeof audioPlayer !== 'undefined') audioPlayer.stop();
+};
     </script>
 </head>
 <body class="playlists-page">
@@ -46,50 +617,12 @@
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
-            <a href="accueil.html">Blindtest</a>
+            <a href="blindtest.html">Blindtest</a>
             <a href="preferences.html">Préférences</a>
-                
-            <div class="dropdown">
-                <a href="#">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
-                <div class="dropdown-content">
-                    <a href="api-installation.html">Installation</a>
-                    <a href="http://127.0.0.1:8000/docs" target="_blank">Doc. Swagger</a>
-                    <a href="api-documentation.html">Doc Legacy</a>
-                    <a href="api-test.html">Testez l'API</a>
-                </div>
-            </div>
         </nav>
-
-        <div class="theme-switcher-wrapper">
-            <button class="theme-btn" id="themeBtnToggle" title="Changer la couleur du site" aria-expanded="false">
-                <span class="theme-btn-dot" id="themeBtnDot"></span>Thème
-            </button>
-            <div class="theme-panel" id="themePanel" role="listbox" aria-label="Choisir un thème de couleur">
-                <p class="theme-panel-title">Couleur du site</p>
-                <div class="theme-options">
-                    <button class="theme-option active" data-theme="orange" role="option" aria-selected="true">
-                        <span class="theme-option-swatch" style="background: rgb(237,122,38);"></span>Orange<span class="theme-option-check">&#10003;</span>
-                    </button>
-                    <button class="theme-option" data-theme="violet" role="option" aria-selected="false">
-                        <span class="theme-option-swatch" style="background: rgb(124,77,211);"></span>Violet<span class="theme-option-check">&#10003;</span>
-                    </button>
-                    <button class="theme-option" data-theme="vert" role="option" aria-selected="false">
-                        <span class="theme-option-swatch" style="background: rgb(39,174,96);"></span>Vert<span class="theme-option-check">&#10003;</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <div class="header-right">
-            <div id="auth-buttons" class="connexion-inscription">
-                <a href="connexion.html?mode=login">Connexion</a>
-                <button title="Inscription">
-                    <a href="connexion.html?mode=register">Inscription</a>
-                </button>
-            </div>
-
-            <div id="user-menu" class="user-dropdown hidden">
-                <a href="#" id="user-name-display">Mon Profil &nbsp; <span style="display: inline-block; transform: translateY(-1px);">▾</span></a>
+            <div id="user-menu" class="user-dropdown">
+                <a href="#" id="user-name-display">Mon Profil &nbsp; ▾</a>
                 <div class="dropdown-content user-dropdown-content">
                     <a href="profil.html">Mon profil</a>
                     <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
@@ -99,120 +632,139 @@
     </header>
 
     <main>
-        <section class="playlists-header">
+        <section class="playlists-header" style="background-color: var(--noir); padding: 4em; display: flex; align-items: center; justify-content: center; min-height: 50vh; text-align: center;">
             <div>
-                <h1>Mes blindtests</h1>
-                <p>Générez, jouez, rejouez et gérez vos blindtests personnalisées, puis partagez les avec vos amis</p>
+                <h1 style="font-family: 'Rammetto One', sans-serif; font-size: 3rem; color: white; margin-bottom: 15px;">Mode Blindtest</h1>
+                <p style="color: #ccc; font-size: 1.1rem; margin-bottom: 30px;">Testez vos connaissances musicales ! Générez un blindtest, écoutez l'extrait, et devinez le titre ou l'artiste avant la fin du temps imparti.</p>
                 <div>
-                    <button class="bouton-creation" id="open-create-playlist-btn" title="Créer une playlist">
-                        Générez un blindtest
-                    </button>
-                    
+                    <button class="bouton-creation" id="open-create-playlist-btn" title="Créer un blindtest" style="background-color: var(--orange, #ed7a26); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(237,122,38,0.4);">
+                        Générer une session
                     </button>
                 </div>
-                <a href="#" id="view-disliked-link" class="discreet-disliked-link">Gérer mes titres masqués</a>
             </div>
         </section>
 
         <section class="my-playlists-section">
-            <div class="playlists-container"></div>
+            <div class="playlists-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; padding: 50px;">
+                </div>
         </section>
     </main>
 
-    <div id="create-playlist-modal" class="create-modal-overlay" style="display:none;">
+    <div id="create-blindtest-modal" class="create-modal-overlay">
         <div class="create-modal-content">
-            <button class="create-modal-close" id="close-create-modal" title="Fermer">&times;</button>
+            <button class="create-modal-close" id="close-blindtest-modal" title="Fermer">&times;</button>
             
             <div class="create-modal-header">
-                <h2>Nouvelle Playlist</h2>
-                <p>Donnez vie à votre sélection musicale</p>
+                <h2>Nouveau Blindtest</h2>
+                <p>Paramétrez votre session de jeu sur mesure</p>
             </div>
             
             <div class="playlist-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="playlist-name-input">Nom de la playlist <span class="required">*</span></label>
-                        <input type="text" id="playlist-name-input" placeholder="Ex: Mes favoris 2026">
+                        <label for="bt-nb-tracks">Nombre de musiques <span style="color:var(--orange)">*</span></label>
+                        <input type="number" id="bt-nb-tracks" value="10" min="1" max="50">
                     </div>
                     <div class="form-group">
-                        <label for="playlist-description-input">Description</label>
-                        <input type="text" id="playlist-description-input" placeholder="Description de la playlist">
+                        <label for="bt-difficulty">Niveau de difficulté <span style="color:var(--orange)">*</span></label>
+                        <select id="bt-difficulty" class="styled-select">
+                            <option value="10">Facile (10 secondes)</option>
+                            <option value="5">Moyen (5 secondes)</option>
+                            <option value="3">Difficile (3 secondes)</option>
+                        </select>
                     </div>
                 </div>
                 
-                <div class="form-group full-width">
-                    <label for="track-search-input">Rechercher des musiques à ajouter</label>
-                    <p>Commencez à taper pour rechercher (minimum 2 caractères)</p>
-                    <input type="text" id="track-search-input" placeholder="Rechercher par titre, artiste ou album...">
-                </div>
-                
-                <div class="selected-tracks-section">
-                    <h3>Musiques sélectionnées <span id="selected-count">(0)</span></h3>
-                    <div id="selected-tracks-container">
-                        <p class="no-selection">Aucune musique sélectionnée</p>
+                <details class="advanced-params">
+                    <summary>Options avancées (Filtres)</summary>
+                    <div class="advanced-params-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bt-year">Année de sortie</label>
+                                <input type="number" id="bt-year" placeholder="Ex: 2010">
+                            </div>
+                            <div class="form-group">
+                                <label for="bt-genre">Genre musical</label>
+                                <input type="text" id="bt-genre" placeholder="Ex: Rock, Pop...">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bt-popularity">Popularité</label>
+                                <select id="bt-popularity" class="styled-select">
+                                    <option value="">Peu importe</option>
+                                    <option value="high">Très populaire (Hits)</option>
+                                    <option value="low">Découverte (Underground)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bt-lang">Langue</label>
+                                <select id="bt-lang" class="styled-select">
+                                    <option value="">Peu importe</option>
+                                    <option value="fr">Français</option>
+                                    <option value="en">Anglais</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </details>
                 
-                <button id="create-playlist-button" title="Créer la playlist">Créer la playlist</button>
+                <button id="generate-blindtest-btn" title="Lancer la partie">Créer et Jouer 🎮</button>
             </div>
         </div>
     </div>
 
-    <footer>
-        <div class="titre-footer">
-            <h2>MuSE</h2>
-        </div>
-        <div class="navigation-footer">
-            <div>
-                <p>Société</p>
-                <div>
-                    <a href="#">À propos de nous</a>
-                    <a href="#">Offre d'emploi</a>
-                </div>
+    <div id="view-blindtest-modal" class="modal">
+        <div class="modal-content blindtest-game-modal">
+            
+            <div id="pdf-header" style="display:none;">
+                <h1 style="color:var(--orange, #ed7a26); font-size:3rem; margin-bottom:10px;">Résultats du Blindtest</h1>
+                <h2 style="color:#444;">Score : <span id="pdf-final-score"></span></h2>
+                <hr style="border:1px solid var(--orange, #ed7a26); margin:20px 0;">
             </div>
-            <div>
-                <p>Liens utiles</p>
-                <div>
-                    <a href="contact.html">Nous contacter</a>
-                </div>
-            </div>
-            <div>
-                <p>Communauté</p>
-                <div>
-                    <a href="#">Développeurs</a>
-                </div>
-            </div>
-            <div>
-                <p>Légal</p>
-                <div>
-                    <a href="#">Mentions légales</a>
-                </div>
-            </div>
-        </div>
-        <div class="barre-separation-footer"></div>
-        <div class="fin-footer">
-            <div class="reseaux-sociaux-footer">
-                <a href="#"><img src="../images/icones/instagram.avif" alt="Instagram"/></a>
-                <a href="#"><img src="../images/icones/linkedin.avif" alt="LinkedIn"/></a>
-                <a href="#"><img src="../images/icones/github.avif" alt="GitHub"/></a>
-                <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"/></a>
-            </div>
-            <p>© 2026 MuSE Français</p>
-        </div>
-    </footer>
 
-    <div id="loginPromptOverlay" class="login-prompt-overlay">
-        <div class="login-prompt-modal">
-            <span class="modal-icon">🎵</span>
-            <h3>Écoutez en illimité !</h3>
-            <p>Vous avez atteint la limite de 30 secondes d'écoute gratuite.<br>
-            Créez un compte ou connectez-vous pour profiter de toute la musique sans restriction.</p>
-            <div class="modal-buttons">
-                <button class="btn-primary" onclick="window.location.href='connexion.html'">Se connecter</button>
-                <button class="btn-secondary" onclick="closeLoginPrompt()">Plus tard</button>
+            <div class="modal-header">
+                <div class="modal-header-info">
+                    <p style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); margin-bottom: 5px;">Session en cours</p>
+                    <h2>Jeu Blindtest</h2>
+                    <p>Score actuel : <strong style="font-size:1.2rem; color:white;"><span id="bt-score">0</span> / <span id="bt-total">10</span></strong></p>
+                </div>
+                <button class="btn-export-pdf" id="export-pdf-btn" onclick="window.print()" style="display:none; z-index:10;">
+                    🖨️ Exporter PDF
+                </button>
+                <button class="close-modal" onclick="closeBlindtestView()">&times;</button>
             </div>
+            
+            <div id="bt-gameplay-area" class="gameplay-area">
+                <h3 id="bt-current-track-num">Piste 1 / 10</h3>
+                
+                <div class="timer-container">
+                    <div id="bt-timer-bar" class="timer-bar"></div>
+                </div>
+
+                <div id="bt-guess-section" style="display:none; margin-top:20px;">
+                    <p style="margin-bottom:10px; font-weight:bold; font-size:1.1rem;">Temps écoulé ! Quelle est cette musique ?</p>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="bt-guess-input" placeholder="Titre de la musique ou Artiste..." class="styled-input" style="flex:1;">
+                        <button id="bt-guess-btn" class="action-btn">Valider</button>
+                    </div>
+                </div>
+
+                <div id="bt-result-section" style="display:none; margin-top:20px; text-align:center; padding:25px; background:#f9f9f9; border-radius:12px; border:2px solid #eee;">
+                    <h3 id="bt-result-msg" style="margin-bottom:10px; font-size:1.4rem;"></h3>
+                    <p id="bt-result-info" style="font-size:1.15rem; color:#444; margin-bottom:20px;"></p>
+                    <button id="bt-next-btn" class="action-btn-dark">Piste suivante ⏭️</button>
+                </div>
+            </div>
+
+            <div id="bt-final-score-container" style="display:none; text-align:center; padding:40px 20px;">
+                <h1 style="font-size:3rem; margin-bottom:10px;">Partie Terminée !</h1>
+                <p style="font-size:1.5rem; color:var(--gris-fonce, #2a2a2a);">Score final : <strong style="color:var(--orange, #ed7a26); font-size:2.5rem;"><span id="bt-final-score"></span> / <span id="bt-final-total"></span></strong></p>
+            </div>
+
+            <div class="modal-tracks-list" id="view-bt-tracks" style="margin-top:10px; border-top:2px solid #eee; padding-top:20px;">
+                </div>
         </div>
     </div>
-
 </body>
 </html>

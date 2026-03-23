@@ -1927,6 +1927,79 @@ async def saveFavorite(request : Request):
         print(f"Erreur : {e}")
         return {"success": False, "error": str(e)}
 
+# =================================================================
+# ===== BLINDTESTS =====
+# =================================================================
+
+class TrackOrder(BaseModel):
+    track_id: int
+    order: int
+
+class BlindtestCreate(BaseModel):
+    name: str
+    user_id: int
+    difficulty: int
+    tracks: List[TrackOrder]
+
+@app.post("/blindtests", tags=["Playlists"], summary="Enregistrer un blindtest généré")
+def create_blindtest(bt: BlindtestCreate):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+        
+    try:
+        cur = conn.cursor()
+        # 1. Créer le blindtest principal
+        query = """
+            INSERT INTO sae.blindtest (blindtest_name, user_id, difficulty_seconds, total_tracks)
+            VALUES (%s, %s, %s, %s) RETURNING blindtest_id;
+        """
+        cur.execute(query, (bt.name, bt.user_id, bt.difficulty, len(bt.tracks)))
+        blindtest_id = cur.fetchone()['blindtest_id']
+
+        # 2. Lier les pistes au blindtest
+        for track in bt.tracks:
+            # On s'assure que le track_id est un entier valide (pour éviter les erreurs avec les mocks)
+            if isinstance(track.track_id, int) or str(track.track_id).isdigit():
+                cur.execute("""
+                    INSERT INTO sae.blindtest_track (blindtest_id, track_id, track_order)
+                    VALUES (%s, %s, %s)
+                """, (blindtest_id, int(track.track_id), track.order))
+
+        conn.commit()
+        return {"success": True, "blindtest_id": blindtest_id}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+@app.get("/users/{user_id}/blindtests", tags=["Utilisateurs"], summary="Récupérer l'historique des blindtests")
+def get_user_blindtests(user_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+        
+    try:
+        cur = conn.cursor()
+        query = """
+            SELECT b.blindtest_id, b.blindtest_name, b.difficulty_seconds, b.score, b.total_tracks, b.created_at
+            FROM sae.blindtest b
+            WHERE b.user_id = %s
+            ORDER BY b.created_at DESC;
+        """
+        cur.execute(query, (user_id,))
+        results = cur.fetchall()
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
 # ===== GESTION DU PROFIL UTILISATEUR (non documenté) =====
 
 class UpdateUserRequest(BaseModel):

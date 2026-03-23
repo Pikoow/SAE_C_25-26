@@ -17,8 +17,10 @@ function ajouterElementSelectionne(nom, containerId, idElement) {
         <button class="badge-remove" title="Supprimer">×</button>
     `;
 
-    // Suppression : clic sur la croix OU sur le badge entier
-    badge.addEventListener('click', function() {
+    // Suppression : UNIQUEMENT lors du clic sur la croix
+    const removeBtn = badge.querySelector('.badge-remove');
+    removeBtn.addEventListener('click', function(e) {
+        e.stopPropagation(); // Évite tout conflit
         badge.remove();
     });
 
@@ -322,9 +324,10 @@ function attachReactionButtons(containerEl, targetType, targetId) {
     if (!containerEl.querySelector('.reaction-controls')) {
         const controls = document.createElement('div');
         controls.className = 'reaction-controls';
+        // Remplacement des émojis par les icônes SVG
         controls.innerHTML = `
-            <button class="btn-like">👍</button>
-            <button class="btn-dislike">👎</button>
+            <button class="btn-like" title="Like"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>
+            <button class="btn-dislike" title="Dislike"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2"></path></svg></button>
         `;
         containerEl.appendChild(controls);
 

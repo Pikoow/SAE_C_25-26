@@ -36,6 +36,7 @@ class AudioPlayer {
     createPlayerUI() {
         this.playerContainer = document.createElement('div');
         this.playerContainer.id = 'audio-player-container';
+        // Remplacement des emojis pouces par des icônes SVG
         this.playerContainer.innerHTML = `
             <div class="player-left">
                 <div class="track-title" id="current-track-title">Aucune musique</div>
@@ -71,9 +72,8 @@ class AudioPlayer {
             
             <div class="player-right">
                 <button class="player-add-playlist-btn" id="player-add-playlist-btn" title="Ajouter à une playlist" disabled>+</button>
-                <button id="player-dislike-btn" class="player-reaction-btn" title="Dislike">👎</button>
-                <button id="player-like-btn" class="player-reaction-btn" title="Like">👍</button>
-                <!-- favorite button removed -->
+                <button id="player-dislike-btn" class="player-reaction-btn" title="Dislike"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-2"></path></svg></button>
+                <button id="player-like-btn" class="player-reaction-btn" title="Like"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>
                 <span class="time-current">0:00</span>
                 <span class="time-separator">/</span>
                 <span class="time-total">0:00</span>

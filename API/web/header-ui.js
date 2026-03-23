@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             orange: 'rgb(237,122,38)',
             violet: 'rgb(124,77,211)',
             vert:   'rgb(39,174,96)',
+            bleu:   'rgb(41, 128, 185)'
         };
 
         const toggleBtn = document.getElementById('themeBtnToggle');
