@@ -774,6 +774,9 @@ class AudioPlayer {
 
     convertTrackUrl(dbUrl) {
         if (!dbUrl) return '';
+        // AJOUT : Si l'URL est déjà complète, on la retourne telle quelle
+        if (dbUrl.startsWith('http://') || dbUrl.startsWith('https://')) return dbUrl;
+        
         let path = dbUrl.startsWith('music/') ? dbUrl.substring(6) : dbUrl;
         return `https://files.freemusicarchive.org/storage-freemusicarchive-org/music/${path}`;
     }

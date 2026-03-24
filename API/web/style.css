@@ -539,7 +539,8 @@ footer {
 
 .accueil footer,
 .playlists-page footer {
-    margin-bottom: 80px;
+    margin-bottom: 0; /* Suppression de la marge extérieure */
+    padding-bottom: calc(3.125em + 80px); /* On ajoute les 80px à l'intérieur du footer */
 }
 
 

@@ -2000,6 +2000,73 @@ def get_user_blindtests(user_id: int):
             cur.close()
             conn.close()
 
+@app.get("/blindtests/{blindtest_id}", tags=["Playlists"], summary="Récupérer un blindtest spécifique")
+def get_blindtest(blindtest_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM sae.blindtest WHERE blindtest_id = %s", (blindtest_id,))
+        bt = cur.fetchone()
+        if not bt:
+            raise HTTPException(status_code=404, detail="Blindtest non trouvé")
+        
+        query = """
+            SELECT bt_tr.track_order, t.track_id, t.track_title, t.track_file,
+                   (SELECT string_agg(art.artist_name, ', ') FROM sae.artist art JOIN sae.artist_album_track aat ON art.artist_id = aat.artist_id WHERE aat.track_id = t.track_id) as artist_names
+            FROM sae.blindtest_track bt_tr
+            JOIN sae.tracks t ON bt_tr.track_id = t.track_id
+            WHERE bt_tr.blindtest_id = %s
+            ORDER BY bt_tr.track_order
+        """
+        cur.execute(query, (blindtest_id,))
+        tracks = cur.fetchall()
+        
+        formatted_tracks = []
+        for tr in tracks:
+            track_url = tr['track_file']
+            if track_url and track_url.startswith('music/'):
+                track_url = 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/' + track_url[6:]
+            formatted_tracks.append({
+                "track_id": tr['track_id'],
+                "title": tr['track_title'],
+                "artist": tr['artist_names'] or "Artiste inconnu",
+                "url": track_url,
+                "guessed": None
+            })
+            
+        bt['tracks'] = formatted_tracks
+        return bt
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+@app.delete("/blindtests/{blindtest_id}", tags=["Playlists"], summary="Supprimer un blindtest")
+def delete_blindtest_endpoint(blindtest_id: int):
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=500, detail="Impossible de se connecter à la base de données")
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM sae.blindtest_track WHERE blindtest_id = %s", (blindtest_id,))
+        cur.execute("DELETE FROM sae.blindtest WHERE blindtest_id = %s", (blindtest_id,))
+        conn.commit()
+        return {"success": True, "message": "Blindtest supprimé"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if conn:
+            cur.close()
+            conn.close()
+
+
 # ===== GESTION DU PROFIL UTILISATEUR (non documenté) =====
 
 class UpdateUserRequest(BaseModel):

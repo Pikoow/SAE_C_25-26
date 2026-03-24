@@ -648,8 +648,11 @@ function showPlaylistModal(playlist) {
                     <div class="modal-header-covers">${coverGridHtml}</div>
                     <div class="modal-header-info">
                         <p class="pl-type">Playlist</p>
-                        <h2>${escapeHtml(playlist.playlist_name)}</h2>
-                        <p class="modal-description">${escapeHtml(playlist.playlist_description || "")}</p>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <h2 id="modal-pl-name" style="margin:0;">${escapeHtml(playlist.playlist_name)}</h2>
+                            <button id="edit-pl-btn" title="Modifier la playlist" style="background:none; border:none; cursor:pointer; font-size:1.2rem; transition:transform 0.2s;">✏️</button>
+                        </div>
+                        <p class="modal-description" id="modal-pl-desc" style="margin-top:5px;">${escapeHtml(playlist.playlist_description || "")}</p>
                         <p class="modal-tracks-count">${tracksCount} morceaux</p>
                     </div>
                     <span class="close-modal">&times;</span>
@@ -680,6 +683,48 @@ function showPlaylistModal(playlist) {
     `).appendTo("body");
 
     document.body.style.overflow = 'hidden';
+
+    // ===== GESTION DE LA MODIFICATION DE PLAYLIST =====
+    modal.find('#edit-pl-btn').on('click', function () {
+        const nameEl = modal.find('#modal-pl-name');
+        const descEl = modal.find('#modal-pl-desc');
+        const isEditing = $(this).hasClass('editing');
+        
+        if (!isEditing) {
+            const currentName = nameEl.text();
+            const currentDesc = descEl.text();
+            nameEl.html(`<input type="text" id="edit-pl-name-input" value="${currentName}" style="font-size:1.4rem; padding:8px; border-radius:8px; border:2px solid var(--orange, #ED7A26); width:100%; outline:none; font-family:'Rammetto One', sans-serif;">`);
+            descEl.html(`<textarea id="edit-pl-desc-input" style="width:100%; padding:8px; border-radius:8px; border:2px solid var(--orange, #ED7A26); outline:none; font-family:'Outfit', sans-serif; resize:vertical; min-height:60px;">${currentDesc}</textarea>`);
+            $(this).addClass('editing').text('💾').attr('title', 'Sauvegarder les modifications');
+        } else {
+            const newName = modal.find('#edit-pl-name-input').val().trim();
+            const newDesc = modal.find('#edit-pl-desc-input').val().trim();
+            
+            if (!newName) {
+                showNotification("Le nom de la playlist ne peut pas être vide", "warning");
+                return;
+            }
+
+            fetch(`${API_BASE_URL}/playlists/${playlist.playlist_id}`, {
+                method: 'PUT',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: newName, description: newDesc })
+            }).then(res => {
+                if(res.ok) {
+                    showNotification("Playlist modifiée avec succès", "success");
+                    nameEl.text(newName);
+                    descEl.text(newDesc);
+                    $(this).removeClass('editing').text('✏️').attr('title', 'Modifier la playlist');
+                    loadUserPlaylists(currentUserId);
+                } else {
+                    showNotification("Erreur lors de la modification", "error");
+                }
+            }).catch(err => {
+                console.error("Edit error:", err);
+                showNotification("Erreur lors de la modification", "error");
+            });
+        }
+    });
 
     let plCurrentTrackId = null;
     let plProgressInterval = null;

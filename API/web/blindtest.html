@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="orange">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,11 +10,20 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script src="audio-player.js"></script>
+    <script src="script.js" defer></script>
     <script src="header-ui.js" defer></script>
+    
+    <script>
+        // Restauration du thème au chargement
+        (function() {
+            var t = localStorage.getItem('muse-theme');
+            if (t && t !== 'orange') document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     
     <style>
         /* =====================================================
-           MODALES (Création & Vue Blindtest)
+           MODALES (Création, Vue & Détails Blindtest)
         ===================================================== */
         .create-modal-overlay, .modal {
             display: none;
@@ -168,7 +177,19 @@
             gap: 20px;
         }
 
-        /* --- Boutons --- */
+        /* --- Boutons et Actions Cartes --- */
+        .btn-play, .btn-view, .btn-export, .btn-delete {
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-play:hover { background: var(--orange-fonce, #fd7208) !important; transform: translateY(-2px); }
+        .btn-view:hover { background: #333 !important; transform: translateY(-2px); }
+        .btn-export:hover { border-color: var(--orange, #ed7a26) !important; color: var(--orange, #ed7a26) !important; background: #fff5e6 !important; transform: translateY(-2px); }
+        .btn-delete:hover { background: #c0392b !important; transform: translateY(-2px); }
+
         .action-btn, #generate-blindtest-btn {
             background: linear-gradient(135deg, var(--orange, #ed7a26), var(--orange-fonce, #fd7208));
             color: white;
@@ -217,12 +238,21 @@
         .btn-export-pdf:hover {
             border-color: var(--orange, #ed7a26);
             color: var(--orange, #ed7a26);
-            background: #fff5e6;
+            background: var(--api-bg-light, #fff5e6);
         }
 
         /* =====================================================
-           GAMEPLAY BLINDTEST UI
+           GAMEPLAY BLINDTEST UI & ANIMATIONS
         ===================================================== */
+        @keyframes cardSlideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .playlist-card {
+            animation: cardSlideIn 0.4s ease backwards;
+        }
+
         .gameplay-area { padding: 40px; text-align: center; }
 
         #bt-current-track-num {
@@ -238,15 +268,24 @@
             border-radius: 6px;
             overflow: hidden;
             margin: 20px 0;
+            position: relative;
         }
+        
+        @keyframes pulseTimer {
+            0% { box-shadow: 0 0 5px var(--orange); }
+            50% { box-shadow: 0 0 15px var(--orange); }
+            100% { box-shadow: 0 0 5px var(--orange); }
+        }
+
         .timer-bar {
             height: 100%;
             background: var(--orange, #ed7a26);
             width: 100%;
             border-radius: 6px;
+            animation: pulseTimer 1s infinite;
         }
 
-        /* Liste des pistes dans le PDF/Récap */
+        /* Liste des pistes dans le PDF/Récap et Détails */
         .modal-tracks-list {
             padding: 20px 40px;
             display: flex;
@@ -261,6 +300,8 @@
             border-radius: 12px;
             background: #f5f5f5;
             gap: 15px;
+            border-left: 4px solid #ccc;
+            animation: cardSlideIn 0.3s ease backwards;
         }
         .modal-track-item.correct { background: #eafaf1; border-left: 4px solid var(--vert, #27ae60); }
         .modal-track-item.wrong { background: #fff5f5; border-left: 4px solid var(--rouge, #ff0000); }
@@ -322,11 +363,12 @@
     </style>
 
     <script>
-       // --- LOGIQUE DU JEU BLINDTEST ---
+// --- LOGIQUE DU JEU BLINDTEST ---
 let currentBlindtest = null;
 let currentTrackIndex = 0;
 let score = 0;
 let blindtestTimer = null;
+let trackToAdd = null; // Pour l'ajout direct en playlist
 
 // Base de test au cas où l'API n'est pas lancée
 const baseMockTracks = [
@@ -337,14 +379,11 @@ const baseMockTracks = [
 ];
 
 $(document).ready(function() {
-    // 1. Charger les blindtests existants depuis la BDD au démarrage
     chargerBlindtestsBDD();
 
-    // Ouvrir/Fermer Modale Création
     $('#open-create-playlist-btn').on('click', () => $('#create-blindtest-modal').fadeIn());
     $('#close-blindtest-modal').on('click', () => $('#create-blindtest-modal').fadeOut());
 
-    // 2. Générer et Sauvegarder le Blindtest
     $('#generate-blindtest-btn').on('click', async function() {
         const btn = $(this);
         btn.text('Génération...').prop('disabled', true);
@@ -357,7 +396,6 @@ $(document).ready(function() {
         let selectedTracks = [];
 
         try {
-            // Tenter de récupérer les musiques via l'API
             const response = await fetch('http://127.0.0.1:8000/tracks');
             if(response.ok) {
                 const data = await response.json();
@@ -373,7 +411,7 @@ $(document).ready(function() {
                         return {
                             track_id: t.track_id,
                             title: t.track_title,
-                            artist: (t.artist_info && t.artist_info.artist_name) ? t.artist_info.artist_name : "Artiste inconnu",
+                            artist: t.artist_names || "Artiste inconnu",
                             url: trackUrl,
                             guessed: null
                         };
@@ -384,7 +422,6 @@ $(document).ready(function() {
             console.warn("API indisponible pour les musiques, bascule sur les mocks.");
         }
 
-        // Compléter avec le mock si la BDD n'a pas assez de pistes
         if (selectedTracks.length < nbTracks) {
             let remaining = nbTracks - selectedTracks.length;
             for (let i = 0; i < remaining; i++) {
@@ -393,45 +430,43 @@ $(document).ready(function() {
             }
         }
 
-        currentBlindtest = {
+        let newBt = {
+            id: 'local_' + Date.now(),
             name: "Session #" + Math.floor(Math.random() * 1000),
             difficulty: difficultySecs,
             tracks: selectedTracks,
             total_tracks: selectedTracks.length
         };
 
-        // --- SAUVEGARDE EN BASE DE DONNÉES ---
         try {
             const saveRes = await fetch('http://127.0.0.1:8000/blindtests', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: currentBlindtest.name,
+                    name: newBt.name,
                     user_id: parseInt(userId),
                     difficulty: difficultySecs,
                     tracks: selectedTracks.map((t, idx) => ({ track_id: t.track_id, order: idx + 1 }))
                 })
             });
             const saveData = await saveRes.json();
-            if(saveData.blindtest_id) {
-                currentBlindtest.id = saveData.blindtest_id;
-            }
+            if(saveData.blindtest_id) newBt.id = saveData.blindtest_id;
         } catch (e) {
             console.warn("Erreur sauvegarde API, sauvegarde locale de secours.", e);
-            // Secours : sauvegarde dans le LocalStorage
-            let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
-            localBts.push(currentBlindtest);
-            localStorage.setItem('localBlindtests', JSON.stringify(localBts));
         }
 
-        // Afficher la carte
-        afficherCarteBlindtest(currentBlindtest.name, currentBlindtest.total_tracks, diffLabel, currentBlindtest);
+        let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
+        localBts.push(newBt);
+        localStorage.setItem('localBlindtests', JSON.stringify(localBts));
+
+        afficherCarteBlindtest(newBt.name, newBt.total_tracks, diffLabel, newBt, null, true);
         
         $('#create-blindtest-modal').fadeOut();
         btn.text('Créer et Jouer 🎮').prop('disabled', false);
+        
+        startBlindtest(null, newBt);
     });
 
-    // Gestion de "Entrée" pour valider la musique
     $('#bt-guess-input').on('keypress', function(e) {
         if(e.which === 13) { validateGuess(); }
     });
@@ -440,10 +475,12 @@ $(document).ready(function() {
     $('#bt-next-btn').on('click', nextTrack);
 });
 
-// Fonction pour récupérer les blindtests depuis la BDD au chargement
 async function chargerBlindtestsBDD() {
     const userId = localStorage.getItem("userId") || 1;
-    $('.playlists-container').empty(); // On vide le conteneur
+    $('.playlists-container').empty();
+
+    let loadedIds = new Set();
+    let indexAnim = 0;
 
     try {
         const response = await fetch(`http://127.0.0.1:8000/users/${userId}/blindtests`);
@@ -451,54 +488,325 @@ async function chargerBlindtestsBDD() {
             const blindtests = await response.json();
             blindtests.forEach(bt => {
                 let diffLabel = bt.difficulty_seconds === 10 ? "Facile" : (bt.difficulty_seconds === 5 ? "Moyen" : "Difficile");
-                // On passe 'null' pour les tracks car la carte affichera juste l'historique ou relancera
-                afficherCarteBlindtest(bt.blindtest_name, bt.total_tracks, diffLabel, null, bt.score);
+                let normalizedBt = {
+                    id: bt.blindtest_id || bt.id,
+                    name: bt.blindtest_name || bt.name,
+                    difficulty: bt.difficulty_seconds || bt.difficulty,
+                    total_tracks: bt.total_tracks,
+                    score: bt.score,
+                    tracks: bt.tracks || []
+                };
+                loadedIds.add(normalizedBt.id);
+                afficherCarteBlindtest(normalizedBt.name, normalizedBt.total_tracks, diffLabel, normalizedBt, normalizedBt.score, false, indexAnim++);
             });
         }
     } catch(e) {
-        console.warn("Impossible de charger depuis la BDD. Chargement local.");
-        let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
-        localBts.forEach(bt => {
-            let diffLabel = bt.difficulty === 10 ? "Facile" : (bt.difficulty === 5 ? "Moyen" : "Difficile");
-            afficherCarteBlindtest(bt.name, bt.total_tracks, diffLabel, bt);
-        });
+        console.warn("API de chargement injoignable. Chargement local uniquement.");
     }
+
+    let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
+    localBts.forEach(bt => {
+        if(!loadedIds.has(bt.id)) {
+            let diffLabel = bt.difficulty === 10 ? "Facile" : (bt.difficulty === 5 ? "Moyen" : "Difficile");
+            afficherCarteBlindtest(bt.name, bt.total_tracks, diffLabel, bt, bt.score, false, indexAnim++);
+        }
+    });
 }
 
-// Fonction utilitaire pour générer la carte HTML
-function afficherCarteBlindtest(nom, nbTracks, diffLabel, blindtestObj, scoreBdd = null) {
-    // Si on a un score enregistré, on l'affiche
-    let scoreHtml = scoreBdd !== null ? `<br><strong style="color:var(--orange)">Score : ${scoreBdd}/${nbTracks}</strong>` : '';
+async function getTracksForBlindtest(btObject) {
+    if(btObject.tracks && btObject.tracks.length > 0) return btObject.tracks;
+    if(btObject.id && !String(btObject.id).startsWith('local_')) {
+        try {
+            let res = await fetch(`http://127.0.0.1:8000/blindtests/${btObject.id}`);
+            if(res.ok) {
+                let fullBt = await res.json();
+                btObject.tracks = fullBt.tracks;
+                return fullBt.tracks;
+            }
+        } catch(e) { console.warn("Erreur chargement tracks BDD détaillées"); }
+    }
+    return [];
+}
+
+function afficherCarteBlindtest(nom, nbTracks, diffLabel, blindtestObj, scoreBdd = null, isNew = false, indexAnim = 0) {
+    let scoreVal = scoreBdd !== null && scoreBdd !== undefined ? scoreBdd : (blindtestObj.score !== undefined ? blindtestObj.score : null);
+    let isPlayed = scoreVal !== null;
+    let scoreHtml = isPlayed ? `<br><strong style="color:var(--orange)">Dernier Score : ${scoreVal}/${nbTracks}</strong>` : '<br><strong style="color:#666">Non joué</strong>';
+    let playLabel = isPlayed ? 'Rejouer' : 'Jouer';
     
-    // On convertit l'objet en chaîne sécurisée pour le onclick s'il est fourni (nouveau blindtest)
-    let onclickAction = blindtestObj 
-        ? `startBlindtest(event, ${JSON.stringify(blindtestObj).replace(/"/g, '&quot;')})` 
-        : `alert('Historique : Cette partie est déjà terminée.')`; // À faire évoluer si on veut rejouer
+    let btJsonEncoded = encodeURIComponent(JSON.stringify(blindtestObj || {}));
+    let delay = isNew ? '0s' : `${indexAnim * 0.05}s`;
 
     const cardHtml = `
-        <div class="playlist-card" onclick="${onclickAction}" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eaeaea; cursor: pointer; transition: all 0.3s;">
-            <div class="playlist-custom-cover" style="background: linear-gradient(135deg, #FF9A4F, #ED7A26); width: 100%; height: 180px; display:flex; align-items:center; justify-content:center; color:white; font-size:4rem;">🎮</div>
-            <div class="playlist-info" style="padding: 20px;">
-                <h3 style="font-size: 1.3rem; margin-bottom: 5px; color:black;">${nom}</h3>
-                <p class="playlist-description" style="color: #888; font-size: 0.95rem;">${nbTracks} Titres • ${diffLabel} ${scoreHtml}</p>
-                <div class="playlist-actions" style="margin-top:15px;">
-                    <button class="btn-view" style="width:100%; background: #000; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">${blindtestObj ? 'Jouer' : 'Voir'}</button>
+        <div class="playlist-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eaeaea; transition: all 0.3s; display:flex; flex-direction:column; animation-delay: ${delay};">
+            <div class="playlist-custom-cover" style="background: linear-gradient(135deg, var(--orange-clair, #FF9A4F), var(--orange, #ED7A26)); width: 100%; height: 160px; display:flex; align-items:center; justify-content:center; color:white; font-size:4rem;">🎮</div>
+            <div class="playlist-info" style="padding: 20px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 5px; color:black;">${nom}</h3>
+                    <p class="playlist-description" style="color: #888; font-size: 0.95rem;">${nbTracks} Titres • ${diffLabel} ${scoreHtml}</p>
+                </div>
+                <div class="playlist-actions" style="margin-top:15px; display:flex; gap:8px; flex-wrap: wrap;">
+                    <button class="btn-play" onclick="startBlindtestFromCard('${btJsonEncoded}')" style="flex:1; min-width:40%; background: var(--orange); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="${playLabel}">🎮 ${playLabel}</button>
+                    <button class="btn-view" onclick="showBlindtestDetails('${btJsonEncoded}')" style="flex:1; min-width:40%; background: #000; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Voir les musiques">👁️ Détails</button>
+                    
+                    <button class="btn-add-pl" onclick="addBlindtestToPlaylists('${btJsonEncoded}')" style="flex:1; min-width:40%; background: #27ae60; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Sauvegarder en Playlist">➕ Playlist</button>
+                    
+                    <button class="btn-export" onclick="exportBlindtest('${btJsonEncoded}')" style="flex:1; background: #fff; color: #333; border: 1px solid #ccc; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Exporter en PDF">📄</button>
+                    <button class="btn-delete" onclick="deleteBlindtest('${blindtestObj.id}', this)" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Supprimer la session">🗑️</button>
                 </div>
             </div>
         </div>
     `;
-    $('.playlists-container').prepend(cardHtml);
+    if(isNew) {
+        $('.playlists-container').prepend(cardHtml);
+    } else {
+        $('.playlists-container').append(cardHtml);
+    }
 }
 
-// Le reste de la logique (startBlindtest, playCurrentBlindtestTrack, showGuessForm, etc...)
-// Reste identique à mon message précédent, il suffit de mettre à jour startBlindtest pour accepter l'objet
+// --- ACTIONS SUR LES CARTES ---
+
+window.deleteBlindtest = async function(id, btnElement) {
+    if(!confirm("Voulez-vous vraiment supprimer cette session de blindtest ?")) return;
+    
+    if(id && !String(id).startsWith('local_')) {
+        try {
+            await fetch(`http://127.0.0.1:8000/blindtests/${id}`, { method: 'DELETE' });
+        } catch(e) { console.warn("API indisponible pour delete", e); }
+    }
+    
+    let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
+    localBts = localBts.filter(bt => String(bt.id) !== String(id));
+    localStorage.setItem('localBlindtests', JSON.stringify(localBts));
+    
+    $(btnElement).closest('.playlist-card').fadeOut(300, function() { $(this).remove(); });
+};
+
+window.startBlindtestFromCard = async function(btJsonEncoded) {
+    let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
+    btObject.tracks = await getTracksForBlindtest(btObject);
+    
+    if(!btObject.tracks || btObject.tracks.length === 0) {
+        alert("Impossible de charger les pistes audio pour cette session.");
+        return;
+    }
+
+    btObject.score = undefined;
+    btObject.tracks.forEach(t => t.guessed = null);
+
+    startBlindtest(null, btObject);
+};
+
+window.exportBlindtest = async function(btJsonEncoded) {
+    let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
+    btObject.tracks = await getTracksForBlindtest(btObject);
+    
+    if(!btObject.tracks || btObject.tracks.length === 0) {
+        alert("Pistes manquantes pour l'export.");
+        return;
+    }
+    
+    $('#pdf-final-score').text(btObject.score !== undefined ? `${btObject.score} / ${btObject.total_tracks}` : "Non joué");
+    $('#view-bt-tracks').empty();
+    
+    btObject.tracks.forEach(track => {
+        const trackHtml = `
+            <div class="modal-track-item">
+                <div style="font-size:1.2rem; margin-right:10px;">🎵</div>
+                <div class="track-details">
+                    <h4 class="track-title">${track.title}</h4>
+                    <p class="track-artist">${track.artist}</p>
+                </div>
+            </div>
+        `;
+        $('#view-bt-tracks').append(trackHtml);
+    });
+    
+    $('#view-blindtest-modal').addClass('show');
+    $('#bt-gameplay-area').hide();
+    $('#bt-final-score-container').hide();
+    $('#pdf-header').show();
+    
+    setTimeout(() => {
+        window.print();
+        closeBlindtestView();
+    }, 500);
+};
+
+window.addBlindtestToPlaylists = async function(btJsonEncoded) {
+    let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
+    btObject.tracks = await getTracksForBlindtest(btObject);
+    
+    if(!btObject.tracks || btObject.tracks.length === 0) {
+        alert("Pistes introuvables pour ce blindtest.");
+        return;
+    }
+    
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+        alert("Vous devez être connecté pour ajouter une playlist.");
+        return;
+    }
+    
+    const trackIds = btObject.tracks
+        .map(t => parseInt(t.track_id))
+        .filter(id => !isNaN(id));
+
+    if (trackIds.length === 0) {
+        alert("Aucune piste valide à ajouter (les musiques de test ne peuvent pas être sauvegardées).");
+        return;
+    }
+    
+    try {
+        const response = await fetch('http://127.0.0.1:8000/playlists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: `Blindtest : ${btObject.name}`,
+                description: 'Playlist sauvegardée depuis une session Blindtest.',
+                user_id: parseInt(userId),
+                track_ids: trackIds
+            })
+        });
+        
+        if (response.ok) {
+            alert("Blindtest ajouté à vos playlists avec succès ! Vous pouvez le retrouver dans l'onglet Playlists.");
+        } else {
+            alert("Erreur lors de l'ajout à vos playlists.");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Erreur de connexion avec l'API.");
+    }
+};
+
+// --- GESTION DE L'AJOUT DE PISTE INDIVIDUELLE ---
+
+window.promptAddToPlaylist = async function(trackId) {
+    if(String(trackId).startsWith('mock_')) {
+        alert("Les musiques d'exemple ne peuvent pas être ajoutées.");
+        return;
+    }
+    trackToAdd = trackId;
+    const userId = localStorage.getItem("userId");
+    if(!userId) {
+        alert("Vous devez être connecté.");
+        return;
+    }
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/users/${userId}/playlists`);
+        if(res.ok) {
+            const pls = await res.json();
+            const select = $('#pl-select-dropdown');
+            select.empty();
+            if(pls.length === 0) {
+                select.append(`<option disabled>Aucune playlist existante</option>`);
+            } else {
+                pls.forEach(p => {
+                    select.append(`<option value="${p.playlist_id}">${p.playlist_name}</option>`);
+                });
+            }
+            $('#select-pl-modal').addClass('show');
+        }
+    } catch(e) {
+        alert("Erreur de chargement des playlists.");
+    }
+};
+
+window.confirmAddToPlaylist = async function() {
+    const plId = $('#pl-select-dropdown').val();
+    if(!plId || !trackToAdd) return;
+    
+    try {
+        // Pour ajouter une musique à la fin, on récupère l'existant, puis update_tracks_in_playlist
+        let res = await fetch(`http://127.0.0.1:8000/playlists/${plId}`);
+        let pl = await res.json();
+        let trackIds = pl.tracks ? pl.tracks.map(t => t.track_id) : [];
+        
+        if(!trackIds.includes(trackToAdd)) {
+            trackIds.push(trackToAdd);
+            let postRes = await fetch(`http://127.0.0.1:8000/playlists/${plId}/tracks`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({track_ids: trackIds})
+            });
+            if(postRes.ok) {
+                alert("Musique ajoutée avec succès !");
+            }
+        } else {
+            alert("Cette musique est déjà dans la playlist.");
+        }
+    } catch(e) {
+        alert("Erreur lors de l'ajout.");
+    }
+    $('#select-pl-modal').removeClass('show');
+};
+
+// --- GESTION DE LA VUE DÉTAILS (Masquage/Démasquage) ---
+
+window.showBlindtestDetails = async function(btJsonEncoded) {
+    let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
+    btObject.tracks = await getTracksForBlindtest(btObject);
+    
+    if(!btObject.tracks || btObject.tracks.length === 0) {
+        alert("Pistes introuvables pour ce blindtest.");
+        return;
+    }
+    
+    $('#details-tracks-list').empty();
+    btObject.tracks.forEach((track, index) => {
+        let titleArtist = `${track.title} - ${track.artist}`;
+        let delay = index * 0.05;
+        let html = `
+            <div class="modal-track-item" style="animation-delay: ${delay}s;">
+                <div class="track-details" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <div>
+                        <h4 class="track-title">Piste n°${index + 1}</h4>
+                        <p class="track-artist secret-info" style="display:none; color:var(--orange); font-weight:bold; font-size:1rem;">${titleArtist}</p>
+                        <p class="track-artist masked-info" style="letter-spacing: 2px;">??? - ???</p>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-export-pdf" onclick="promptAddToPlaylist(${track.track_id})" style="margin:0; padding:6px 12px; font-size:0.85rem;" title="Ajouter à une de mes playlists">➕ Playlist</button>
+                        <button onclick="toggleTrackSecret(this)" title="Révéler / Masquer" style="background:none; border:none; cursor:pointer; font-size:1.5rem; transition:transform 0.2s;">👁️</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#details-tracks-list').append(html);
+    });
+    
+    $('#details-blindtest-modal').addClass('show');
+};
+
+window.toggleTrackSecret = function(btn) {
+    let container = $(btn).closest('.track-details');
+    let secret = container.find('.secret-info');
+    let masked = container.find('.masked-info');
+    
+    if(secret.is(':visible')) {
+        secret.hide();
+        masked.show();
+        $(btn).text('👁️').css('transform', 'scale(1)');
+    } else {
+        secret.show();
+        masked.hide();
+        $(btn).text('🙈').css('transform', 'scale(1.1)');
+    }
+};
+
+window.closeDetailsModal = function() {
+    $('#details-blindtest-modal').removeClass('show');
+};
+
+
+// --- MÉCANIQUE DU JEU ---
+
 window.startBlindtest = function(event, btObject) {
     if(!btObject) return;
     currentBlindtest = btObject;
     currentTrackIndex = 0;
     score = 0;
     
-    // Préparer l'UI
     $('#view-blindtest-modal').addClass('show');
     $('#bt-final-score-container').hide();
     $('#export-pdf-btn').hide();
@@ -539,7 +847,8 @@ function playCurrentBlindtestTrack() {
             showGuessForm();
         }, currentBlindtest.difficulty * 1000);
     } else {
-        alert("Lecteur audio indisponible.");
+        console.warn("Lecteur audio indisponible. Simulation de fin de timer.");
+        setTimeout(() => { showGuessForm(); }, 1000);
     }
 }
 
@@ -561,18 +870,19 @@ function validateGuess() {
     updateScoreUI();
     
     $('#bt-guess-section').hide();
-    $('#bt-result-msg').html(isCorrect ? `<span style="color:#27ae60">✅ Bonne réponse !</span>` : `<span style="color:#e74c3c">❌ Raté !</span>`);
+    $('#bt-result-msg').html(isCorrect ? `<span style="color:var(--vert, #27ae60)">✅ Bonne réponse !</span>` : `<span style="color:var(--rouge, #e74c3c)">❌ Raté !</span>`);
     $('#bt-result-info').html(`C'était <strong>${track.title}</strong> de <strong>${track.artist}</strong>`);
     $('#bt-result-section').fadeIn();
 
     const trackHtml = `
         <div class="modal-track-item ${isCorrect ? 'correct' : 'wrong'}">
             <div style="font-size:1.5rem; margin-right:10px;">${isCorrect ? '✅' : '❌'}</div>
-            <img src="images/no_image_music.avif" class="track-image">
+            <img src="images/no_image_music.avif" class="track-image" alt="couverture">
             <div class="track-details">
                 <h4 class="track-title">${track.title}</h4>
                 <p class="track-artist">${track.artist}</p>
             </div>
+            <button class="btn-export-pdf" onclick="promptAddToPlaylist(${track.track_id})" style="margin:0; padding:6px 12px; font-size:0.85rem;">➕ Playlist</button>
         </div>
     `;
     $('#view-bt-tracks').append(trackHtml);
@@ -594,8 +904,15 @@ function endBlindtest() {
     
     if(typeof audioPlayer !== 'undefined') audioPlayer.stop();
 
-    // OPTIONNEL : Mettre à jour le score en BDD à la fin (nécessite une route PUT ou POST)
-    // fetch(`http://127.0.0.1:8000/blindtests/${currentBlindtest.id}/score`, { ... })
+    currentBlindtest.score = score;
+    let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
+    let index = localBts.findIndex(b => String(b.id) === String(currentBlindtest.id));
+    if(index !== -1) {
+        localBts[index].score = score;
+        localStorage.setItem('localBlindtests', JSON.stringify(localBts));
+    }
+    
+    chargerBlindtestsBDD(); 
 }
 
 function updateScoreUI() {
@@ -611,7 +928,7 @@ window.closeBlindtestView = function() {
 };
     </script>
 </head>
-<body class="playlists-page">
+<body class="playlists-page" style="padding-bottom: 120px;">
     <header>
         <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a> 
         <nav>
@@ -620,6 +937,30 @@ window.closeBlindtestView = function() {
             <a href="blindtest.html">Blindtest</a>
             <a href="preferences.html">Préférences</a>
         </nav>
+        
+        <div class="theme-switcher-wrapper">
+            <button class="theme-btn" id="themeBtnToggle" title="Changer la couleur du site" aria-expanded="false">
+                <span class="theme-btn-dot" id="themeBtnDot"></span>Thème
+            </button>
+            <div class="theme-panel" id="themePanel" role="listbox" aria-label="Choisir un thème de couleur">
+                <p class="theme-panel-title">Couleur du site</p>
+                <div class="theme-options">
+                    <button class="theme-option active" data-theme="orange" role="option" aria-selected="true">
+                        <span class="theme-option-swatch" style="background: rgb(237,122,38);"></span>Orange<span class="theme-option-check">&#10003;</span>
+                    </button>
+                    <button class="theme-option" data-theme="violet" role="option" aria-selected="false">
+                        <span class="theme-option-swatch" style="background: rgb(124,77,211);"></span>Violet<span class="theme-option-check">&#10003;</span>
+                    </button>
+                    <button class="theme-option" data-theme="vert" role="option" aria-selected="false">
+                        <span class="theme-option-swatch" style="background: rgb(39,174,96);"></span>Vert<span class="theme-option-check">&#10003;</span>
+                    </button>
+                    <button class="theme-option" data-theme="bleu" role="option" aria-selected="false">
+                        <span class="theme-option-swatch" style="background: rgb(41, 128, 185);"></span>Bleu<span class="theme-option-check">&#10003;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="header-right">
             <div id="user-menu" class="user-dropdown">
                 <a href="#" id="user-name-display">Mon Profil &nbsp; ▾</a>
@@ -645,7 +986,7 @@ window.closeBlindtestView = function() {
         </section>
 
         <section class="my-playlists-section">
-            <div class="playlists-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; padding: 50px;">
+            <div class="playlists-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; padding: 50px;">
                 </div>
         </section>
     </main>
@@ -714,6 +1055,18 @@ window.closeBlindtestView = function() {
         </div>
     </div>
 
+    <div id="details-blindtest-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="close-modal" onclick="closeDetailsModal()">&times;</button>
+            <div class="create-modal-header" style="margin-bottom:15px; padding-bottom:10px;">
+                <h2>Liste des pistes</h2>
+                <p>Cliquez sur l'icône 👁️ pour révéler une musique</p>
+            </div>
+            <div id="details-tracks-list" class="modal-tracks-list" style="padding: 0;">
+                </div>
+        </div>
+    </div>
+
     <div id="view-blindtest-modal" class="modal">
         <div class="modal-content blindtest-game-modal">
             
@@ -766,5 +1119,58 @@ window.closeBlindtestView = function() {
                 </div>
         </div>
     </div>
+    
+    <div id="select-pl-modal" class="modal">
+       <div class="modal-content" style="max-width: 400px; text-align:center; padding: 30px;">
+           <button class="close-modal" onclick="$('#select-pl-modal').removeClass('show')">&times;</button>
+           <h2 style="font-family:'Rammetto One', sans-serif; font-size:1.5rem; margin-bottom:10px;">Choisir une playlist</h2>
+           <p style="color:#666; margin-bottom:20px;">Où souhaitez-vous ajouter cette musique ?</p>
+           <select id="pl-select-dropdown" class="styled-select" style="margin-bottom:25px;"></select>
+           <button class="action-btn" onclick="confirmAddToPlaylist()" style="width:100%;">Ajouter</button>
+       </div>
+    </div>
+
+    <footer aria-label="Pied de page MuSE">
+        <div class="titre-footer">
+            <h2>MuSE</h2>
+        </div>
+        <div class="navigation-footer">
+            <div>
+                <p>Société</p>
+                <div>
+                    <a href="#">À propos de nous</a>
+                    <a href="#">Offre d'emploi</a>
+                </div>
+            </div>
+            <div>
+                <p>Liens utiles</p>
+                <div>
+                    <a href="contact.html">Nous contacter</a>
+                </div>
+            </div>
+            <div>
+                <p>Communauté</p>
+                <div>
+                    <a href="#">Développeurs</a>
+                </div>
+            </div>
+            <div>
+                <p>Légal</p>
+                <div>
+                    <a href="#">Mentions légales</a>
+                </div>
+            </div>
+        </div>
+        <div class="barre-separation-footer"></div>
+        <div class="fin-footer">
+            <div class="reseaux-sociaux-footer">
+                <a href="#" aria-label="Instagram"><img src="images/icones/instagram.avif" alt="Instagram" width="24" height="24" loading="lazy"/></a>
+                <a href="#" aria-label="LinkedIn"><img src="images/icones/linkedin.avif" alt="LinkedIn" width="24" height="24" loading="lazy"/></a>
+                <a href="#" aria-label="GitHub"><img src="images/icones/github.avif" alt="GitHub" width="24" height="24" loading="lazy"/></a>
+                <a href="#" aria-label="Facebook"><img src="images/icones/facebook.avif" alt="Facebook" width="24" height="24" loading="lazy"/></a>
+            </div>
+            <p>© 2026 MuSE Français</p>
+        </div>
+    </footer>
 </body>
 </html>
