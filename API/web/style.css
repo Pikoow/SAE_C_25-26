@@ -2358,22 +2358,37 @@ footer {
     border-color: var(--orange);
 }
 
-.admin-page.admin-refresh-btn {
+.admin-page .admin-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     padding: 10px 20px;
-    border: none;
+    border: 2px solid var(--orange);
     border-radius: 10px;
-    background: var(--orange);
-    color: white;
+    background: transparent;
+    color: var(--orange);
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
+    transition: all 0.3s ease;
 }
 
 .admin-page .admin-refresh-btn:hover {
-    background: var(--orange-fonce);
-    transform: translateY(-1px);
+    background: var(--orange);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--orange) 30%, transparent);
+}
+
+.admin-page .admin-refresh-btn .refresh-icon {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.5s ease;
+}
+
+.admin-page .admin-refresh-btn:hover .refresh-icon {
+    transform: rotate(180deg);
 }
 
 /* USERS TABLE */

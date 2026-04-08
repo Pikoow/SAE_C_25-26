@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mes Blindtests - MuSE</title>
+    <title>Mes Blindtests - 10Heures</title>
     <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.2/themes/base/jquery-ui.css">
@@ -23,60 +23,208 @@
     
     <style>
         /* =====================================================
-           MODALES (Création, Vue & Détails Blindtest)
+           UX/UI MINIMALISTE & PROFESSIONNEL (Cartes et Modales)
         ===================================================== */
-        .create-modal-overlay, .modal {
+        
+        /* --- Grid & Cartes --- */
+        .bt-grid-container {
+            padding: 50px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            background: #fff;
+        }
+
+        .bt-card {
+            background: #fff;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+            overflow: hidden;
+        }
+
+        .bt-card:hover {
+            border-color: var(--orange, #ed7a26);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .bt-card-cover {
+            height: 120px;
+            background: #fcfcfc;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--orange, #ed7a26);
+        }
+
+        .bt-card-info {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bt-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .bt-card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--noir);
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .bt-card-meta {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 16px;
+        }
+        
+        .bt-card-score {
+            font-weight: 600;
+            color: var(--noir);
+            margin-top: 4px;
+            display: block;
+        }
+
+        .bt-card-actions {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .bt-btn-group {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .bt-icon-group {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-flat {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+
+        .btn-flat.primary {
+            background: var(--orange);
+            color: white;
+        }
+
+        .btn-flat.primary:hover {
+            background: var(--orange-fonce);
+        }
+
+        .btn-flat.secondary {
+            background: #f5f5f5;
+            color: var(--noir);
+        }
+
+        .btn-flat.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: #f5f5f5;
+            color: var(--noir);
+        }
+
+        .btn-icon.danger:hover {
+            background: #fff0f0;
+            color: #d32f2f;
+        }
+
+        /* --- Modales --- */
+        .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
             z-index: 6000;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
         }
 
-        .create-modal-overlay[style*="display: block"], .modal.show {
-            display: flex !important;
-            animation: plFadeIn 0.3s ease;
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.2s ease;
         }
 
-        @keyframes plFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .create-modal-content, .modal-content {
-            background: var(--blanc, #fff);
-            border-radius: 24px;
-            padding: 40px;
+        .modal-container {
+            background: #fff;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            padding: 32px;
             width: 90%;
-            max-width: 720px;
-            max-height: 88vh;
+            max-width: 650px; 
+            max-height: 85vh;
             overflow-y: auto;
             position: relative;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-            animation: slideUpModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .blindtest-game-modal {
-            padding: 0; /* Full bleed pour le header du jeu */
+        .modal-container.full-bleed {
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        @keyframes slideUpModal {
-            from { transform: translateY(30px) scale(0.97); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .create-modal-close, .close-modal {
+        .btn-close-modal {
             position: absolute;
-            top: 18px;
-            right: 22px;
-            background: #f0f0f0;
+            top: 20px;
+            right: 20px;
+            background: transparent;
             border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 1.3rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: #666;
+            color: #999;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,281 +232,191 @@
             z-index: 10;
         }
 
-        .create-modal-close:hover, .close-modal:hover {
-            background: var(--orange, #ed7a26);
-            color: white;
-            transform: scale(1.1);
+        .btn-close-modal:hover {
+            background: #f5f5f5;
+            color: var(--noir);
         }
 
-        /* En-tête Modale Création */
-        .create-modal-header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 25px;
-            border-bottom: 2px solid #f5f5f5;
+        .modal-header-text {
+            margin-bottom: 24px;
         }
-        .create-modal-header h2 {
-            font-family: 'Rammetto One', sans-serif;
-            font-size: 1.8rem;
-            color: var(--noir, #000);
+        
+        .modal-header-text h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--noir);
+            margin-bottom: 4px;
+        }
+
+        .modal-header-text p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* --- Formulaires --- */
+        .bt-form { display: flex; flex-direction: column; gap: 16px; }
+        .bt-form-row { display: flex; gap: 16px; }
+        .bt-form-group { flex: 1; display: flex; flex-direction: column; }
+        
+        .bt-form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #444;
             margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .create-modal-header p { color: #888; font-size: 0.95rem; }
 
-        /* En-tête Modale Jeu */
-        .modal-header {
-            background: linear-gradient(135deg, var(--orange, #ed7a26) 0%, var(--orange-fonce, #fd7208) 100%);
-            padding: 30px 40px;
+        .bt-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            background-color: #fff;
+            color: var(--noir);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        
+        .bt-input:focus {
+            outline: none;
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(237, 122, 38, 0.1);
+        }
+
+        .bt-advanced {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 8px;
+            background: #fafafa;
+        }
+        
+        .bt-advanced summary {
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            color: #666;
+            user-select: none;
+        }
+        
+        .bt-advanced-content {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .bt-btn-submit {
+            background: var(--noir);
             color: white;
-            position: relative;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-top: 8px;
+        }
+        .bt-btn-submit:hover { background: #333; }
+
+        /* --- Gameplay UI --- */
+        .game-header {
+            background: #fff;
+            border-bottom: 1px solid #eaeaea;
+            padding: 24px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .modal-header h2 {
-            font-family: 'Rammetto One', sans-serif;
-            font-size: 2rem;
-            margin: 5px 0;
-        }
-
-        /* --- Formulaires --- */
-        .playlist-form { display: flex; flex-direction: column; gap: 20px; }
-        .form-row { display: flex; gap: 20px; }
-        .form-group { flex: 1; display: flex; flex-direction: column; }
-        .form-group label {
-            font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 6px;
-        }
-
-        .styled-input, .styled-select, input[type="number"], input[type="text"] {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid #eaeaea;
-            border-radius: 12px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            background-color: #fcfcfc;
-            color: var(--noir, #000);
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-        .styled-input:focus, .styled-select:focus, input[type="number"]:focus, input[type="text"]:focus {
-            outline: none;
-            border-color: var(--orange, #ed7a26);
-            background-color: #fff;
-            box-shadow: 0 0 0 4px rgba(237, 122, 38, 0.15);
-        }
-
-        .advanced-params {
-            background: #f9f9f9;
-            border: 1px solid #eaeaea;
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-top: 10px;
-            transition: all 0.3s;
-        }
-        .advanced-params[open] {
-            background: #fff;
-            border-color: var(--orange, #ed7a26);
-            box-shadow: 0 4px 15px rgba(237, 122, 38, 0.08);
-        }
-        .advanced-params summary {
-            font-weight: 600;
-            font-size: 1.05rem;
-            cursor: pointer;
-            outline: none;
-            color: var(--orange, #ed7a26);
-        }
-        .advanced-params-content {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* --- Boutons et Actions Cartes --- */
-        .btn-play, .btn-view, .btn-export, .btn-delete {
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-        .btn-play:hover { background: var(--orange-fonce, #fd7208) !important; transform: translateY(-2px); }
-        .btn-view:hover { background: #333 !important; transform: translateY(-2px); }
-        .btn-export:hover { border-color: var(--orange, #ed7a26) !important; color: var(--orange, #ed7a26) !important; background: #fff5e6 !important; transform: translateY(-2px); }
-        .btn-delete:hover { background: #c0392b !important; transform: translateY(-2px); }
-
-        .action-btn, #generate-blindtest-btn {
-            background: linear-gradient(135deg, var(--orange, #ed7a26), var(--orange-fonce, #fd7208));
-            color: white;
-            border: none;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-family: 'Outfit', sans-serif;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(237, 122, 38, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .action-btn:hover, #generate-blindtest-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(237, 122, 38, 0.4);
-        }
         
-        .action-btn-dark {
-            padding: 14px 24px;
-            background: var(--noir, #000);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-            transition: background 0.2s;
-        }
-        .action-btn-dark:hover { background: #333; }
-
-        .btn-export-pdf {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 16px;
-            border-radius: 8px;
-            background: white;
-            border: 1px solid #ccc;
-            font-weight: bold;
-            color: #333;
-            cursor: pointer;
-            margin-right: 40px;
-            transition: all 0.2s;
-        }
-        .btn-export-pdf:hover {
-            border-color: var(--orange, #ed7a26);
-            color: var(--orange, #ed7a26);
-            background: var(--api-bg-light, #fff5e6);
-        }
-
-        /* =====================================================
-           GAMEPLAY BLINDTEST UI & ANIMATIONS
-        ===================================================== */
-        @keyframes cardSlideIn {
-            from { opacity: 0; transform: translateX(30px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .playlist-card {
-            animation: cardSlideIn 0.4s ease backwards;
-        }
-
-        .gameplay-area { padding: 40px; text-align: center; }
-
-        #bt-current-track-num {
-            font-family: 'Rammetto One', sans-serif;
-            color: var(--gris-fonce, #2a2a2a);
-            margin-bottom: 20px;
-        }
-
-        .timer-container {
-            width: 100%;
-            height: 12px;
-            background: #eee;
-            border-radius: 6px;
-            overflow: hidden;
-            margin: 20px 0;
-            position: relative;
-        }
-        
-        @keyframes pulseTimer {
-            0% { box-shadow: 0 0 5px var(--orange); }
-            50% { box-shadow: 0 0 15px var(--orange); }
-            100% { box-shadow: 0 0 5px var(--orange); }
-        }
-
-        .timer-bar {
-            height: 100%;
-            background: var(--orange, #ed7a26);
-            width: 100%;
-            border-radius: 6px;
-            animation: pulseTimer 1s infinite;
-        }
-
-        /* Liste des pistes dans le PDF/Récap et Détails */
-        .modal-tracks-list {
-            padding: 20px 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .modal-track-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            border-radius: 12px;
+        .game-header h2 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+        .game-score-badge {
             background: #f5f5f5;
-            gap: 15px;
-            border-left: 4px solid #ccc;
-            animation: cardSlideIn 0.3s ease backwards;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0px 30px;
         }
-        .modal-track-item.correct { background: #eafaf1; border-left: 4px solid var(--vert, #27ae60); }
-        .modal-track-item.wrong { background: #fff5f5; border-left: 4px solid var(--rouge, #ff0000); }
 
-        .track-image { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
-        .track-details { flex: 1; text-align: left; }
-        .track-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 3px; color: var(--noir); }
-        .track-artist { font-size: 0.9rem; color: #666; }
+        .game-body { padding: 40px 32px; text-align: center; flex: 1; overflow-y: auto;}
 
-        /* =====================================================
-           STYLES POUR IMPRESSION PDF (@media print)
-        ===================================================== */
+        .game-track-counter {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .game-timer-bg {
+            width: 100%;
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 auto 32px;
+            max-width: 400px;
+        }
+
+        .game-timer-fill {
+            height: 100%;
+            background: var(--noir);
+            width: 100%;
+            border-radius: 2px;
+        }
+
+        .game-result-box {
+            background: #fafafa;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        /* --- Listes des pistes (Détails & Fin de partie) --- */
+        .track-list-clean {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .track-row-clean {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .track-row-clean.correct { border-left: 4px solid #27ae60; }
+        .track-row-clean.wrong { border-left: 4px solid #e74c3c; }
+
+        .track-info-clean h4 { font-size: 0.95rem; margin: 0 0 2px 0; font-weight: 600; }
+        .track-info-clean p { font-size: 0.85rem; color: #666; margin: 0; }
+
+        /* Impression PDF */
         @media print {
             body * { visibility: hidden; }
-            
             #view-blindtest-modal, #view-blindtest-modal * { visibility: visible; }
-            
-            #view-blindtest-modal {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: white;
-                display: block !important;
-            }
-
-            .modal-content {
-                box-shadow: none !important;
-                border: none !important;
-                width: 100%;
-                max-width: 100%;
-                padding: 0;
-                margin: 0;
-            }
-
-            .modal-header, .close-modal, #export-pdf-btn, #bt-gameplay-area { display: none !important; }
-
-            #pdf-header {
-                display: block !important;
-                text-align: center;
-                margin-bottom: 30px;
-            }
-
+            #view-blindtest-modal { position: absolute; left: 0; top: 0; width: 100%; background: white; display: block !important; }
+            .modal-container { box-shadow: none !important; border: none !important; width: 100%; max-width: 100%; padding: 0; }
+            .game-header, .btn-close-modal, #bt-gameplay-area { display: none !important; }
+            #pdf-header { display: block !important; text-align: left; margin-bottom: 30px; }
             #bt-final-score-container { display: none !important; }
-
-            .modal-tracks-list { padding: 0; }
-
-            .modal-track-item {
-                background: transparent !important;
-                border: 1px solid #ddd;
-                border-left: 5px solid #ccc;
-                page-break-inside: avoid;
-                margin-bottom: 10px;
-            }
-            
-            .modal-track-item.correct { border-left-color: var(--vert, #27ae60); }
-            .modal-track-item.wrong { border-left-color: var(--rouge, #ff0000); }
+            .track-row-clean { border: none; border-bottom: 1px solid #eee; margin-bottom: 0; border-radius: 0; }
         }
     </style>
 
@@ -368,9 +426,8 @@ let currentBlindtest = null;
 let currentTrackIndex = 0;
 let score = 0;
 let blindtestTimer = null;
-let trackToAdd = null; // Pour l'ajout direct en playlist
+let trackToAdd = null; 
 
-// Base de test au cas où l'API n'est pas lancée
 const baseMockTracks = [
     { track_id: 1, title: "Bohemian Rhapsody", artist: "Queen", url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Tours/Enthusiast/Tours_-_01_-_Enthusiast.mp3" },
     { track_id: 2, title: "Shape of You", artist: "Ed Sheeran", url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/WFMU/Broke_For_Free/Directionless_EP/Broke_For_Free_-_01_-_Night_Owl.mp3" },
@@ -381,50 +438,68 @@ const baseMockTracks = [
 $(document).ready(function() {
     chargerBlindtestsBDD();
 
-    $('#open-create-playlist-btn').on('click', () => $('#create-blindtest-modal').fadeIn());
-    $('#close-blindtest-modal').on('click', () => $('#create-blindtest-modal').fadeOut());
+    $('#open-create-playlist-btn').on('click', () => $('#create-blindtest-modal').addClass('show'));
+    $('.btn-close-modal').on('click', function() { $(this).closest('.modal-overlay').removeClass('show'); });
 
     $('#generate-blindtest-btn').on('click', async function() {
         const btn = $(this);
-        btn.text('Génération...').prop('disabled', true);
+        const originalText = btn.html();
+        btn.html('Génération en cours...').prop('disabled', true);
 
         const nbTracks = parseInt($('#bt-nb-tracks').val()) || 10;
         const diffLabel = $('#bt-difficulty option:selected').text();
         const difficultySecs = parseInt($('#bt-difficulty').val());
+        const customName = $('#bt-name').val().trim() || "Session #" + Math.floor(Math.random() * 1000);
         const userId = localStorage.getItem("userId") || 1;
 
-        let selectedTracks = [];
+        const filterYear = $('#bt-year').val();
+        const filterGenre = ($('#bt-genre').val() || "").toLowerCase();
+        const filterArtist = ($('#bt-artist').val() || "").toLowerCase();
+        const filterPop = $('#bt-popularity').val();
+        const filterType = $('#bt-type').val();
+        const filterLang = $('#bt-lang').val();
 
+        let queryParams = new URLSearchParams({ limit: nbTracks });
+        if (filterYear) queryParams.append('min_year', filterYear);
+        if (filterGenre) queryParams.append('genre', filterGenre);
+        if (filterArtist) queryParams.append('artist', filterArtist);
+        if (filterPop) queryParams.append('popularity', filterPop);
+        if (filterType) queryParams.append('track_type', filterType);
+        if (filterLang) queryParams.append('lang', filterLang);
+
+        let selectedTracks = [];
         try {
-            const response = await fetch('http://127.0.0.1:8000/tracks');
+            const response = await fetch(`http://127.0.0.1:8000/blindtests/generate/${userId}?${queryParams.toString()}`);
             if(response.ok) {
                 const data = await response.json();
-                let allTracks = data.results || [];
                 
-                if(allTracks.length > 0) {
-                    allTracks = allTracks.sort(() => 0.5 - Math.random());
-                    selectedTracks = allTracks.slice(0, nbTracks).map(t => {
-                        let trackUrl = t.track_file;
-                        if (trackUrl && trackUrl.startsWith('music/')) {
-                            trackUrl = 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/' + trackUrl.substring(6);
-                        }
-                        return {
-                            track_id: t.track_id,
-                            title: t.track_title,
-                            artist: t.artist_names || "Artiste inconnu",
-                            url: trackUrl,
-                            guessed: null
-                        };
-                    });
-                }
+                selectedTracks = data.tracks.map(t => {
+                    let trackUrl = t.track_file || "";
+                    if (trackUrl && trackUrl.startsWith('music/')) {
+                        trackUrl = 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/' + trackUrl.substring(6);
+                    }
+                    return {
+                        track_id: t.track_id,
+                        title: t.track_title,
+                        artist: t.artist_names || "Artiste inconnu",
+                        url: trackUrl,
+                        guessed: null
+                    };
+                });
+            } else {
+                alert("Les filtres sont trop stricts. Impossible de générer la partie.");
+                btn.html(originalText).prop('disabled', false);
+                return;
             }
         } catch(e) {
-            console.warn("API indisponible pour les musiques, bascule sur les mocks.");
+            console.error(e);
+            alert("Erreur de connexion lors de la génération.");
+            btn.html(originalText).prop('disabled', false);
+            return;
         }
 
-        if (selectedTracks.length < nbTracks) {
-            let remaining = nbTracks - selectedTracks.length;
-            for (let i = 0; i < remaining; i++) {
+        if (selectedTracks.length === 0) {
+            for (let i = 0; i < nbTracks; i++) {
                 let mock = baseMockTracks[i % baseMockTracks.length];
                 selectedTracks.push({ ...mock, track_id: 'mock_' + i, guessed: null });
             }
@@ -432,7 +507,7 @@ $(document).ready(function() {
 
         let newBt = {
             id: 'local_' + Date.now(),
-            name: "Session #" + Math.floor(Math.random() * 1000),
+            name: customName,
             difficulty: difficultySecs,
             tracks: selectedTracks,
             total_tracks: selectedTracks.length
@@ -451,9 +526,7 @@ $(document).ready(function() {
             });
             const saveData = await saveRes.json();
             if(saveData.blindtest_id) newBt.id = saveData.blindtest_id;
-        } catch (e) {
-            console.warn("Erreur sauvegarde API, sauvegarde locale de secours.", e);
-        }
+        } catch (e) {}
 
         let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
         localBts.push(newBt);
@@ -461,26 +534,26 @@ $(document).ready(function() {
 
         afficherCarteBlindtest(newBt.name, newBt.total_tracks, diffLabel, newBt, null, true);
         
-        $('#create-blindtest-modal').fadeOut();
-        btn.text('Créer et Jouer 🎮').prop('disabled', false);
+        $('#create-blindtest-modal').removeClass('show');
+        btn.html(originalText).prop('disabled', false);
         
         startBlindtest(null, newBt);
     });
 
-    $('#bt-guess-input').on('keypress', function(e) {
-        if(e.which === 13) { validateGuess(); }
-    });
-
+    $('#bt-guess-input').on('keypress', function(e) { if(e.which === 13) validateGuess(); });
     $('#bt-guess-btn').on('click', validateGuess);
     $('#bt-next-btn').on('click', nextTrack);
 });
 
 async function chargerBlindtestsBDD() {
     const userId = localStorage.getItem("userId") || 1;
-    $('.playlists-container').empty();
+    $('.bt-grid-container').empty();
 
     let loadedIds = new Set();
     let indexAnim = 0;
+    
+    // On récupère les scores du stockage local
+    let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
 
     try {
         const response = await fetch(`http://127.0.0.1:8000/users/${userId}/blindtests`);
@@ -496,17 +569,22 @@ async function chargerBlindtestsBDD() {
                     score: bt.score,
                     tracks: bt.tracks || []
                 };
+                
+                // --- FIX : Priorité au score local fraîchement joué ---
+                let localMatch = localBts.find(l => String(l.id) === String(normalizedBt.id));
+                if (localMatch && localMatch.score !== undefined) {
+                    normalizedBt.score = localMatch.score;
+                }
+
                 loadedIds.add(normalizedBt.id);
                 afficherCarteBlindtest(normalizedBt.name, normalizedBt.total_tracks, diffLabel, normalizedBt, normalizedBt.score, false, indexAnim++);
             });
         }
-    } catch(e) {
-        console.warn("API de chargement injoignable. Chargement local uniquement.");
-    }
+    } catch(e) {}
 
-    let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
     localBts.forEach(bt => {
-        if(!loadedIds.has(bt.id)) {
+        // Affiche les blindtests locaux non présents en BDD (exclut les entrées sans 'name' ajoutées juste pour le score)
+        if(!loadedIds.has(bt.id) && bt.name) {
             let diffLabel = bt.difficulty === 10 ? "Facile" : (bt.difficulty === 5 ? "Moyen" : "Difficile");
             afficherCarteBlindtest(bt.name, bt.total_tracks, diffLabel, bt, bt.score, false, indexAnim++);
         }
@@ -523,7 +601,7 @@ async function getTracksForBlindtest(btObject) {
                 btObject.tracks = fullBt.tracks;
                 return fullBt.tracks;
             }
-        } catch(e) { console.warn("Erreur chargement tracks BDD détaillées"); }
+        } catch(e) {}
     }
     return [];
 }
@@ -531,413 +609,362 @@ async function getTracksForBlindtest(btObject) {
 function afficherCarteBlindtest(nom, nbTracks, diffLabel, blindtestObj, scoreBdd = null, isNew = false, indexAnim = 0) {
     let scoreVal = scoreBdd !== null && scoreBdd !== undefined ? scoreBdd : (blindtestObj.score !== undefined ? blindtestObj.score : null);
     let isPlayed = scoreVal !== null;
-    let scoreHtml = isPlayed ? `<br><strong style="color:var(--orange)">Dernier Score : ${scoreVal}/${nbTracks}</strong>` : '<br><strong style="color:#666">Non joué</strong>';
+    let scoreHtml = isPlayed ? `<span class="bt-card-score">Score : ${scoreVal}/${nbTracks * 2}</span>` : '<span class="bt-card-score" style="color:#aaa;">Non joué</span>';
     let playLabel = isPlayed ? 'Rejouer' : 'Jouer';
+    let btJsonEncoded = encodeURIComponent(JSON.stringify(blindtestObj || {})).replace(/'/g, "%27");
     
-    let btJsonEncoded = encodeURIComponent(JSON.stringify(blindtestObj || {}));
-    let delay = isNew ? '0s' : `${indexAnim * 0.05}s`;
-
     const cardHtml = `
-        <div class="playlist-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eaeaea; transition: all 0.3s; display:flex; flex-direction:column; animation-delay: ${delay};">
-            <div class="playlist-custom-cover" style="background: linear-gradient(135deg, var(--orange-clair, #FF9A4F), var(--orange, #ED7A26)); width: 100%; height: 160px; display:flex; align-items:center; justify-content:center; color:white; font-size:4rem;">🎮</div>
-            <div class="playlist-info" style="padding: 20px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
-                <div>
-                    <h3 style="font-size: 1.3rem; margin-bottom: 5px; color:black;">${nom}</h3>
-                    <p class="playlist-description" style="color: #888; font-size: 0.95rem;">${nbTracks} Titres • ${diffLabel} ${scoreHtml}</p>
+        <div class="bt-card" style="animation: fadeIn 0.4s ease forwards; animation-delay: ${isNew ? '0s' : indexAnim*0.05+'s'}; opacity: 0;">
+            <div class="bt-card-cover">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="bt-card-info">
+                <div class="bt-card-header">
+                    <h3 class="bt-card-title">${nom}</h3>
+                    <button class="btn-icon" title="Modifier le nom" onclick="editBlindtestName('${blindtestObj.id}', this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
                 </div>
-                <div class="playlist-actions" style="margin-top:15px; display:flex; gap:8px; flex-wrap: wrap;">
-                    <button class="btn-play" onclick="startBlindtestFromCard('${btJsonEncoded}')" style="flex:1; min-width:40%; background: var(--orange); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="${playLabel}">🎮 ${playLabel}</button>
-                    <button class="btn-view" onclick="showBlindtestDetails('${btJsonEncoded}')" style="flex:1; min-width:40%; background: #000; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Voir les musiques">👁️ Détails</button>
-                    
-                    <button class="btn-add-pl" onclick="addBlindtestToPlaylists('${btJsonEncoded}')" style="flex:1; min-width:40%; background: #27ae60; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Sauvegarder en Playlist">➕ Playlist</button>
-                    
-                    <button class="btn-export" onclick="exportBlindtest('${btJsonEncoded}')" style="flex:1; background: #fff; color: #333; border: 1px solid #ccc; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Exporter en PDF">📄</button>
-                    <button class="btn-delete" onclick="deleteBlindtest('${blindtestObj.id}', this)" style="background: #e74c3c; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" title="Supprimer la session">🗑️</button>
+                <div class="bt-card-meta">${nbTracks} Titres • ${diffLabel} ${scoreHtml}</div>
+                
+                <div class="bt-card-actions">
+                    <div class="bt-btn-group">
+                        <button class="btn-flat primary" onclick="startBlindtestFromCard('${btJsonEncoded}')" title="${playLabel}">${playLabel}</button>
+                        <button class="btn-flat secondary" onclick="showBlindtestDetails('${btJsonEncoded}')" title="Voir les musiques">Détails</button>
+                    </div>
+                    <div class="bt-icon-group">
+                        <button class="btn-icon" onclick="addBlindtestToPlaylists('${btJsonEncoded}')" title="Sauvegarder en Playlist"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                        <button class="btn-icon" onclick="exportBlindtest('${btJsonEncoded}')" title="Exporter en PDF"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
+                        <button class="btn-icon danger" onclick="deleteBlindtest('${blindtestObj.id}', this)" title="Supprimer la session"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
                 </div>
             </div>
         </div>
     `;
-    if(isNew) {
-        $('.playlists-container').prepend(cardHtml);
-    } else {
-        $('.playlists-container').append(cardHtml);
-    }
+    if(isNew) $('.bt-grid-container').prepend(cardHtml);
+    else $('.bt-grid-container').append(cardHtml);
 }
 
-// --- ACTIONS SUR LES CARTES ---
+window.editBlindtestName = async function(id, btnElement) {
+    let card = $(btnElement).closest('.bt-card');
+    let titleEl = card.find('.bt-card-title');
+    let currentName = titleEl.text();
+    let newName = prompt("Nouveau nom du blindtest :", currentName);
+    if (newName && newName.trim() !== "" && newName !== currentName) {
+        if (!String(id).startsWith('local_')) {
+            try {
+                await fetch(`http://127.0.0.1:8000/blindtests/${id}/name`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName.trim() }) });
+            } catch(e) {}
+        } else {
+            let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
+            let index = localBts.findIndex(bt => String(bt.id) === String(id));
+            if (index !== -1) { localBts[index].name = newName.trim(); localStorage.setItem('localBlindtests', JSON.stringify(localBts)); }
+        }
+        titleEl.text(newName.trim());
+    }
+};
 
 window.deleteBlindtest = async function(id, btnElement) {
-    if(!confirm("Voulez-vous vraiment supprimer cette session de blindtest ?")) return;
-    
+    if(!confirm("Supprimer cette session ?")) return;
     if(id && !String(id).startsWith('local_')) {
-        try {
-            await fetch(`http://127.0.0.1:8000/blindtests/${id}`, { method: 'DELETE' });
-        } catch(e) { console.warn("API indisponible pour delete", e); }
+        try { await fetch(`http://127.0.0.1:8000/blindtests/${id}`, { method: 'DELETE' }); } catch(e) {}
     }
-    
     let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
     localBts = localBts.filter(bt => String(bt.id) !== String(id));
     localStorage.setItem('localBlindtests', JSON.stringify(localBts));
-    
-    $(btnElement).closest('.playlist-card').fadeOut(300, function() { $(this).remove(); });
+    $(btnElement).closest('.bt-card').fadeOut(200, function() { $(this).remove(); });
 };
 
 window.startBlindtestFromCard = async function(btJsonEncoded) {
     let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
     btObject.tracks = await getTracksForBlindtest(btObject);
-    
-    if(!btObject.tracks || btObject.tracks.length === 0) {
-        alert("Impossible de charger les pistes audio pour cette session.");
-        return;
-    }
-
+    if(!btObject.tracks || btObject.tracks.length === 0) return alert("Pistes audio manquantes.");
     btObject.score = undefined;
     btObject.tracks.forEach(t => t.guessed = null);
-
     startBlindtest(null, btObject);
 };
 
 window.exportBlindtest = async function(btJsonEncoded) {
     let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
     btObject.tracks = await getTracksForBlindtest(btObject);
+    if(!btObject.tracks || btObject.tracks.length === 0) return alert("Pistes manquantes.");
     
-    if(!btObject.tracks || btObject.tracks.length === 0) {
-        alert("Pistes manquantes pour l'export.");
-        return;
-    }
-    
-    $('#pdf-final-score').text(btObject.score !== undefined ? `${btObject.score} / ${btObject.total_tracks}` : "Non joué");
+    $('#pdf-final-score').text(btObject.score !== undefined ? `${btObject.score} / ${btObject.total_tracks * 2}` : "Non joué");
     $('#view-bt-tracks').empty();
-    
     btObject.tracks.forEach(track => {
-        const trackHtml = `
-            <div class="modal-track-item">
-                <div style="font-size:1.2rem; margin-right:10px;">🎵</div>
-                <div class="track-details">
-                    <h4 class="track-title">${track.title}</h4>
-                    <p class="track-artist">${track.artist}</p>
-                </div>
+        $('#view-bt-tracks').append(`
+            <div class="track-row-clean">
+                <div class="track-info-clean"><h4>${track.title}</h4><p>${track.artist}</p></div>
             </div>
-        `;
-        $('#view-bt-tracks').append(trackHtml);
+        `);
     });
     
     $('#view-blindtest-modal').addClass('show');
     $('#bt-gameplay-area').hide();
     $('#bt-final-score-container').hide();
     $('#pdf-header').show();
-    
-    setTimeout(() => {
-        window.print();
-        closeBlindtestView();
-    }, 500);
+    setTimeout(() => { window.print(); $('#view-blindtest-modal').removeClass('show'); }, 500);
 };
 
 window.addBlindtestToPlaylists = async function(btJsonEncoded) {
     let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
     btObject.tracks = await getTracksForBlindtest(btObject);
-    
-    if(!btObject.tracks || btObject.tracks.length === 0) {
-        alert("Pistes introuvables pour ce blindtest.");
-        return;
-    }
-    
+    if(!btObject.tracks || btObject.tracks.length === 0) return alert("Pistes introuvables.");
     const userId = localStorage.getItem("userId");
-    if (!userId) {
-        alert("Vous devez être connecté pour ajouter une playlist.");
-        return;
-    }
+    if (!userId) return alert("Vous devez être connecté.");
     
-    const trackIds = btObject.tracks
-        .map(t => parseInt(t.track_id))
-        .filter(id => !isNaN(id));
-
-    if (trackIds.length === 0) {
-        alert("Aucune piste valide à ajouter (les musiques de test ne peuvent pas être sauvegardées).");
-        return;
-    }
+    const trackIds = btObject.tracks.map(t => parseInt(t.track_id)).filter(id => !isNaN(id));
+    if (trackIds.length === 0) return alert("Aucune piste valide.");
     
     try {
         const response = await fetch('http://127.0.0.1:8000/playlists', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: `Blindtest : ${btObject.name}`,
-                description: 'Playlist sauvegardée depuis une session Blindtest.',
-                user_id: parseInt(userId),
-                track_ids: trackIds
-            })
+            body: JSON.stringify({ name: `Blindtest : ${btObject.name}`, description: '', user_id: parseInt(userId), track_ids: trackIds })
         });
-        
-        if (response.ok) {
-            alert("Blindtest ajouté à vos playlists avec succès ! Vous pouvez le retrouver dans l'onglet Playlists.");
-        } else {
-            alert("Erreur lors de l'ajout à vos playlists.");
-        }
-    } catch (e) {
-        console.error(e);
-        alert("Erreur de connexion avec l'API.");
-    }
+        if (response.ok) alert("Blindtest sauvegardé en playlist !");
+    } catch (e) { alert("Erreur de connexion API."); }
 };
 
-// --- GESTION DE L'AJOUT DE PISTE INDIVIDUELLE ---
-
 window.promptAddToPlaylist = async function(trackId) {
-    if(String(trackId).startsWith('mock_')) {
-        alert("Les musiques d'exemple ne peuvent pas être ajoutées.");
-        return;
-    }
+    if(String(trackId).startsWith('mock_')) return alert("Musique d'exemple non ajoutable.");
     trackToAdd = trackId;
     const userId = localStorage.getItem("userId");
-    if(!userId) {
-        alert("Vous devez être connecté.");
-        return;
-    }
+    if(!userId) return alert("Vous devez être connecté.");
     try {
         const res = await fetch(`http://127.0.0.1:8000/users/${userId}/playlists`);
         if(res.ok) {
             const pls = await res.json();
-            const select = $('#pl-select-dropdown');
-            select.empty();
-            if(pls.length === 0) {
-                select.append(`<option disabled>Aucune playlist existante</option>`);
-            } else {
-                pls.forEach(p => {
-                    select.append(`<option value="${p.playlist_id}">${p.playlist_name}</option>`);
-                });
-            }
+            const select = $('#pl-select-dropdown').empty();
+            if(pls.length === 0) select.append(`<option disabled>Aucune playlist</option>`);
+            else pls.forEach(p => select.append(`<option value="${p.playlist_id}">${p.playlist_name}</option>`));
             $('#select-pl-modal').addClass('show');
         }
-    } catch(e) {
-        alert("Erreur de chargement des playlists.");
-    }
+    } catch(e) {}
 };
 
 window.confirmAddToPlaylist = async function() {
     const plId = $('#pl-select-dropdown').val();
     if(!plId || !trackToAdd) return;
-    
     try {
-        // Pour ajouter une musique à la fin, on récupère l'existant, puis update_tracks_in_playlist
         let res = await fetch(`http://127.0.0.1:8000/playlists/${plId}`);
         let pl = await res.json();
         let trackIds = pl.tracks ? pl.tracks.map(t => t.track_id) : [];
-        
         if(!trackIds.includes(trackToAdd)) {
             trackIds.push(trackToAdd);
-            let postRes = await fetch(`http://127.0.0.1:8000/playlists/${plId}/tracks`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({track_ids: trackIds})
-            });
-            if(postRes.ok) {
-                alert("Musique ajoutée avec succès !");
-            }
-        } else {
-            alert("Cette musique est déjà dans la playlist.");
-        }
-    } catch(e) {
-        alert("Erreur lors de l'ajout.");
-    }
+            await fetch(`http://127.0.0.1:8000/playlists/${plId}/tracks`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({track_ids: trackIds}) });
+            alert("Ajouté avec succès.");
+        } else { alert("Déjà dans la playlist."); }
+    } catch(e) {}
     $('#select-pl-modal').removeClass('show');
 };
-
-// --- GESTION DE LA VUE DÉTAILS (Masquage/Démasquage) ---
 
 window.showBlindtestDetails = async function(btJsonEncoded) {
     let btObject = JSON.parse(decodeURIComponent(btJsonEncoded));
     btObject.tracks = await getTracksForBlindtest(btObject);
-    
-    if(!btObject.tracks || btObject.tracks.length === 0) {
-        alert("Pistes introuvables pour ce blindtest.");
-        return;
-    }
+    if(!btObject.tracks || btObject.tracks.length === 0) return;
     
     $('#details-tracks-list').empty();
     btObject.tracks.forEach((track, index) => {
         let titleArtist = `${track.title} - ${track.artist}`;
-        let delay = index * 0.05;
-        let html = `
-            <div class="modal-track-item" style="animation-delay: ${delay}s;">
-                <div class="track-details" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                    <div>
-                        <h4 class="track-title">Piste n°${index + 1}</h4>
-                        <p class="track-artist secret-info" style="display:none; color:var(--orange); font-weight:bold; font-size:1rem;">${titleArtist}</p>
-                        <p class="track-artist masked-info" style="letter-spacing: 2px;">??? - ???</p>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-export-pdf" onclick="promptAddToPlaylist(${track.track_id})" style="margin:0; padding:6px 12px; font-size:0.85rem;" title="Ajouter à une de mes playlists">➕ Playlist</button>
-                        <button onclick="toggleTrackSecret(this)" title="Révéler / Masquer" style="background:none; border:none; cursor:pointer; font-size:1.5rem; transition:transform 0.2s;">👁️</button>
-                    </div>
+        $('#details-tracks-list').append(`
+            <div class="track-row-clean">
+                <div class="track-info-clean">
+                    <h4>Piste n°${index + 1}</h4>
+                    <p class="secret-info" style="display:none; color:var(--noir); font-weight:500;">${titleArtist}</p>
+                    <p class="masked-info" style="color:#aaa;">??? - ???</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-icon" onclick="promptAddToPlaylist(${track.track_id})" title="Playlist"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                    <button class="btn-icon" onclick="toggleTrackSecret(this)" title="Révéler"><svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                 </div>
             </div>
-        `;
-        $('#details-tracks-list').append(html);
+        `);
     });
-    
     $('#details-blindtest-modal').addClass('show');
 };
 
 window.toggleTrackSecret = function(btn) {
-    let container = $(btn).closest('.track-details');
+    let container = $(btn).closest('.track-row-clean');
     let secret = container.find('.secret-info');
     let masked = container.find('.masked-info');
-    
     if(secret.is(':visible')) {
-        secret.hide();
-        masked.show();
-        $(btn).text('👁️').css('transform', 'scale(1)');
+        secret.hide(); masked.show();
+        $(btn).html('<svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>');
     } else {
-        secret.show();
-        masked.hide();
-        $(btn).text('🙈').css('transform', 'scale(1.1)');
+        secret.show(); masked.hide();
+        $(btn).html('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>');
     }
 };
-
-window.closeDetailsModal = function() {
-    $('#details-blindtest-modal').removeClass('show');
-};
-
-
-// --- MÉCANIQUE DU JEU ---
 
 window.startBlindtest = function(event, btObject) {
     if(!btObject) return;
-    currentBlindtest = btObject;
-    currentTrackIndex = 0;
-    score = 0;
+    currentBlindtest = btObject; currentTrackIndex = 0; score = 0;
     
     $('#view-blindtest-modal').addClass('show');
     $('#bt-final-score-container').hide();
-    $('#export-pdf-btn').hide();
     $('#view-bt-tracks').empty();
     $('#pdf-header').hide();
     
-    updateScoreUI();
-    playCurrentBlindtestTrack();
+    updateScoreUI(); playCurrentBlindtestTrack();
 };
 
 function playCurrentBlindtestTrack() {
-    if(currentTrackIndex >= currentBlindtest.tracks.length) {
-        endBlindtest();
-        return;
-    }
+    if(currentTrackIndex >= currentBlindtest.tracks.length) return endBlindtest();
 
     const track = currentBlindtest.tracks[currentTrackIndex];
-    
     $('#bt-gameplay-area').show();
-    $('#bt-guess-section').hide();
-    $('#bt-result-section').hide();
+    $('#bt-guess-section, #bt-result-section').hide();
     $('#bt-guess-input').val('');
-    $('#bt-current-track-num').text(`Piste ${currentTrackIndex + 1} / ${currentBlindtest.tracks.length}`);
-    $('#bt-timer-bar').css('width', '100%').css('transition', `width ${currentBlindtest.difficulty}s linear`);
+    $('#bt-current-track-num').text(`Piste ${currentTrackIndex + 1} sur ${currentBlindtest.tracks.length}`);
+    
+    const diff = currentBlindtest.difficulty || currentBlindtest.difficulty_seconds || 10;
+
+    let $timerBar = $('#bt-timer-bar');
+    $timerBar.css({ transition: 'none', width: '100%' });
+    $timerBar[0].offsetHeight; 
+    $timerBar.css({ transition: `width ${diff}s linear`, width: '0%' });
 
     if(typeof audioPlayer !== 'undefined') {
-        audioPlayer.playTrack({
-            url: track.url,
-            title: "???",
-            artist: "???",
-            trackId: track.track_id
-        });
-
-        setTimeout(() => { $('#bt-timer-bar').css('width', '0%'); }, 50);
-
-        blindtestTimer = setTimeout(() => {
-            audioPlayer.pause();
-            showGuessForm();
-        }, currentBlindtest.difficulty * 1000);
+        audioPlayer.playTrack({ url: track.url, title: "???", artist: "???", trackId: track.track_id });
+        blindtestTimer = setTimeout(() => { audioPlayer.pause(); showGuessForm(); }, diff * 1000);
     } else {
-        console.warn("Lecteur audio indisponible. Simulation de fin de timer.");
         setTimeout(() => { showGuessForm(); }, 1000);
     }
 }
 
 function showGuessForm() {
     $('#bt-timer-bar').css('transition', 'none').css('width', '0%');
-    $('#bt-guess-section').fadeIn();
+    $('#bt-guess-section').fadeIn(200);
     $('#bt-guess-input').focus();
 }
 
 function validateGuess() {
-    const guess = $('#bt-guess-input').val().trim().toLowerCase();
+    const guess = ($('#bt-guess-input').val() || "").trim().toLowerCase();
     const track = currentBlindtest.tracks[currentTrackIndex];
-    
-    const isCorrect = guess && (track.title.toLowerCase().includes(guess) || track.artist.toLowerCase().includes(guess));
-    
-    track.guessed = isCorrect;
-    if(isCorrect) score++;
-    
+
+    const titleLower = track.title.toLowerCase();
+    const artistLower = track.artist.toLowerCase();
+
+    let foundTitle = false;
+    let foundArtist = false;
+
+    if (guess.length > 2) {
+        if (titleLower.includes(guess) || guess.includes(titleLower)) foundTitle = true;
+        if (artistLower.includes(guess) || guess.includes(artistLower)) foundArtist = true;
+    } else if (guess.length > 0) {
+        if (titleLower === guess) foundTitle = true;
+        if (artistLower === guess) foundArtist = true;
+    }
+
+    let pointsGagnes = 0;
+    if (foundTitle && foundArtist) {
+        pointsGagnes = 2; // Artiste + Musique
+    } else if (foundTitle || foundArtist) {
+        pointsGagnes = 1; // Un des deux
+    }
+
+    track.guessed = pointsGagnes;
+    score += pointsGagnes;
     updateScoreUI();
-    
     $('#bt-guess-section').hide();
-    $('#bt-result-msg').html(isCorrect ? `<span style="color:var(--vert, #27ae60)">✅ Bonne réponse !</span>` : `<span style="color:var(--rouge, #e74c3c)">❌ Raté !</span>`);
-    $('#bt-result-info').html(`C'était <strong>${track.title}</strong> de <strong>${track.artist}</strong>`);
-    $('#bt-result-section').fadeIn();
+    
+    let msg = '';
+    let color = '';
+    let cssClass = '';
 
-    const trackHtml = `
-        <div class="modal-track-item ${isCorrect ? 'correct' : 'wrong'}">
-            <div style="font-size:1.5rem; margin-right:10px;">${isCorrect ? '✅' : '❌'}</div>
-            <img src="images/no_image_music.avif" class="track-image" alt="couverture">
-            <div class="track-details">
-                <h4 class="track-title">${track.title}</h4>
-                <p class="track-artist">${track.artist}</p>
+    if (pointsGagnes === 2) {
+        msg = 'Parfait ! (Titre et Artiste)';
+        color = '#27ae60'; // Vert
+        cssClass = 'correct';
+    } else if (pointsGagnes === 1) {
+        msg = foundTitle ? 'Bien ! (Titre trouvé)' : 'Bien ! (Artiste trouvé)';
+        color = '#f39c12'; // Orange/Jaune
+        cssClass = 'correct';
+    } else {
+        msg = 'Raté !';
+        color = '#e74c3c'; // Rouge
+        cssClass = 'wrong';
+    }
+
+    $('#bt-result-msg').text(msg).css('color', color);
+    $('#bt-result-info').html(`${track.title} – ${track.artist}`);
+    $('#bt-result-section').fadeIn(200);
+
+    $('#view-bt-tracks').append(`
+        <div class="track-row-clean ${cssClass}">
+            <div class="track-info-clean" style="width: 100%;">
+                <h4 style="display:flex; justify-content:space-between; align-items:center;">
+                    ${track.title}
+                    <span style="font-size: 0.85rem; font-weight: 600; color: ${color};">+${pointsGagnes} pt(s)</span>
+                </h4>
+                <p>${track.artist}</p>
             </div>
-            <button class="btn-export-pdf" onclick="promptAddToPlaylist(${track.track_id})" style="margin:0; padding:6px 12px; font-size:0.85rem;">➕ Playlist</button>
         </div>
-    `;
-    $('#view-bt-tracks').append(trackHtml);
+    `);
 }
 
-function nextTrack() {
-    currentTrackIndex++;
-    playCurrentBlindtestTrack();
-}
+function nextTrack() { currentTrackIndex++; playCurrentBlindtestTrack(); }
 
 function endBlindtest() {
     $('#bt-gameplay-area').hide();
-    $('#bt-final-score-container').show();
+    $('#bt-final-score-container').fadeIn(200);
     $('#bt-final-score').text(score);
-    $('#bt-final-total').text(currentBlindtest.tracks.length);
-    $('#export-pdf-btn').fadeIn();
-    $('#pdf-final-score').text(`${score} / ${currentBlindtest.tracks.length}`);
-    $('#pdf-header').show();
-    
+    $('#bt-final-total').text(currentBlindtest.tracks.length * 2);
     if(typeof audioPlayer !== 'undefined') audioPlayer.stop();
 
     currentBlindtest.score = score;
+    
+    // --- FIX : Synchronisation immédiate avec le LocalStorage ---
     let localBts = JSON.parse(localStorage.getItem('localBlindtests') || '[]');
     let index = localBts.findIndex(b => String(b.id) === String(currentBlindtest.id));
-    if(index !== -1) {
-        localBts[index].score = score;
-        localStorage.setItem('localBlindtests', JSON.stringify(localBts));
+    if(index !== -1) { 
+        localBts[index].score = score; 
+    } else {
+        // Si c'est un blindtest importé de la BDD, on garde quand même une trace locale de son score 
+        // pour surcharger l'affichage en attendant la mise à jour côté base de données
+        localBts.push({ id: currentBlindtest.id, score: score });
     }
+    localStorage.setItem('localBlindtests', JSON.stringify(localBts));
     
+    // --- OPTIONNEL : Envoi du score à l'API si l'endpoint PUT existe ---
+    if (currentBlindtest.id && !String(currentBlindtest.id).startsWith('local_')) {
+        try {
+            fetch(`http://127.0.0.1:8000/blindtests/${currentBlindtest.id}/score`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ score: score })
+            });
+        } catch(e) {}
+    }
+
     chargerBlindtestsBDD(); 
 }
 
 function updateScoreUI() {
     $('#bt-score').text(score);
-    $('#bt-total').text(currentBlindtest ? currentBlindtest.tracks.length : 0);
+    $('#bt-total').text(currentBlindtest ? currentBlindtest.tracks.length * 2 : 0);
 }
-
-window.closeBlindtestView = function() {
-    $('#view-blindtest-modal').removeClass('show');
-    $('#pdf-header').hide();
-    if(blindtestTimer) clearTimeout(blindtestTimer);
-    if(typeof audioPlayer !== 'undefined') audioPlayer.stop();
-};
     </script>
 </head>
-<body class="playlists-page" style="padding-bottom: 120px;">
+<body class="playlists-page">
     <header>
-        <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a> 
-        <nav>
-            <a href="accueil.html">Accueil</a>
+        <a href="accueil.html" class="brand" aria-label="10Heures – Accueil"><img src="images/logos/Group%206.svg" alt="10Heures logo" width="38" height="38" fetchpriority="high" style="vertical-align:middle;margin-right:8px;"> <h2>10Heures</h2></a> 
+        <nav aria-label="Navigation principale">
+            <a href="accueil.html" aria-current="page">Accueil</a>
             <a href="playlists.html">Playlists</a>
             <a href="blindtest.html">Blindtest</a>
             <a href="preferences.html">Préférences</a>
+                
+            <div class="dropdown">
+                <a href="#" aria-haspopup="true" aria-expanded="false">API &nbsp; <span style="display: inline-block; transform: translateY(-1px);" aria-hidden="true">▾</span></a>
+                <div class="dropdown-content" role="menu">
+                    <a href="api-installation.html" role="menuitem">Installation</a>
+                    <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer" role="menuitem">Doc. Swagger</a>
+                    <a href="api-documentation.html" role="menuitem">Doc Legacy</a>
+                    <a href="api-test.html" role="menuitem">Testez l'API</a>
+                </div>
+            </div>
         </nav>
-        
+
         <div class="theme-switcher-wrapper">
             <button class="theme-btn" id="themeBtnToggle" title="Changer la couleur du site" aria-expanded="false">
                 <span class="theme-btn-dot" id="themeBtnDot"></span>Thème
@@ -962,18 +989,24 @@ window.closeBlindtestView = function() {
         </div>
 
         <div class="header-right">
-            <div id="user-menu" class="user-dropdown">
-                <a href="#" id="user-name-display">Mon Profil &nbsp; ▾</a>
-                <div class="dropdown-content user-dropdown-content">
-                    <a href="profil.html">Mon profil</a>
-                    <a href="#" id="logoutBtn" class="logout-link">Déconnexion</a>
+            <div id="auth-buttons" class="connexion-inscription">
+                <a href="connexion.html?mode=login">Connexion</a>
+                <button title="Inscription">
+                    <a href="connexion.html?mode=register">Inscription</a>
+                </button>
+            </div>
+            <div id="user-menu" class="user-dropdown hidden">
+                <a href="#" id="user-name-display" aria-haspopup="true" aria-expanded="false">Mon Profil &nbsp; <span style="display: inline-block; transform: translateY(-1px);" aria-hidden="true">▾</span></a>
+                <div class="dropdown-content user-dropdown-content" role="menu">
+                    <a href="profil.html" role="menuitem">Mon profil</a>
+                    <a href="#" id="logoutBtn" class="logout-link" role="menuitem">Déconnexion</a>
                 </div>
             </div>
         </div>
     </header>
 
     <main>
-        <section class="playlists-header" style="background-color: var(--noir); padding: 4em; display: flex; align-items: center; justify-content: center; min-height: 50vh; text-align: center;">
+        <section class="playlists-header" style="background-color: var(--noir); padding: 4em; display: flex; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
             <div>
                 <h1 style="font-family: 'Rammetto One', sans-serif; font-size: 3rem; color: white; margin-bottom: 15px;">Mode Blindtest</h1>
                 <p style="color: #ccc; font-size: 1.1rem; margin-bottom: 30px;">Testez vos connaissances musicales ! Générez un blindtest, écoutez l'extrait, et devinez le titre ou l'artiste avant la fin du temps imparti.</p>
@@ -985,191 +1018,179 @@ window.closeBlindtestView = function() {
             </div>
         </section>
 
-        <section class="my-playlists-section">
-            <div class="playlists-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; padding: 50px;">
-                </div>
-        </section>
+        <section class="bt-grid-container"></section>
     </main>
 
-    <div id="create-blindtest-modal" class="create-modal-overlay">
-        <div class="create-modal-content">
-            <button class="create-modal-close" id="close-blindtest-modal" title="Fermer">&times;</button>
-            
-            <div class="create-modal-header">
+    <div id="create-blindtest-modal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="btn-close-modal" title="Fermer">&times;</button>
+            <div class="modal-header-text">
                 <h2>Nouveau Blindtest</h2>
-                <p>Paramétrez votre session de jeu sur mesure</p>
+                <p>Paramétrez votre session de jeu.</p>
             </div>
             
-            <div class="playlist-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="bt-nb-tracks">Nombre de musiques <span style="color:var(--orange)">*</span></label>
-                        <input type="number" id="bt-nb-tracks" value="10" min="1" max="50">
+            <div class="bt-form">
+                <div class="bt-form-group">
+                    <label for="bt-name">Nom de la session</label>
+                    <input type="text" id="bt-name" placeholder="Généré automatiquement si vide" class="bt-input">
+                </div>
+                <div class="bt-form-row">
+                    <div class="bt-form-group">
+                        <label for="bt-nb-tracks">Pistes</label>
+                        <input type="number" id="bt-nb-tracks" value="10" min="1" max="50" class="bt-input">
                     </div>
-                    <div class="form-group">
-                        <label for="bt-difficulty">Niveau de difficulté <span style="color:var(--orange)">*</span></label>
-                        <select id="bt-difficulty" class="styled-select">
-                            <option value="10">Facile (10 secondes)</option>
-                            <option value="5">Moyen (5 secondes)</option>
-                            <option value="3">Difficile (3 secondes)</option>
+                    <div class="bt-form-group">
+                        <label for="bt-difficulty">Difficulté</label>
+                        <select id="bt-difficulty" class="bt-input">
+                            <option value="10">Facile (10s)</option>
+                            <option value="5">Moyen (5s)</option>
+                            <option value="3">Difficile (3s)</option>
                         </select>
                     </div>
                 </div>
                 
-                <details class="advanced-params">
-                    <summary>Options avancées (Filtres)</summary>
-                    <div class="advanced-params-content">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="bt-year">Année de sortie</label>
-                                <input type="number" id="bt-year" placeholder="Ex: 2010">
+                <details class="bt-advanced">
+                    <summary>Filtres Avancés</summary>
+                    <div class="bt-advanced-content">
+                        <div class="bt-form-row">
+                            <div class="bt-form-group">
+                                <label for="bt-year">Année</label>
+                                <input type="number" id="bt-year" placeholder="Ex: 2010" class="bt-input">
                             </div>
-                            <div class="form-group">
-                                <label for="bt-genre">Genre musical</label>
-                                <input type="text" id="bt-genre" placeholder="Ex: Rock, Pop...">
+                            <div class="bt-form-group">
+                                <label for="bt-genre">Genre</label>
+                                <input type="text" id="bt-genre" placeholder="Ex: Pop" class="bt-input">
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
+                        
+                        <div class="bt-form-row">
+                            <div class="bt-form-group">
+                                <label for="bt-artist">Artiste</label>
+                                <input type="text" id="bt-artist" placeholder="Ex: Queen" class="bt-input">
+                            </div>
+                            <div class="bt-form-group">
                                 <label for="bt-popularity">Popularité</label>
-                                <select id="bt-popularity" class="styled-select">
+                                <select id="bt-popularity" class="bt-input">
                                     <option value="">Peu importe</option>
-                                    <option value="high">Très populaire (Hits)</option>
-                                    <option value="low">Découverte (Underground)</option>
+                                    <option value="high">Populaire (> 5000 écoutes)</option>
+                                    <option value="medium">Moyenne (1000 - 5000 écoutes)</option>
+                                    <option value="low">Découverte (< 1000 écoutes)</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="bt-lang">Langue</label>
-                                <select id="bt-lang" class="styled-select">
+                        </div>
+
+                        <div class="bt-form-row">
+                            <div class="bt-form-group">
+                                <label for="bt-type">Type Vocal</label>
+                                <select id="bt-type" class="bt-input">
                                     <option value="">Peu importe</option>
+                                    <option value="instrumental">Instrumental</option>
+                                    <option value="vocal">Vocal</option>
+                                    <option value="spoken">Spoken Word / Rap</option>
+                                </select>
+                            </div>
+                            <div class="bt-form-group">
+                                <label for="bt-lang">Langue</label>
+                                <select id="bt-lang" class="bt-input">
+                                    <option value="">Toutes les langues</option>
                                     <option value="fr">Français</option>
                                     <option value="en">Anglais</option>
+                                    <option value="es">Espagnol</option>
+                                    <option value="it">Italien</option>
+                                    <option value="de">Allemand</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                 </details>
                 
-                <button id="generate-blindtest-btn" title="Lancer la partie">Créer et Jouer 🎮</button>
+                <button id="generate-blindtest-btn" class="bt-btn-submit">Démarrer</button>
             </div>
         </div>
     </div>
 
-    <div id="details-blindtest-modal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <button class="close-modal" onclick="closeDetailsModal()">&times;</button>
-            <div class="create-modal-header" style="margin-bottom:15px; padding-bottom:10px;">
+    <div id="details-blindtest-modal" class="modal-overlay">
+        <div class="modal-container">
+            <button class="btn-close-modal" title="Fermer">&times;</button>
+            <div class="modal-header-text">
                 <h2>Liste des pistes</h2>
-                <p>Cliquez sur l'icône 👁️ pour révéler une musique</p>
+                <p>Révélez les titres masqués ci-dessous.</p>
             </div>
-            <div id="details-tracks-list" class="modal-tracks-list" style="padding: 0;">
-                </div>
+            <div id="details-tracks-list" class="track-list-clean"></div>
         </div>
     </div>
 
-    <div id="view-blindtest-modal" class="modal">
-        <div class="modal-content blindtest-game-modal">
+    <div id="view-blindtest-modal" class="modal-overlay">
+        <div class="modal-container full-bleed">
+            <button class="btn-close-modal" title="Quitter">&times;</button>
             
-            <div id="pdf-header" style="display:none;">
-                <h1 style="color:var(--orange, #ed7a26); font-size:3rem; margin-bottom:10px;">Résultats du Blindtest</h1>
-                <h2 style="color:#444;">Score : <span id="pdf-final-score"></span></h2>
-                <hr style="border:1px solid var(--orange, #ed7a26); margin:20px 0;">
+            <div id="pdf-header" style="display:none; padding:32px;">
+                <h1>Résultats Blindtest</h1>
+                <h2>Score : <span id="pdf-final-score"></span></h2>
+                <hr>
             </div>
 
-            <div class="modal-header">
-                <div class="modal-header-info">
-                    <p style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); margin-bottom: 5px;">Session en cours</p>
-                    <h2>Jeu Blindtest</h2>
-                    <p>Score actuel : <strong style="font-size:1.2rem; color:white;"><span id="bt-score">0</span> / <span id="bt-total">10</span></strong></p>
-                </div>
-                <button class="btn-export-pdf" id="export-pdf-btn" onclick="window.print()" style="display:none; z-index:10;">
-                    🖨️ Exporter PDF
-                </button>
-                <button class="close-modal" onclick="closeBlindtestView()">&times;</button>
+            <div class="game-header">
+                <h2>Session en cours</h2>
+                <span class="game-score-badge"><span id="bt-score">0</span> / <span id="bt-total">10</span></span>
             </div>
             
-            <div id="bt-gameplay-area" class="gameplay-area">
-                <h3 id="bt-current-track-num">Piste 1 / 10</h3>
-                
-                <div class="timer-container">
-                    <div id="bt-timer-bar" class="timer-bar"></div>
-                </div>
+            <div id="bt-gameplay-area" class="game-body">
+                <div id="bt-current-track-num" class="game-track-counter">Piste 1 / 10</div>
+                <div class="game-timer-bg"><div id="bt-timer-bar" class="game-timer-fill"></div></div>
 
-                <div id="bt-guess-section" style="display:none; margin-top:20px;">
-                    <p style="margin-bottom:10px; font-weight:bold; font-size:1.1rem;">Temps écoulé ! Quelle est cette musique ?</p>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="bt-guess-input" placeholder="Titre de la musique ou Artiste..." class="styled-input" style="flex:1;">
-                        <button id="bt-guess-btn" class="action-btn">Valider</button>
+                <div id="bt-guess-section" style="display:none;">
+                    <p style="margin-bottom:12px; font-weight:600; font-size:1.05rem;">Titre ou Artiste ?</p>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="bt-guess-input" placeholder="Saisir votre réponse..." class="bt-input">
+                        <button id="bt-guess-btn" class="bt-btn-submit" style="margin:0;">Valider</button>
                     </div>
                 </div>
 
-                <div id="bt-result-section" style="display:none; margin-top:20px; text-align:center; padding:25px; background:#f9f9f9; border-radius:12px; border:2px solid #eee;">
-                    <h3 id="bt-result-msg" style="margin-bottom:10px; font-size:1.4rem;"></h3>
-                    <p id="bt-result-info" style="font-size:1.15rem; color:#444; margin-bottom:20px;"></p>
-                    <button id="bt-next-btn" class="action-btn-dark">Piste suivante ⏭️</button>
+                <div id="bt-result-section" class="game-result-box" style="display:none;">
+                    <h3 id="bt-result-msg" style="margin-bottom:8px; font-size:1.2rem;"></h3>
+                    <p id="bt-result-info" style="font-size:1rem; color:#444; margin-bottom:16px; font-weight:500;"></p>
+                    <button id="bt-next-btn" class="btn-flat secondary" style="border:1px solid #ddd;">Piste suivante</button>
                 </div>
             </div>
 
-            <div id="bt-final-score-container" style="display:none; text-align:center; padding:40px 20px;">
-                <h1 style="font-size:3rem; margin-bottom:10px;">Partie Terminée !</h1>
-                <p style="font-size:1.5rem; color:var(--gris-fonce, #2a2a2a);">Score final : <strong style="color:var(--orange, #ed7a26); font-size:2.5rem;"><span id="bt-final-score"></span> / <span id="bt-final-total"></span></strong></p>
+            <div id="bt-final-score-container" class="game-body" style="display:none;">
+                <h1 style="font-size:2.4rem; margin-bottom:16px; color:var(--noir);">Partie Terminée</h1>
+                <p style="font-size:1.2rem; color:#666;">Score final : <strong style="color:var(--noir); font-size:1.6rem;"><span id="bt-final-score"></span> / <span id="bt-final-total"></span></strong></p>
+                <div class="track-list-clean" id="view-bt-tracks" style="margin-top:24px; text-align:left;"></div>
             </div>
-
-            <div class="modal-tracks-list" id="view-bt-tracks" style="margin-top:10px; border-top:2px solid #eee; padding-top:20px;">
-                </div>
         </div>
     </div>
     
-    <div id="select-pl-modal" class="modal">
-       <div class="modal-content" style="max-width: 400px; text-align:center; padding: 30px;">
-           <button class="close-modal" onclick="$('#select-pl-modal').removeClass('show')">&times;</button>
-           <h2 style="font-family:'Rammetto One', sans-serif; font-size:1.5rem; margin-bottom:10px;">Choisir une playlist</h2>
-           <p style="color:#666; margin-bottom:20px;">Où souhaitez-vous ajouter cette musique ?</p>
-           <select id="pl-select-dropdown" class="styled-select" style="margin-bottom:25px;"></select>
-           <button class="action-btn" onclick="confirmAddToPlaylist()" style="width:100%;">Ajouter</button>
+    <div id="select-pl-modal" class="modal-overlay">
+       <div class="modal-container" style="max-width: 400px; text-align:center;">
+           <button class="btn-close-modal" title="Fermer">&times;</button>
+           <div class="modal-header-text">
+               <h2>Choix Playlist</h2>
+               <p>Où ajouter cette musique ?</p>
+           </div>
+           <select id="pl-select-dropdown" class="bt-input" style="margin-bottom:16px;"></select>
+           <button class="bt-btn-submit" onclick="confirmAddToPlaylist()" style="width:100%;">Ajouter</button>
        </div>
     </div>
 
-    <footer aria-label="Pied de page MuSE">
-        <div class="titre-footer">
-            <h2>MuSE</h2>
-        </div>
+    <footer aria-label="Pied de page 10Heures">
+        <div class="titre-footer"><h2>10Heures</h2></div>
         <div class="navigation-footer">
-            <div>
-                <p>Société</p>
-                <div>
-                    <a href="#">À propos de nous</a>
-                    <a href="#">Offre d'emploi</a>
-                </div>
-            </div>
-            <div>
-                <p>Liens utiles</p>
-                <div>
-                    <a href="contact.html">Nous contacter</a>
-                </div>
-            </div>
-            <div>
-                <p>Communauté</p>
-                <div>
-                    <a href="#">Développeurs</a>
-                </div>
-            </div>
-            <div>
-                <p>Légal</p>
-                <div>
-                    <a href="#">Mentions légales</a>
-                </div>
-            </div>
+            <div><p>Société</p><div><a href="#">À propos</a><a href="#">Emplois</a></div></div>
+            <div><p>Liens utiles</p><div><a href="contact.html">Contact</a></div></div>
+            <div><p>Communauté</p><div><a href="#">Développeurs</a></div></div>
+            <div><p>Légal</p><div><a href="#">Mentions légales</a></div></div>
         </div>
         <div class="barre-separation-footer"></div>
         <div class="fin-footer">
             <div class="reseaux-sociaux-footer">
-                <a href="#" aria-label="Instagram"><img src="images/icones/instagram.avif" alt="Instagram" width="24" height="24" loading="lazy"/></a>
-                <a href="#" aria-label="LinkedIn"><img src="images/icones/linkedin.avif" alt="LinkedIn" width="24" height="24" loading="lazy"/></a>
-                <a href="#" aria-label="GitHub"><img src="images/icones/github.avif" alt="GitHub" width="24" height="24" loading="lazy"/></a>
-                <a href="#" aria-label="Facebook"><img src="images/icones/facebook.avif" alt="Facebook" width="24" height="24" loading="lazy"/></a>
+                <a href="#"><img src="images/icones/instagram.avif" alt="Instagram" width="24" height="24"></a>
+                <a href="#"><img src="images/icones/linkedin.avif" alt="LinkedIn" width="24" height="24"></a>
+                <a href="#"><img src="images/icones/github.avif" alt="GitHub" width="24" height="24"></a>
+                <a href="#"><img src="images/icones/facebook.avif" alt="Facebook" width="24" height="24"></a>
             </div>
-            <p>© 2026 MuSE Français</p>
+            <p>© 2026 10Heures Français</p>
         </div>
     </footer>
 </body>

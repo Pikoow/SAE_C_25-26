@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Administration - MuSE</title>
+    <title>Administration - 10Heures</title>
     <link rel="icon" href="images/logos/Group%206.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
     <script src="header-ui.js" defer></script>
@@ -20,7 +20,7 @@
 <body class="admin-page">
 
     <header>
-        <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>MuSE</h2></a>
+        <a href="accueil.html" class="brand"><img src="images/logos/Group%206.svg" alt="MuSe logo" style="height:38px;vertical-align:middle;margin-right:8px;"> <h2>10Heures</h2></a>
         <nav>
             <a href="accueil.html">Accueil</a>
             <a href="playlists.html">Playlists</a>
@@ -107,7 +107,13 @@
                         <option value="admin">Administrateurs</option>
                         <option value="banned">Bannis</option>
                     </select>
-                    <button class="admin-refresh-btn" id="btn-refresh" onclick="loadUsers()" title="Actualiser">Actualiser</button>
+                    <button class="admin-refresh-btn" id="btn-refresh" onclick="loadUsers()" title="Actualiser">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="refresh-icon">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                        Actualiser
+                    </button>
                 </div>
 
                 <div class="admin-table-wrap">
@@ -212,7 +218,7 @@
     <div class="admin-toast" id="admin-toast"></div>
 
     <footer>
-        <div class="titre-footer"><h2>MuSE</h2></div>
+        <div class="titre-footer"><h2>10Heures</h2></div>
         <div class="navigation-footer">
             <div><p>Société</p><div><a href="#">À propos de nous</a><a href="#">Offre d'emploi</a></div></div>
             <div><p>Liens utiles</p><div><a href="contact.html">Nous contacter</a></div></div>
@@ -227,7 +233,7 @@
                 <a href="#"><img src="../images/icones/github.avif" alt="GitHub"></a>
                 <a href="#"><img src="../images/icones/facebook.avif" alt="Facebook"></a>
             </div>
-            <p>© 2026 MuSE Français</p>
+            <p>© 2026 10Heures Français</p>
         </div>
     </footer>
 

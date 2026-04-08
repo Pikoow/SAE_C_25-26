@@ -1,5 +1,5 @@
 """
-Script pour créer le compte super-admin dans la base de données MuSE.
+Script pour créer le compte super-admin dans la base de données 10Heures.
 Usage : python seed_admin.py
 """
 import psycopg2

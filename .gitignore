@@ -24,3 +24,4 @@ postgres.session.sql
 __pycache__/
 *.pyc
 API/web/uploads/playlists/
+repartition.md
